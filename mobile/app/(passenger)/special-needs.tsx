@@ -1,0 +1,527 @@
+// Diseñado por: Edward Labrador
+// Para: ELITE GROUP - Integral Services LLC
+// ═══════════════════════════════════════════════════════════════
+// Pantalla: Perfil de necesidades especiales del pasajero
+// Accesible desde el home del pasajero
+// ═══════════════════════════════════════════════════════════════
+
+import React, { useState, useEffect } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity, TextInput,
+  SafeAreaView, ScrollView, ActivityIndicator, Alert, Switch,
+} from 'react-native';
+import { router } from 'expo-router';
+import * as Haptics from 'expo-haptics';
+import { passengerMobileService } from '../../src/services/passengerService';
+import { PassengerSpecialNeeds, SpecialNeedsCategory } from '@vride/shared';
+import { BRAND_COLORS } from '@vride/shared';
+
+// ─────────────────────────────────────
+// Opciones de categoría
+// ─────────────────────────────────────
+const CATEGORIES: { key: SpecialNeedsCategory; label: string; emoji: string; desc: string }[] = [
+  { key: 'none',              label: 'No special needs',         emoji: '✅', desc: 'Standard passenger' },
+  { key: 'pregnant',          label: 'Pregnant woman',           emoji: '🤰', desc: 'Needs extra care and comfort' },
+  { key: 'wheelchair',        label: 'Wheelchair user',          emoji: '♿', desc: 'Requires wheelchair-accessible vehicle' },
+  { key: 'visual_impairment', label: 'Visual impairment',        emoji: '👁️', desc: 'Blind or low vision' },
+  { key: 'hearing_impairment',label: 'Hearing impairment',       emoji: '🦻', desc: 'Deaf or hard of hearing' },
+  { key: 'elderly',           label: 'Older adult',              emoji: '👴', desc: 'Senior passenger' },
+  { key: 'minor',             label: 'Minor (child)',            emoji: '🧒', desc: 'Passenger under 18' },
+  { key: 'medical',           label: 'Medical patient',          emoji: '🏥', desc: 'Medical condition or equipment' },
+];
+
+const COMM_METHODS: { key: string; label: string }[] = [
+  { key: 'verbal',        label: 'Verbal communication' },
+  { key: 'text',          label: 'Text / written messages' },
+  { key: 'sign_language', label: 'Sign language' },
+  { key: 'lip_reading',   label: 'Lip reading' },
+];
+
+export default function SpecialNeedsScreen() {
+  const [loading, setLoading]     = useState(true);
+  const [saving, setSaving]       = useState(false);
+  const [categories, setCategories] = useState<SpecialNeedsCategory[]>(['none']);
+
+  // Mobility
+  const [needsPhysicalHelp,      setNeedsPhysicalHelp]      = useState(false);
+  const [usesWheelchair,         setUsesWheelchair]          = useState(false);
+  const [usesWalker,             setUsesWalker]              = useState(false);
+  const [usesCane,               setUsesCane]                = useState(false);
+  const [needsRamp,              setNeedsRamp]               = useState(false);
+  const [travelingWithCompanion, setTravelingWithCompanion]  = useState(false);
+
+  // Visual / hearing
+  const [guideDog,              setGuideDog]              = useState(false);
+  const [commMethod,            setCommMethod]            = useState('verbal');
+
+  // Medical
+  const [carriesMedEquipment,   setCarriesMedEquipment]   = useState(false);
+  const [medEquipmentDetails,   setMedEquipmentDetails]   = useState('');
+
+  // Minor
+  const [needsBabySeat,         setNeedsBabySeat]         = useState(false);
+  const [canTravelAlone,        setCanTravelAlone]        = useState(true);
+
+  // Emergency & instructions
+  const [emergencyName,         setEmergencyName]         = useState('');
+  const [emergencyPhone,        setEmergencyPhone]        = useState('');
+  const [specialInstructions,   setSpecialInstructions]   = useState('');
+
+  // Cargar perfil actual
+  useEffect(() => {
+    passengerMobileService.getProfile()
+      .then(profile => {
+        const sn = profile.special_needs ?? {};
+        const saved = sn.categories as SpecialNeedsCategory[] | undefined;
+        setCategories(saved?.length ? saved : [(sn.category as SpecialNeedsCategory) ?? 'none']);
+        setNeedsPhysicalHelp(sn.needs_physical_help ?? false);
+        setUsesWheelchair(sn.uses_wheelchair ?? false);
+        setUsesWalker(sn.uses_walker ?? false);
+        setUsesCane(sn.uses_cane ?? false);
+        setNeedsRamp(sn.needs_ramp ?? false);
+        setTravelingWithCompanion(sn.traveling_with_companion ?? false);
+        setGuideDog(sn.guide_dog ?? false);
+        setCommMethod(sn.communication_method ?? 'verbal');
+        setCarriesMedEquipment(sn.carries_medical_equipment ?? false);
+        setMedEquipmentDetails(sn.medical_equipment_details ?? '');
+        setNeedsBabySeat(sn.needs_baby_seat ?? false);
+        setCanTravelAlone(sn.can_travel_alone ?? true);
+        setEmergencyName(sn.emergency_contact_name ?? '');
+        setEmergencyPhone(sn.emergency_contact_phone ?? '');
+        setSpecialInstructions(sn.special_instructions ?? '');
+      })
+      .catch(() => {/* perfil nuevo, valores por defecto */})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const primary = categories.find(c => c !== 'none') ?? 'none';
+      const payload: Partial<PassengerSpecialNeeds> = {
+        category:   primary,
+        categories,
+        needs_physical_help:      needsPhysicalHelp,
+        uses_wheelchair:          usesWheelchair,
+        uses_walker:              usesWalker,
+        uses_cane:                usesCane,
+        needs_ramp:               needsRamp,
+        traveling_with_companion: travelingWithCompanion,
+        guide_dog:                guideDog,
+        communication_method:     commMethod as PassengerSpecialNeeds['communication_method'],
+        carries_medical_equipment: carriesMedEquipment,
+        medical_equipment_details: medEquipmentDetails.trim() || undefined,
+        needs_baby_seat:          needsBabySeat,
+        can_travel_alone:         canTravelAlone,
+        emergency_contact_name:   emergencyName.trim() || undefined,
+        emergency_contact_phone:  emergencyPhone.trim() || undefined,
+        special_instructions:     specialInstructions.trim() || undefined,
+      };
+
+      await passengerMobileService.updateSpecialNeeds(payload);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      Alert.alert('Saved', 'Your profile has been updated successfully.', [
+        { text: 'OK', onPress: () => router.back() },
+      ]);
+    } catch {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      Alert.alert('Error', 'Could not save your profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ActivityIndicator size="large" color={BRAND_COLORS.PRIMARY} style={{ marginTop: 80 }} />
+      </SafeAreaView>
+    );
+  }
+
+  const has = (cat: SpecialNeedsCategory) => categories.includes(cat);
+  const toggleCategory = (cat: SpecialNeedsCategory) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (cat === 'none') { setCategories(['none']); return; }
+    setCategories(prev => {
+      const without = prev.filter(c => c !== 'none');
+      return without.includes(cat) ? (without.filter(c => c !== cat) || ['none']) : [...without, cat];
+    });
+  };
+
+  // Mostrar secciones adicionales según las categorías seleccionadas
+  const showMobility   = ['wheelchair', 'elderly', 'pregnant', 'medical'].some(has);
+  const showVisual     = has('visual_impairment');
+  const showHearing    = has('hearing_impairment');
+  const showMedical    = has('medical');
+  const showMinor      = has('minor');
+  const showCommMethod = has('visual_impairment') || has('hearing_impairment');
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <Text style={styles.backText}>←</Text>
+        </TouchableOpacity>
+        <Text style={styles.title}>Special Needs Profile</Text>
+        <View style={styles.backBtn} />
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <Text style={styles.hint}>
+          This information helps drivers prepare for your trip and provide better service.
+          It is confidential and only shared with your assigned driver.
+        </Text>
+
+        {/* Categorías — selección múltiple */}
+        <Text style={styles.sectionTitle}>Select all that apply</Text>
+        {CATEGORIES.map(cat => {
+          const selected = has(cat.key);
+          return (
+            <TouchableOpacity
+              key={cat.key}
+              style={[styles.catCard, selected && styles.catCardSelected]}
+              onPress={() => toggleCategory(cat.key)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: selected }}
+            >
+              <Text style={styles.catEmoji}>{cat.emoji}</Text>
+              <View style={styles.catInfo}>
+                <Text style={[styles.catLabel, selected && styles.catLabelSelected]}>
+                  {cat.label}
+                </Text>
+                <Text style={styles.catDesc}>{cat.desc}</Text>
+              </View>
+              <View style={[styles.checkbox, selected && styles.checkboxSelected]}>
+                {selected && <Text style={styles.checkboxMark}>✓</Text>}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+        {/* Movilidad */}
+        {showMobility && (
+          <>
+            <Text style={styles.sectionTitle}>Mobility assistance</Text>
+            <ToggleRow label="I need help getting in/out of the vehicle"
+              value={needsPhysicalHelp} onChange={setNeedsPhysicalHelp} />
+            <ToggleRow label="I use a wheelchair"
+              value={usesWheelchair} onChange={v => { setUsesWheelchair(v); if (v) setNeedsRamp(true); }} />
+            <ToggleRow label="I use a walker/rollator"
+              value={usesWalker} onChange={setUsesWalker} />
+            <ToggleRow label="I use a cane"
+              value={usesCane} onChange={setUsesCane} />
+            <ToggleRow label="I need a wheelchair ramp"
+              value={needsRamp} onChange={setNeedsRamp} />
+            <ToggleRow label="I will travel with a companion"
+              value={travelingWithCompanion} onChange={setTravelingWithCompanion} />
+          </>
+        )}
+
+        {/* Visual */}
+        {showVisual && (
+          <>
+            <Text style={styles.sectionTitle}>Visual impairment</Text>
+            <ToggleRow label="I travel with a guide dog"
+              value={guideDog} onChange={setGuideDog} />
+            <ToggleRow label="I need the driver to guide me to/from the vehicle"
+              value={needsPhysicalHelp} onChange={setNeedsPhysicalHelp} />
+          </>
+        )}
+
+        {/* Hearing */}
+        {showHearing && (
+          <>
+            <Text style={styles.sectionTitle}>Hearing impairment</Text>
+          </>
+        )}
+
+        {/* Método de comunicación */}
+        {showCommMethod && (
+          <>
+            <Text style={styles.sectionTitle}>Preferred communication method</Text>
+            {COMM_METHODS.map(m => {
+              const sel = commMethod === m.key;
+              return (
+                <TouchableOpacity
+                  key={m.key}
+                  style={[styles.commOption, sel && styles.commOptionSelected]}
+                  onPress={() => { setCommMethod(m.key); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                >
+                  <Text style={[styles.commLabel, sel && styles.commLabelSelected]}>{m.label}</Text>
+                  {sel && <Text style={styles.catCheck}>✓</Text>}
+                </TouchableOpacity>
+              );
+            })}
+          </>
+        )}
+
+        {/* Médico */}
+        {showMedical && (
+          <>
+            <Text style={styles.sectionTitle}>Medical equipment</Text>
+            <ToggleRow label="I carry medical equipment (oxygen tank, IV, etc.)"
+              value={carriesMedEquipment} onChange={setCarriesMedEquipment} />
+            {carriesMedEquipment && (
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>Describe the equipment</Text>
+                <TextInput
+                  style={styles.input}
+                  value={medEquipmentDetails}
+                  onChangeText={setMedEquipmentDetails}
+                  placeholder="e.g. portable oxygen tank"
+                  placeholderTextColor="#aaa"
+                  maxLength={200}
+                />
+              </View>
+            )}
+          </>
+        )}
+
+        {/* Menor */}
+        {showMinor && (
+          <>
+            <Text style={styles.sectionTitle}>Minor passenger</Text>
+            <ToggleRow label="Needs a baby/booster seat"
+              value={needsBabySeat} onChange={setNeedsBabySeat} />
+            <ToggleRow label="Can travel without an adult companion"
+              value={canTravelAlone} onChange={setCanTravelAlone} />
+          </>
+        )}
+
+        {/* Elderly - can travel alone */}
+        {has('elderly') && (
+          <>
+            <Text style={styles.sectionTitle}>Independence</Text>
+            <ToggleRow label="Can travel without a companion"
+              value={canTravelAlone} onChange={setCanTravelAlone} />
+          </>
+        )}
+
+        {/* Contacto de emergencia */}
+        {!has('none') && categories.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Emergency contact</Text>
+            <View style={styles.field}>
+              <Text style={styles.fieldLabel}>Contact name</Text>
+              <TextInput style={styles.input} value={emergencyName}
+                onChangeText={setEmergencyName}
+                autoCapitalize="words" placeholder="Full name" placeholderTextColor="#aaa" />
+            </View>
+            <View style={styles.field}>
+              <Text style={styles.fieldLabel}>Contact phone</Text>
+              <TextInput style={styles.input} value={emergencyPhone}
+                onChangeText={setEmergencyPhone}
+                keyboardType="phone-pad" placeholder="(555) 123-4567" placeholderTextColor="#aaa" />
+            </View>
+          </>
+        )}
+
+        {/* Instrucciones especiales */}
+        <Text style={styles.sectionTitle}>Special instructions for the driver</Text>
+        <TextInput
+          style={[styles.input, styles.textArea]}
+          value={specialInstructions}
+          onChangeText={setSpecialInstructions}
+          placeholder="Any additional information the driver should know..."
+          placeholderTextColor="#aaa"
+          multiline
+          numberOfLines={4}
+          maxLength={500}
+          textAlignVertical="top"
+        />
+
+        <TouchableOpacity
+          style={[styles.saveBtn, saving && styles.btnDisabled]}
+          onPress={handleSave}
+          disabled={saving}
+          accessibilityRole="button"
+        >
+          {saving
+            ? <ActivityIndicator color="#fff" size="small" />
+            : <Text style={styles.saveBtnText}>Save profile</Text>
+          }
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+// ─────────────────────────────────────
+// Componente Toggle reutilizable
+// ─────────────────────────────────────
+function ToggleRow({ label, value, onChange }: {
+  label: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <View style={styles.toggleRow}>
+      <Text style={styles.toggleLabel}>{label}</Text>
+      <Switch
+        value={value}
+        onValueChange={v => { onChange(v); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+        trackColor={{ false: '#E0E0E0', true: BRAND_COLORS.PRIMARY }}
+        thumbColor="#fff"
+      />
+    </View>
+  );
+}
+
+// ─────────────────────────────────────
+// Estilos
+// ─────────────────────────────────────
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: '#fff' },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  backBtn: { width: 44, justifyContent: 'center' },
+  backText: { fontSize: 24, color: BRAND_COLORS.PRIMARY },
+  title: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 17,
+    fontWeight: '700',
+    color: BRAND_COLORS.TEXT,
+    fontFamily: 'Inter_700Bold',
+  },
+  scroll: { padding: 20, paddingBottom: 48 },
+  hint: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 21,
+    marginBottom: 20,
+    fontFamily: 'Inter_400Regular',
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#888',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 24,
+    marginBottom: 12,
+    fontFamily: 'Inter_600SemiBold',
+  },
+
+  // Categorías
+  catCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FAFAFA',
+    marginBottom: 10,
+    gap: 12,
+  },
+  catCardSelected: {
+    borderColor: BRAND_COLORS.PRIMARY,
+    backgroundColor: BRAND_COLORS.PRIMARY + '10',
+  },
+  catEmoji: { fontSize: 24 },
+  catInfo: { flex: 1 },
+  catLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: BRAND_COLORS.TEXT,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  catLabelSelected: { color: BRAND_COLORS.PRIMARY },
+  catDesc: { fontSize: 13, color: '#888', marginTop: 2, fontFamily: 'Inter_400Regular' },
+  catCheck: { fontSize: 18, color: BRAND_COLORS.PRIMARY },
+  checkbox: {
+    width: 24, height: 24, borderRadius: 6, borderWidth: 2,
+    borderColor: '#D0D0D0', backgroundColor: '#fff',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  checkboxSelected: { borderColor: BRAND_COLORS.PRIMARY, backgroundColor: BRAND_COLORS.PRIMARY },
+  checkboxMark: { fontSize: 14, color: '#fff', fontWeight: '700' },
+
+  // Toggle rows
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f5f5f5',
+  },
+  toggleLabel: {
+    flex: 1,
+    fontSize: 15,
+    color: BRAND_COLORS.TEXT,
+    marginRight: 12,
+    fontFamily: 'Inter_400Regular',
+  },
+
+  // Communication method
+  commOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FAFAFA',
+    marginBottom: 8,
+  },
+  commOptionSelected: {
+    borderColor: BRAND_COLORS.PRIMARY,
+    backgroundColor: BRAND_COLORS.PRIMARY + '10',
+  },
+  commLabel: { fontSize: 15, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_400Regular' },
+  commLabelSelected: { color: BRAND_COLORS.PRIMARY, fontFamily: 'Inter_600SemiBold' },
+
+  // Campos de texto
+  field: { marginBottom: 14 },
+  fieldLabel: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: BRAND_COLORS.TEXT,
+    marginBottom: 6,
+    fontFamily: 'Inter_500Medium',
+  },
+  input: {
+    borderWidth: 1.5,
+    borderColor: '#E0E0E0',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 16,
+    color: BRAND_COLORS.TEXT,
+    backgroundColor: '#FAFAFA',
+    fontFamily: 'Inter_400Regular',
+  },
+  textArea: {
+    height: 110,
+    marginBottom: 14,
+  },
+
+  // Botón guardar
+  saveBtn: {
+    height: 56,
+    backgroundColor: BRAND_COLORS.PRIMARY,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+  },
+  btnDisabled: { opacity: 0.6 },
+  saveBtnText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
+  },
+});

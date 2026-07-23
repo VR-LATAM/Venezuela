@@ -1,0 +1,23 @@
+{
+  "name": "@vride/database",
+  "version": "1.0.0",
+  "private": true,
+  "description": "V-Ride Database migrations and seeds (PostgreSQL + PostGIS)",
+  "scripts": {
+    "migrate": "tsx scripts/migrate.ts",
+    "seed": "tsx scripts/seed.ts",
+    "migrate:rollback": "tsx scripts/rollback.ts",
+    "fix-nan-earnings": "tsx scripts/fix-nan-earnings.ts"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.1",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/pg": "^8.11.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.3.3"
+  }
+}

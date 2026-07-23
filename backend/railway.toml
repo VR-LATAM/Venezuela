@@ -1,0 +1,14 @@
+[build]
+builder        = "dockerfile"
+dockerfilePath = "../Dockerfile"
+buildCommand   = ""
+
+[deploy]
+startCommand  = "node backend/dist/index.js"
+healthcheckPath    = "/health"
+healthcheckTimeout = 300
+restartPolicyType  = "on_failure"
+restartPolicyMaxRetries = 5
+
+[environments.production.deploy]
+numReplicas = 1

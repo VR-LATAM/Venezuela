@@ -1,0 +1,268 @@
+════════════════════════════════════════════════════════════════════════════════
+  RESUMEN COMPLETO DEL PROYECTO VERONA RIDE
+  Edward Labrador · ELITE GROUP – Integral Services LLC
+  Fecha de resumen: 1 de mayo de 2026
+════════════════════════════════════════════════════════════════════════════════
+
+
+¿QUÉ ES VERONA RIDE?
+──────────────────────────────────────────────────────────────────────────────
+Aplicación de transporte (Uber/Lyft-style) especializada en adultos mayores y
+personas con discapacidad. Opera en todo Estados Unidos, iniciando en Texas.
+
+  - Plataforma cobra: 13% de comisión
+  - Conductor recibe: 87% de cada viaje
+  - Público objetivo: 1.5 millones de texanos mayores/discapacitados
+  - Expansión planeada: todo EE.UU. y otros países
+
+Antes se llamaba V-Ride. Fue renombrada a VERONA RIDE en el proceso de desarrollo.
+
+
+ESTRUCTURA TÉCNICA (MONOREPO)
+──────────────────────────────────────────────────────────────────────────────
+  Ubicación:   D:\APPs\V-Ride\
+
+  backend\     Node.js + Express + Socket.io + TypeScript
+  mobile\      React Native + Expo (iOS y Android)
+  dashboard\   Next.js 14 (Panel de administración)
+  landing\     Next.js 16 (Sitio web público)
+  shared\      Tipos TypeScript compartidos
+  database\    Migraciones SQL y seeds
+
+
+════════════════════════════════════════════════════════════════════════════════
+  LO QUE SE CONSTRUYÓ — FASE POR FASE
+════════════════════════════════════════════════════════════════════════════════
+
+
+FASE 1 — FUNDACIONES
+──────────────────────────────────────────────────────────────────────────────
+  - Estructura completa del monorepo
+  - 6 archivos de migración SQL (PostGIS + 50 estados de EE.UU. + usuarios +
+    viajes + ganancias + notificaciones)
+  - Tipos TypeScript compartidos y constantes
+  - Seeds de prueba: 5 conductores TX, 10 pasajeros, 5 viajes completados
+  - README.md inicial
+
+
+FASE 2 — AUTENTICACIÓN Y PERFILES
+──────────────────────────────────────────────────────────────────────────────
+  Backend:
+  - authService, authController, driverService, driverController
+  - adminController, storageService
+  - JWT + Firebase Admin SDK middleware
+  - Redis para refresh tokens
+  - Rate limiting
+
+  Mobile:
+  - Pantallas: Onboarding, Splash, Login, Registro pasajero, Registro conductor
+    (wizard de 5 pasos con subida de documentos)
+  - Pantalla home del pasajero (post-login)
+  - Pantalla home del conductor (con estados: pending/under_review/active/
+    rejected/suspended)
+  - Zustand para manejo de estado (authStore)
+  - Axios con JWT refresh automático
+
+
+FASE 3 — VIAJES EN TIEMPO REAL Y GPS
+──────────────────────────────────────────────────────────────────────────────
+  Backend:
+  - rideRepository con PostGIS para consultas geográficas
+  - fareService: Google Maps Distance Matrix + fallback Haversine, surge pricing
+  - rideService: búsqueda de conductor por radio dinámico (10→20→40→80→150 km)
+  - Socket.io: GPS en tiempo real, JWT middleware, eventos de viaje
+  - socket/emitter.ts: singleton para evitar imports circulares
+
+  Mobile:
+  - socketService: cliente Socket.io singleton con auth JWT
+  - rideService: ciclo completo de vida del viaje
+  - rideStore (Zustand): estado de pasajero + conductor, máquina de estados
+  - Pantalla home del pasajero: mapa + estimación de tarifa + flujo completo
+    (idle → buscando → asignado → llegó → en progreso)
+  - Pantalla de viaje activo con rastreo GPS
+  - Pantalla de calificación post-viaje (5 estrellas)
+  - Pantalla home del conductor: toggle online/offline, GPS, modal de 30s,
+    fases del viaje activo
+
+
+FASE 4 — PAGOS, NOTIFICACIONES Y CALIFICACIONES
+──────────────────────────────────────────────────────────────────────────────
+  Backend:
+  - stripeService: Customer (pasajero), SetupIntent, PaymentIntent, Connect
+    Express (conductor), Transfer (87% automático), Payout (retiro manual)
+  - paymentRepository: métodos de pago, retiros, ganancias, IDs de Stripe
+  - Integración de Stripe en rideService.completeRide (cobra al pasajero y
+    transfiere al conductor automáticamente)
+  - fcmService: notificaciones push Firebase para todos los eventos del viaje
+  - notificationRepository y notificationController
+
+  Mobile:
+  - paymentService: gestión de tarjetas, Stripe Connect, ganancias, retiros
+  - Pantalla de pagos del pasajero (lista de tarjetas, agregar, eliminar,
+    default via Stripe PaymentSheet)
+  - Pantalla de ganancias del conductor (hoy/semana/mes, balance disponible,
+    onboarding Stripe Connect, solicitud de retiro, historial)
+  - notificationService: registro FCM, handler de primer plano, navegación
+    por tap en notificación, cleanup al cerrar sesión
+
+
+FASE 5 — FUNCIONALIDADES AVANZADAS
+──────────────────────────────────────────────────────────────────────────────
+  Backend:
+  - Viajes programados: reserva, listado, cancelación, cron despacha 15 min
+    antes, recordatorio push 30 min antes, bloqueo optimista anti-duplicados
+  - receiptService: recibo PDF de cada viaje (pdfkit, con desglose de tarifa)
+  - SOS: activación guarda evento, emite a admins vía Socket.io y push FCM
+  - analyticsController: heatmap de demanda (PostGIS grid), surge status, KPIs
+  - referralService: bonos ($50 primer viaje, $600 en 50 viajes, $50 mensual
+    por 100+ viajes con rating ≥4.8), leaderboard
+  - Endpoints: recibo PDF, token compartido de viaje, rastreo público sin auth
+
+  Mobile:
+  - Pantalla de viajes programados (formulario + lista + cancelar)
+  - Historial de viajes del pasajero (paginado + modal de detalle + PDF)
+  - Historial de viajes del conductor (con desglose de ganancias)
+  - Pantalla de referidos del conductor (código, progreso, bonos)
+  - SOS real con GPS desde pantalla de viaje activo
+  - Botón "Compartir viaje" con deep link
+
+
+FASE 6 — PANEL DE ADMINISTRACIÓN
+──────────────────────────────────────────────────────────────────────────────
+  Backend:
+  - adminController extendido: mapa de conductores online, lista de viajes,
+    resumen financiero, lista/actualización de tarifas, lista de pasajeros
+
+  Dashboard (Next.js 14):
+  - Configuración: Tailwind CSS, PostCSS, NextAuth, React Query
+  - Componentes UI: Button, Card, Badge, Input, Modal (Radix Dialog), Skeleton
+  - Layout: Sidebar (8 links), Header, AdminShell (auth guard)
+  - Gráficos: RevenueChart (AreaChart), RidesChart (BarChart) — Recharts
+  - Mapas: LiveMap (actualización cada 10s), HeatMap
+  - Páginas completas:
+    · /login
+    · /dashboard (KPIs + mapa en vivo + gráficos + banner SOS)
+    · /drivers (lista + tabs + modales aprobar/rechazar/suspender)
+    · /drivers/[id] (detalle + documentos + acciones)
+    · /rides (tabla filtrable + paginación)
+    · /finance (selector de período + gráficos + top conductores)
+    · /states (configuración de tarifas por estado + modal de edición)
+    · /passengers (búsqueda + tabla)
+    · /analytics (heatmap + surge status + KPIs)
+    · /settings (feed SOS + notificaciones masivas + leaderboard referidos)
+
+
+FASE 7 — PULIDO Y PREPARACIÓN PARA DEPLOY
+──────────────────────────────────────────────────────────────────────────────
+  Tests automatizados:
+  - fareService.test.ts (tarifas estándar/ejecutivo/accesible/hora/surge/mínimo)
+  - haversine.test.ts (distancias entre ciudades de Texas ±15%)
+  - jwt.test.ts (generar/verificar/manipular/issuer/roles)
+
+  Backend deploy:
+  - Dockerfile multi-stage (Node 20 Alpine)
+  - railway.toml (2 réplicas en producción)
+
+  Dashboard:
+  - Dark mode completo (light/dark/system + localStorage)
+  - ThemeToggle en Header
+  - Clases dark: en Sidebar, Header, AdminShell, globals.css
+
+  Internacionalización:
+  - Mobile: react-i18next, JSON locales en/es para todos los módulos
+  - Dashboard: i18n propio con context + useI18n hook + selector de idioma
+
+  EAS Build:
+  - eas.json configurado (development/preview/production)
+  - Perfiles de submit para App Store y Google Play
+  - OTA updates configurado en app.json
+
+  README.md:
+  - Diagrama de arquitectura completo
+  - Pasos de instalación local
+  - Migraciones de BD
+  - Guía de deploy (Railway/Vercel/EAS)
+  - Referencia completa de API
+  - Tabla de eventos Socket.io
+  - Estructura de comisiones
+
+
+════════════════════════════════════════════════════════════════════════════════
+  TRABAJO ADICIONAL EN ESTA SESIÓN (abril–mayo 2026)
+════════════════════════════════════════════════════════════════════════════════
+
+CORRECCIÓN DE TESTS
+──────────────────────────────────────────────────────────────────────────────
+  - Creado jest.config.js (reemplaza jest.config.ts que requería ts-node)
+  - 26 tests nuevos para stripeService (todos los flujos de Stripe)
+  - Corregidos tests existentes: distanceMiles vs distanceKm (refactorización
+    que nunca se actualizó en los tests)
+  - Corregido TX_CONFIG: price_per_mile en lugar de price_per_km
+  - Resultado final: 50/50 tests pasando ✓
+
+LANDING PAGE DESPLEGADA
+──────────────────────────────────────────────────────────────────────────────
+  - URL: https://verona-ride-landing.vercel.app
+  - Proyecto Vercel: verona-ride-landing (cuenta edwardlabrador)
+  - Framework: Next.js 16
+  - Páginas: / · /contact · /legal · /privacy
+  - Estado: READY ✓
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PENDIENTE — LO QUE FALTA PARA LANZAR
+════════════════════════════════════════════════════════════════════════════════
+
+  1. DOMINIO veronaride.app
+     - Comprar en Namecheap (~$14/año)
+     - Manejar DNS en ScalaHosting (cPanel → Zone Editor)
+     - Conectar a Vercel (registros A y CNAME)
+     - También comprar: veronaexpress.app (para la futura app de delivery)
+
+  2. EAS BUILD
+     - Compilar binarios reales para iOS (.ipa) y Android (.aab)
+     - Requiere: cuenta Expo + Apple Developer ($99/año) + Google Play ($25)
+     - Pendiente de confirmar qué cuentas tiene el usuario
+
+  3. DEPLOY DEL BACKEND
+     - Subir backend a Railway (staging primero, luego producción)
+     - Sin backend live, la app móvil no puede funcionar
+
+  4. BETA CERRADO
+     - 5-10 conductores y pasajeros reales en Texas
+     - Probar flujos de pago Stripe con dinero real
+     - Probar GPS en carretera real
+     - Probar notificaciones push en dispositivos físicos
+
+
+════════════════════════════════════════════════════════════════════════════════
+  PLAN FUTURO — VERONA EXPRESS
+════════════════════════════════════════════════════════════════════════════════
+
+  Después del lanzamiento de Verona Ride se desarrollará una segunda app:
+
+  Nombre:    VERONA EXPRESS
+  Tipo:      App de delivery (comida, paquetes, comercios)
+  Dominio:   veronaexpress.app
+  Backend:   Compartido con Verona Ride
+  Dashboard: Un solo panel de admin para las dos plataformas
+  Roles:     Cliente + Restaurantes/Comercios + Repartidores
+
+  La marca paraguas es VERONA — igual que Amazon tiene Prime, Fresh, etc.
+
+
+════════════════════════════════════════════════════════════════════════════════
+  NOTAS TÉCNICAS IMPORTANTES
+════════════════════════════════════════════════════════════════════════════════
+
+  - Sin geofencing — opera en cualquier coordenada GPS de EE.UU.
+  - Búsqueda de conductor: radio dinámico 10→20→40→80→150 km (PostGIS)
+  - Admin por ESTADO (no por ciudad)
+  - Arquitectura: routes → controllers → services → repositories
+  - Tarifas en MILLAS (mercado EE.UU.), no en kilómetros
+  - Todo el código de negocio comentado en español
+
+════════════════════════════════════════════════════════════════════════════════
+  Documento generado por Claude Code — Anthropic
+  Para: Edward Labrador · ELITE GROUP – Integral Services LLC
+════════════════════════════════════════════════════════════════════════════════

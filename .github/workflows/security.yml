@@ -1,0 +1,100 @@
+name: Security & Quality
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  audit-backend:
+    name: Backend — npm audit + TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: TypeScript check
+        working-directory: backend
+        run: npx tsc --noEmit
+
+      - name: npm audit (critical + high)
+        working-directory: backend
+        run: npm audit --audit-level=high
+        continue-on-error: false
+
+  audit-mobile:
+    name: Mobile — npm audit + TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Install dependencies
+        working-directory: mobile
+        run: npm ci
+
+      - name: TypeScript check
+        working-directory: mobile
+        run: npx tsc --noEmit
+
+      - name: npm audit (critical + high)
+        working-directory: mobile
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  audit-dashboard:
+    name: Dashboard — npm audit + TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: TypeScript check
+        working-directory: dashboard
+        run: npx tsc --noEmit
+        continue-on-error: true
+
+      - name: npm audit (critical + high)
+        working-directory: dashboard
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+  secret-scan:
+    name: Scan for hardcoded secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect secrets with gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,77 @@
+{
+  "cli": {
+    "version": ">= 7.0.0",
+    "requireCommit": true
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleDebug"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:4000/api/v1",
+        "EXPO_PUBLIC_SOCKET_URL": "http://localhost:4000"
+      }
+    },
+
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "ios": {
+        "simulator": false
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://vridebackend-production-00dd.up.railway.app",
+        "EXPO_PUBLIC_SOCKET_URL": "https://vridebackend-production-00dd.up.railway.app",
+        "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyC-KX0r_gnUvL3DcJblWtN9v4FbmO91AFA",
+        "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "vride-production.firebaseapp.com",
+        "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "vride-production",
+        "EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET": "vride-production.firebasestorage.app",
+        "EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID": "810943557905",
+        "EXPO_PUBLIC_FIREBASE_APP_ID": "1:810943557905:android:fe53b7a2094e6394541cb0",
+        "EXPO_PUBLIC_APP_ENV": "production",
+        "EXPO_PUBLIC_GOOGLE_MAPS_KEY": "AIzaSyAUmxLQzspdtOUYGUhzo-iNt1FG4mkRwDM"
+      }
+    },
+
+    "production": {
+      "autoIncrement": true,
+      "channel": "production",
+      "ios": {
+        "buildConfiguration": "Release",
+        "credentialsSource": "remote"
+      },
+      "android": {
+        "buildType": "app-bundle",
+        "credentialsSource": "remote"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://vridebackend-production-00dd.up.railway.app/api/v1",
+        "EXPO_PUBLIC_SOCKET_URL": "https://vridebackend-production-00dd.up.railway.app"
+      }
+    }
+  },
+
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "developer@vride.com",
+        "ascAppId": "YOUR_APP_STORE_CONNECT_APP_ID",
+        "appleTeamId": "YOUR_APPLE_TEAM_ID"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-play-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
+}

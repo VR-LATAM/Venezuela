@@ -1,0 +1,93 @@
+# ════════════════════════════════════════════════════════════════
+# V-RIDE — .gitignore global del monorepo
+# ════════════════════════════════════════════════════════════════
+
+# Credenciales privadas
+CREDENCIALES_VRIDE.txt
+
+# Claude Code — archivos de sesión/memoria
+CLAUDE.md
+MEMORY.md
+MEMORY_*.md
+
+# Dependencias
+node_modules/
+.pnp
+.pnp.js
+
+# Builds
+dist/
+build/
+.next/
+out/
+*.tsbuildinfo
+
+# Variables de entorno — NUNCA subir al repositorio
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+**/.env
+**/.env.local
+
+# Firebase
+**/firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+
+# Expo / React Native
+.expo/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+web-build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+logs/
+*.log
+
+# Tests
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/settings.json
+.idea/
+*.swp
+
+# Temporales
+tmp/
+temp/
+
+# Uploads (fotos de perfil y archivos de usuarios)
+backend/uploads/
+
+# Scripts de documentos de negocio — no son parte del software
+generate_*.py
+
+# Archivos locales — no subir al repositorio
+Screenshot/
+*.docx
+*.xlsx
+*.pdf
+*.zip
+*.mp4
+FRANCHISE_DOCS.md
+SECURITY_OVERVIEW*
+SESSION_2026-*.md
+"V-Ride System Password.docx"
+VeronaRide_*.docx
+console.error*
+~$*
+database/scripts/migrate-pii-encrypt.ts
