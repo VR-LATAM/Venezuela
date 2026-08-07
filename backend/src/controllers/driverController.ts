@@ -12,6 +12,7 @@ import { driverRepository } from '../repositories/driverRepository';
 import { rideRepository } from '../repositories/rideRepository';
 import { trainingService } from '../services/trainingService';
 import { sendSuccess, sendError } from '../utils/response';
+import { logger } from '../utils/logger';
 import { redis, REDIS_KEYS, REDIS_TTL } from '../config/redis';
 import { emitToUser, emitToAdmins } from '../socket/emitter';
 import multer from 'multer';
@@ -98,10 +99,23 @@ export const driverController = {
   // GET /driver/profile
   getProfile: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const [driver, commissionInfo] = await Promise.all([
-        driverRepository.findById(req.user!.userId),
-        getDriverCommissionInfo(req.user!.userId),
-      ]);
+      let driver;
+      try {
+        driver = await driverRepository.findById(req.user!.userId);
+      } catch (dbErr: any) {
+        logger.error('[getProfile] findById FAILED:', { msg: dbErr?.message, code: dbErr?.code, detail: dbErr?.detail });
+        sendError(res, 500, `DB Error: ${dbErr?.message}`, 'DB_ERROR');
+        return;
+      }
+
+      let commissionInfo;
+      try {
+        commissionInfo = await getDriverCommissionInfo(req.user!.userId);
+      } catch (commErr: any) {
+        logger.error('[getProfile] getDriverCommissionInfo FAILED:', { msg: commErr?.message });
+        commissionInfo = { rate: 0.19, tier: 'standard', ridesThisYear: 0, ratingAvg: 5, nextTierRides: null, nextTierRate: null };
+      }
+
       if (!driver) {
         sendError(res, 404, 'Driver profile not found', 'NOT_FOUND');
         return;
