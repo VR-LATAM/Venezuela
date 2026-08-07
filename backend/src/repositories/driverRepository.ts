@@ -22,11 +22,16 @@ function toIsoDate(mmYyyy: string | undefined): string | undefined {
 function decryptDriver<T>(driver: T | null): T | null {
   if (!driver) return null;
   const d = driver as unknown as Record<string, unknown>;
+  const safeDecrypt = (val: unknown): unknown => {
+    if (val === null || val === undefined) return null;
+    if (typeof val !== 'string') return val;
+    return decryptPII(val);
+  };
   return {
     ...d,
-    date_of_birth:  decryptPII(d['date_of_birth']  as string | null),
-    home_address:   decryptPII(d['home_address']   as string | null),
-    license_number: decryptPII(d['license_number'] as string | null),
+    date_of_birth:  safeDecrypt(d['date_of_birth']),
+    home_address:   safeDecrypt(d['home_address']),
+    license_number: safeDecrypt(d['license_number']),
   } as unknown as T;
 }
 
