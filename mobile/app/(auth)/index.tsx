@@ -11,13 +11,11 @@ import {
   SafeAreaView, Dimensions, Animated,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { BRAND_COLORS } from '@vride/shared';
 
 const { width } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
-  const { t } = useTranslation();
   const fadeAnim  = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.82)).current;
 
@@ -49,16 +47,6 @@ export default function WelcomeScreen() {
         />
       </View>
 
-      {/* Ilustración central — America250 */}
-      <View style={styles.illustration}>
-        <Animated.Image
-          source={require('../../assets/America250.png')}
-          style={[styles.worldCupImage, { opacity: fadeAnim }]}
-          resizeMode="contain"
-          accessibilityLabel="Celebrating America's 250th Anniversary"
-        />
-      </View>
-
       {/* Botones de acción */}
       <View style={styles.buttons}>
 
@@ -66,35 +54,31 @@ export default function WelcomeScreen() {
         <TouchableOpacity
           style={[styles.button, styles.signInButton]}
           onPress={() => router.push('/(auth)/login')}
-          accessibilityLabel="Sign In"
+          accessibilityLabel="Iniciar sesión"
           accessibilityRole="button"
         >
-          <Text style={styles.signInButtonText} numberOfLines={1} adjustsFontSizeToFit>Sign In</Text>
+          <Text style={styles.signInButtonText} numberOfLines={1} adjustsFontSizeToFit>Iniciar sesión</Text>
         </TouchableOpacity>
 
         {/* Separador con leyenda */}
-        <View style={styles.dividerRow}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerLabel}>New User?</Text>
-          <View style={styles.dividerLine} />
-        </View>
+        <Text style={styles.dividerLabel}>¿Eres nuevo?</Text>
 
         <TouchableOpacity
           style={[styles.button, styles.primaryButton]}
           onPress={() => router.push('/(auth)/register-passenger')}
-          accessibilityLabel={t('auth.iAmPassenger')}
+          accessibilityLabel="Soy pasajero"
           accessibilityRole="button"
         >
-          <Text style={styles.primaryButtonText} numberOfLines={1} adjustsFontSizeToFit>I'm a Passenger</Text>
+          <Text style={styles.primaryButtonText} numberOfLines={1} adjustsFontSizeToFit>Soy pasajero</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
           onPress={() => router.push('/(auth)/register-driver')}
-          accessibilityLabel="I'm a Driver"
+          accessibilityLabel="Soy conductor"
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryButtonText} numberOfLines={1} adjustsFontSizeToFit>I'm a Driver</Text>
+          <Text style={styles.secondaryButtonText} numberOfLines={1} adjustsFontSizeToFit>Soy conductor</Text>
         </TouchableOpacity>
 
       </View>
@@ -112,11 +96,11 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 210,
   },
   logoImage: {
-    width: width * 0.75,
-    height: 130,
+    width: width * 0.95,
+    height: 200,
     marginBottom: 8,
   },
   slogan: {
@@ -201,10 +185,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#E0E0E0',
   },
   dividerLabel: {
-    marginHorizontal: 12,
-    fontSize: 14,
-    color: '#999',
-    fontFamily: 'Inter_400Regular',
-    fontWeight: '500',
+    fontSize: 18,
+    color: '#000',
+    fontFamily: 'Inter_600SemiBold',
+    fontWeight: '600',
+    textAlign: 'center',
+    width: '100%',
   },
 });

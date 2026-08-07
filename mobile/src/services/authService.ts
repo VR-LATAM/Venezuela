@@ -12,28 +12,32 @@ import {
   GoogleAuthProvider,
   signOut,
   sendEmailVerification,
+  initializeAuth,
   getAuth,
+  getReactNativePersistence,
 } from 'firebase/auth';
+import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { apiClient } from './apiClient';
 import { User } from '@vride/shared';
-import { initializeApp, getApps } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import Constants from 'expo-constants';
 
-// Firebase se inicializa de forma lazy para evitar errores en development
-// cuando las claves son placeholders y Firebase no se necesita
 export function getFirebaseAuth() {
   if (!getApps().length) {
-    initializeApp({
-      apiKey: process.env['EXPO_PUBLIC_FIREBASE_API_KEY']!,
-      authDomain: process.env['EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN']!,
-      projectId: process.env['EXPO_PUBLIC_FIREBASE_PROJECT_ID']!,
-      storageBucket: process.env['EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET']!,
+    const app = initializeApp({
+      apiKey:            process.env['EXPO_PUBLIC_FIREBASE_API_KEY']!,
+      authDomain:        process.env['EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN']!,
+      projectId:         process.env['EXPO_PUBLIC_FIREBASE_PROJECT_ID']!,
+      storageBucket:     process.env['EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET']!,
       messagingSenderId: process.env['EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID']!,
-      appId: process.env['EXPO_PUBLIC_FIREBASE_APP_ID']!,
+      appId:             process.env['EXPO_PUBLIC_FIREBASE_APP_ID']!,
+    });
+    initializeAuth(app, {
+      persistence: getReactNativePersistence(ReactNativeAsyncStorage),
     });
   }
-  return getAuth();
+  return getAuth(getApp());
 }
 
 export interface AuthResult {
