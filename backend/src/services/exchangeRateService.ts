@@ -33,12 +33,21 @@ export async function refreshExchangeRate(): Promise<number> {
       },
     });
 
-    // El BCV muestra el dólar en: <div id="dolar"> ... <strong>755,9001</strong>
-    const match = html.match(/id=["']dolar["'][^>]*>[\s\S]*?<strong>([\d,\.]+)<\/strong>/i);
-    if (!match) throw new Error('No se encontró la tasa del dólar en la página del BCV');
+    // Patrón 1: <div id="dolar">...<strong>756,70830000</strong>
+    let rateRaw: string | undefined;
+    const pat1 = html.match(/id=["']dolar["'][^>]*>[\s\S]{0,500}?<strong>([\d,\.]+)<\/strong>/i);
+    if (pat1) rateRaw = pat1[1];
 
-    // El BCV usa coma como separador decimal en Venezuela: "755,9001" → 755.9001
-    const rateStr = match[1].replace(/\./g, '').replace(',', '.');
+    // Patrón 2: texto "USD756,70830000" directo en la página
+    if (!rateRaw) {
+      const pat2 = html.match(/USD\s*([\d]{1,4}[,\.]\d{2,10})/i);
+      if (pat2) rateRaw = pat2[1];
+    }
+
+    if (!rateRaw) throw new Error('No se encontró la tasa USD en la página del BCV');
+
+    // El BCV usa coma como separador decimal: "756,70830000" → 756.70830000
+    const rateStr = rateRaw.replace(/\./g, '').replace(',', '.');
     const rate = parseFloat(rateStr);
     if (!rate || rate <= 0) throw new Error(`Tasa inválida extraída: ${match[1]}`);
 
