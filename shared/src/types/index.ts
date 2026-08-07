@@ -311,6 +311,9 @@ export interface FareEstimate {
   wait_per_minute_rate?: number;
   // Hourly
   hourly_package_hours?: number;
+  // Dual currency (Venezuela)
+  total_ves?: number;
+  exchange_rate_ves?: number;
 }
 
 // ─────────────────────────────────────

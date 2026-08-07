@@ -32,6 +32,7 @@ import { initSocketEmitter } from './socket/emitter';
 import { scheduledRideService } from './services/scheduledRideService';
 import { referralService } from './services/referralService';
 import { payoutService } from './services/payoutService';
+import { refreshExchangeRate } from './services/exchangeRateService';
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -224,6 +225,9 @@ async function startServer(): Promise<void> {
 
   if (health.db && health.redis) {
     payoutService.startCron();
+    // Cargar tasa BCV al arrancar y refrescar cada hora
+    refreshExchangeRate().catch(() => {});
+    setInterval(() => refreshExchangeRate().catch(() => {}), 3_600_000);
     logger.info(`📡 Socket.io listo para GPS en tiempo real`);
     logger.info(`🗺️  Cobertura: Texas activo, expansión nacional lista`);
   } else {

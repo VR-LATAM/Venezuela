@@ -12,6 +12,7 @@ import { redis, REDIS_KEYS, REDIS_TTL } from '../config/redis';
 import { env } from '../config/env';
 import { FareEstimate, ServiceType, USState } from '@vride/shared';
 import { logger } from '../utils/logger';
+import { convertToVES } from './exchangeRateService';
 
 // Multiplicadores de servicio — fallback si la BD no los tiene
 const SERVICE_MULTIPLIERS: Record<ServiceType, number> = {
@@ -182,6 +183,7 @@ export async function calculateFareEstimate(params: {
       hours >= 8 ? +(stateConfig?.hourly_8h_price ?? 140.00) :
       hours >= 4 ? +(stateConfig?.hourly_4h_price ?? 80.00)  :
                    +(stateConfig?.hourly_2h_price ?? 45.00);
+    const { ves, rate } = await convertToVES(hourlyPrice);
     return {
       service_type:         params.serviceType,
       base_fare:            0,
@@ -191,6 +193,8 @@ export async function calculateFareEstimate(params: {
       service_multiplier:   1.0,
       subtotal:             hourlyPrice,
       total:                hourlyPrice,
+      total_ves:            ves,
+      exchange_rate_ves:    rate,
       distance_miles:       Math.round(distanceMiles * 100) / 100,
       duration_minutes:     durationMinutes,
       driver_eta_minutes:   params.driverEtaMinutes,
@@ -212,6 +216,7 @@ export async function calculateFareEstimate(params: {
       minFare
     );
     const total = Math.round((oneLegFare * 2 + waitFare) * 100) / 100;
+    const { ves, rate } = await convertToVES(total);
 
     return {
       service_type:          params.serviceType,
@@ -222,6 +227,8 @@ export async function calculateFareEstimate(params: {
       service_multiplier:    1.0,
       subtotal:              total,
       total,
+      total_ves:             ves,
+      exchange_rate_ves:     rate,
       distance_miles:        Math.round(safeDistMiles * 100) / 100,
       duration_minutes:      safeDurationMin,
       driver_eta_minutes:    params.driverEtaMinutes,
@@ -240,6 +247,7 @@ export async function calculateFareEstimate(params: {
   const rawSubtotal  = (baseFare + distanceFare + timeFare) * serviceMultiplier * surgeMultiplier;
   const subtotal     = Math.max(rawSubtotal, minFare);
   const total        = Math.round(subtotal * 100) / 100;
+  const { ves, rate } = await convertToVES(total);
 
   return {
     service_type:       params.serviceType,
@@ -250,6 +258,8 @@ export async function calculateFareEstimate(params: {
     service_multiplier: serviceMultiplier,
     subtotal:           total,
     total,
+    total_ves:          ves,
+    exchange_rate_ves:  rate,
     distance_miles:     Math.round(safeDistMiles * 100) / 100,
     duration_minutes:   safeDurationMin,
     driver_eta_minutes: params.driverEtaMinutes,
