@@ -13,7 +13,7 @@ export type Language = 'es' | 'en';
 // ─────────────────────────────────────
 // TIPOS DE SERVICIO
 // ─────────────────────────────────────
-export type ServiceType = 'standard' | 'family' | 'executive' | 'accessible' | 'military' | 'scheduled' | 'hourly' | 'wait_and_return' | 'medical' | 'dialysis';
+export type ServiceType = 'motorcycle' | 'sedan' | 'suv' | 'scheduled' | 'hourly' | 'wait_and_return';
 
 // ─────────────────────────────────────
 // ESTADOS DEL VIAJE
@@ -69,12 +69,8 @@ export interface USState {
   min_fare: number;
   surge_multiplier: number;
   platform_commission_percent: number;
-  family_multiplier: number;
-  executive_multiplier: number;
-  accessible_multiplier: number;
-  military_multiplier: number;
-  medical_multiplier: number;
-  dialysis_multiplier: number;
+  motorcycle_multiplier: number;
+  suv_multiplier: number;
   hourly_2h_price: number;
   hourly_4h_price: number;
   hourly_8h_price: number;

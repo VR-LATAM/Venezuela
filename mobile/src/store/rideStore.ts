@@ -105,7 +105,7 @@ export const useRideStore = create<RideState>((set, get) => ({
   searchStatus:    'idle',
   currentRide:     null,
   fareEstimate:    null,
-  selectedService: 'standard',
+  selectedService: 'sedan',
   assignedDriver:  null,
   driverLocation:  null,
   searchRadiusKm:  10,

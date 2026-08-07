@@ -82,7 +82,7 @@ const updateProfileSchema = z.object({
   insurancePolicyNumber:  z.string().optional(),
   insuranceExpiry:        z.string().optional(),
   // Service
-  services: z.array(z.enum(['standard', 'executive', 'accessible', 'scheduled', 'hourly'])).optional(),
+  services: z.array(z.enum(['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly'])).optional(),
   // Languages & equipment
   languages:        z.array(z.string()).optional(),
   specialEquipment: z.array(z.string()).optional(),

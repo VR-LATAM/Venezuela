@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { scheduledRideService } from '../services/scheduledRideService';
 import { sendSuccess, sendCreated, sendError } from '../utils/response';
 
-const SERVICE_TYPES = ['standard', 'executive', 'accessible', 'scheduled', 'hourly'] as const;
+const SERVICE_TYPES = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly'] as const;
 
 export const scheduledRideController = {
 

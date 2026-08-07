@@ -6,7 +6,7 @@
 
 import { query, queryOne } from '../config/database';
 
-export type ServiceType = 'standard' | 'executive' | 'accessible' | 'scheduled';
+export type ServiceType = 'motorcycle' | 'sedan' | 'suv' | 'scheduled';
 
 export interface TrainingModule {
   id: number;

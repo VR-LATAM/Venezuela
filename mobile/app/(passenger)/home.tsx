@@ -48,11 +48,9 @@ interface Prediction {
 }
 
 const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string }[] = [
-  { key: 'standard',        label: 'Estándar',     emoji: '🚗' },
-  { key: 'family',          label: 'Familiar',     emoji: '🚐' },
-  { key: 'executive',       label: 'Ejecutivo',    emoji: '🚙' },
-  { key: 'accessible',      label: 'Accesible',    emoji: '♿' },
-  { key: 'military',        label: 'Militar',      emoji: '🎖️' },
+  { key: 'motorcycle',      label: 'Moto',         emoji: '🏍️' },
+  { key: 'sedan',           label: 'Sedán',        emoji: '🚗' },
+  { key: 'suv',             label: 'SUV',          emoji: '🚙' },
   { key: 'scheduled',       label: 'Programado',   emoji: '📅' },
   { key: 'wait_and_return', label: 'Esperar y regresar', emoji: '⏳' },
   { key: 'hourly',          label: 'Por hora',     emoji: '🕐' },
@@ -524,7 +522,7 @@ export default function PassengerHomeScreen() {
       setEstimateError(null);
 
       try {
-        const services: ServiceType[] = ['standard', 'family', 'executive', 'accessible', 'military', 'wait_and_return', 'hourly'];
+        const services: ServiceType[] = ['motorcycle', 'sedan', 'suv', 'wait_and_return', 'hourly'];
         const results = await Promise.allSettled(
           services.map(svc =>
             rideMobileService.estimateFare({
@@ -556,7 +554,7 @@ export default function PassengerHomeScreen() {
           setEstimateError(`No se pudo obtener tarifas${status ? ` (${status})` : ''}: ${detail}`);
         } else {
           setAllEstimates(estimates);
-          const active = estimates[selectedService] ?? estimates['standard'];
+          const active = estimates[selectedService] ?? estimates['sedan'];
           if (active) setFareEstimate(active);
         }
       } catch (err) {
@@ -954,7 +952,7 @@ export default function PassengerHomeScreen() {
                             setIsLoadingEstimates(true);
                             void (async () => {
                               try {
-                                const services: ServiceType[] = ['standard', 'family', 'executive', 'accessible', 'military'];
+                                const services: ServiceType[] = ['motorcycle', 'sedan', 'suv'];
                                 const results = await Promise.allSettled(
                                   services.map(svc => rideMobileService.estimateFare({
                                     pickupLat: userLocation.latitude, pickupLng: userLocation.longitude,
@@ -969,7 +967,7 @@ export default function PassengerHomeScreen() {
                                 });
                                 if (Object.keys(est2).length > 0) {
                                   setAllEstimates(est2);
-                                  const active = est2[selectedService] ?? est2['standard'];
+                                  const active = est2[selectedService] ?? est2['sedan'];
                                   if (active) setFareEstimate(active);
                                 } else {
                                   setEstimateError('Reintentar falló. Verifica tu conexión al servidor.');

@@ -19,7 +19,7 @@ export const waitlistController = {
         pickup_lng:      z.number(),
         pickup_address:  z.string().min(5),
         dropoff_address: z.string().min(5),
-        service_type:    z.enum(['standard', 'accessible', 'medical']).default('standard'),
+        service_type:    z.enum(['motorcycle', 'sedan', 'suv']).default('sedan'),
         state_code:      z.string().length(2).optional(),
       });
       const body = schema.parse(req.body);

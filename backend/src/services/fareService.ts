@@ -16,16 +16,12 @@ import { convertToVES } from './exchangeRateService';
 
 // Multiplicadores de servicio — fallback si la BD no los tiene
 const SERVICE_MULTIPLIERS: Record<ServiceType, number> = {
-  standard:        1.0,
-  family:          1.5,
-  executive:       1.8,
-  accessible:      2.0,   // WAV/silla de ruedas — mercado NEMT $3-5/mi
-  military:        1.0,
+  motorcycle:      0.75,
+  sedan:           1.0,
+  suv:             1.3,
   scheduled:       1.0,
   hourly:          1.0,
   wait_and_return: 1.0,
-  medical:         1.3,   // Postpartum, postoperatorio, embarazadas
-  dialysis:        1.25,  // Diálisis — descuento fidelidad (3 viajes/semana)
 };
 
 // ─────────────────────────────────────
@@ -150,21 +146,13 @@ export async function calculateFareEstimate(params: {
   const pricePerMile   = +(stateConfig?.price_per_mile        ?? 0.82);
   const pricePerMin    = +(stateConfig?.price_per_minute     ?? 0.19);
   const minFare        = +(stateConfig?.min_fare             ?? 5.00);
-  const familyMultiplier    = +(stateConfig?.family_multiplier     ?? 1.50);
-  const execMultiplier      = +(stateConfig?.executive_multiplier  ?? 1.80);
-  const accMultiplier       = +(stateConfig?.accessible_multiplier ?? 2.00);
-  const militaryMultiplier  = +(stateConfig?.military_multiplier   ?? 1.00);
-  const medicalMultiplier   = +(stateConfig?.medical_multiplier    ?? 1.30);
-  const dialysisMultiplier  = +(stateConfig?.dialysis_multiplier   ?? 1.25);
+  const motorcycleMultiplier = +(stateConfig?.motorcycle_multiplier ?? 0.75);
+  const suvMultiplier        = +(stateConfig?.suv_multiplier        ?? 1.30);
 
-  // Multiplicador de servicio según tipo
+  // Multiplicador de servicio según tipo de vehículo
   const serviceMultiplier =
-    params.serviceType === 'family'     ? familyMultiplier   :
-    params.serviceType === 'executive'  ? execMultiplier     :
-    params.serviceType === 'accessible' ? accMultiplier      :
-    params.serviceType === 'military'   ? militaryMultiplier :
-    params.serviceType === 'medical'    ? medicalMultiplier  :
-    params.serviceType === 'dialysis'   ? dialysisMultiplier :
+    params.serviceType === 'motorcycle' ? motorcycleMultiplier :
+    params.serviceType === 'suv'        ? suvMultiplier        :
     1.0;
 
   // Surge pricing (hora pico)

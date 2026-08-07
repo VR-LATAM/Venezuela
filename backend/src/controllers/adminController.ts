@@ -364,7 +364,7 @@ export const adminController = {
       const { rows } = await db.query(
         `SELECT code, name, base_fare::float, price_per_km::float, price_per_minute::float,
                 min_fare::float, surge_multiplier::float, platform_commission_percent::float,
-                executive_multiplier::float, accessible_multiplier::float,
+                motorcycle_multiplier::float, suv_multiplier::float,
                 hourly_rate::float, scheduled_surcharge::float
          FROM us_states ORDER BY name ASC`
       );
@@ -381,8 +381,8 @@ export const adminController = {
         min_fare:                    z.number().positive().optional(),
         surge_multiplier:            z.number().min(1).max(5).optional(),
         platform_commission_percent: z.number().min(5).max(30).optional(),
-        executive_multiplier:        z.number().min(1).max(5).optional(),
-        accessible_multiplier:       z.number().min(1).max(5).optional(),
+        motorcycle_multiplier:       z.number().min(0.1).max(5).optional(),
+        suv_multiplier:              z.number().min(1).max(5).optional(),
         hourly_rate:                 z.number().positive().optional(),
         scheduled_surcharge:         z.number().min(1).max(3).optional(),
       });

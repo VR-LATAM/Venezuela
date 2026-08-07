@@ -34,7 +34,7 @@ export const recurringRideController = {
         dropoff_address: z.string().min(5),
         dropoff_lat:    z.number(),
         dropoff_lng:    z.number(),
-        service_type:   z.enum(['standard', 'accessible', 'medical']).default('standard'),
+        service_type:   z.enum(['motorcycle', 'sedan', 'suv']).default('sedan'),
         days_of_week:   z.array(z.number().min(0).max(6)).min(1).max(7),
         time_of_day:    z.string().regex(/^\d{2}:\d{2}$/, 'Use HH:MM format'),
         state_code:     z.string().length(2).default('TX'),

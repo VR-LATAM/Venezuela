@@ -32,12 +32,8 @@ CREATE TABLE IF NOT EXISTS us_states (
   min_fare                    DECIMAL(6,2) NOT NULL DEFAULT 2.50,
   surge_multiplier            DECIMAL(3,2) NOT NULL DEFAULT 1.30,
   platform_commission_percent DECIMAL(5,2) NOT NULL DEFAULT 19.00,
-  executive_multiplier        DECIMAL(3,2) NOT NULL DEFAULT 1.50,
-  accessible_multiplier       DECIMAL(3,2) NOT NULL DEFAULT 1.40,
-  military_multiplier         DECIMAL(3,2) NOT NULL DEFAULT 1.00,
-  medical_multiplier          DECIMAL(3,2) NOT NULL DEFAULT 1.25,
-  dialysis_multiplier         DECIMAL(3,2) NOT NULL DEFAULT 1.20,
-  family_multiplier           DECIMAL(3,2) NOT NULL DEFAULT 1.30,
+  motorcycle_multiplier       DECIMAL(3,2) NOT NULL DEFAULT 0.75,
+  suv_multiplier              DECIMAL(3,2) NOT NULL DEFAULT 1.30,
   hourly_2h_price             DECIMAL(8,2) NOT NULL DEFAULT 20.00,
   hourly_4h_price             DECIMAL(8,2) NOT NULL DEFAULT 35.00,
   hourly_8h_price             DECIMAL(8,2) NOT NULL DEFAULT 60.00,
@@ -159,7 +155,7 @@ CREATE TABLE IF NOT EXISTS drivers (
     CHECK (background_check_status IN ('pending', 'approved', 'rejected')),
   accessible_cert_url TEXT,
 
-  services TEXT[] NOT NULL DEFAULT '{standard}',
+  services TEXT[] NOT NULL DEFAULT '{sedan}',
 
   status VARCHAR(20) NOT NULL DEFAULT 'pending'
     CHECK (status IN ('pending', 'under_review', 'active', 'inactive', 'suspended', 'rejected')),
@@ -302,7 +298,7 @@ CREATE TABLE IF NOT EXISTS rides (
 
   service_type VARCHAR(20) NOT NULL
     CHECK (service_type IN (
-      'standard', 'family', 'executive', 'accessible',
+      'motorcycle', 'sedan', 'suv',
       'scheduled', 'hourly', 'wait_and_return'
     )),
 
