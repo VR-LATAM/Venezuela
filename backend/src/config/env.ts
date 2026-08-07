@@ -40,10 +40,10 @@ const envSchema = z.object({
   // Google Maps
   GOOGLE_MAPS_API_KEY: z.string().min(1, 'GOOGLE_MAPS_API_KEY es requerida'),
 
-  // Stripe
-  STRIPE_SECRET_KEY: z.string().min(1, 'STRIPE_SECRET_KEY es requerida'),
-  STRIPE_PUBLISHABLE_KEY: z.string().min(1, 'STRIPE_PUBLISHABLE_KEY es requerida'),
-  STRIPE_WEBHOOK_SECRET: z.string().default('whsec_placeholder_not_configured'),
+  /* Stripe no se usa en Venezuela — pagos son Zelle, Binance, Pago Móvil */
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 
   // Encriptación PII (date_of_birth, home_address, license_number)
   // Generar con: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
