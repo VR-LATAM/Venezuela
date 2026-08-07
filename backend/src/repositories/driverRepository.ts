@@ -24,9 +24,9 @@ function decryptDriver<T>(driver: T | null): T | null {
   const d = driver as unknown as Record<string, unknown>;
   return {
     ...d,
-    date_of_birth:  decryptPII((d['date_of_birth_enc']  ?? d['date_of_birth'])  as string | null),
-    home_address:   decryptPII((d['home_address_enc']   ?? d['home_address'])   as string | null),
-    license_number: decryptPII((d['license_number_enc'] ?? d['license_number']) as string | null),
+    date_of_birth:  decryptPII(d['date_of_birth']  as string | null),
+    home_address:   decryptPII(d['home_address']   as string | null),
+    license_number: decryptPII(d['license_number'] as string | null),
   } as unknown as T;
 }
 
@@ -36,7 +36,6 @@ const DRIVER_SELECT = `
     u.id, u.firebase_uid, u.email, u.name, u.phone, u.phone_verified,
     u.photo_url, u.role, u.language, u.state_code, u.is_active,
     u.created_at, u.updated_at,
-    d.date_of_birth_enc, d.home_address_enc, d.license_number_enc,
     d.date_of_birth, d.ssn_last4, d.home_address,
     d.license_number, d.license_expiry, d.license_front_url, d.license_back_url,
     d.vehicle_plate, d.vehicle_brand, d.vehicle_model, d.vehicle_year, d.vehicle_color,
