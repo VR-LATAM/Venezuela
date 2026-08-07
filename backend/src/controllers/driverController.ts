@@ -2,6 +2,7 @@
 // Para: ELITE GROUP - Integral Services LLC
 // ═══════════════════════════════════════════════════════════════
 // Controlador de conductores — perfil, documentos, verificación
+// v2 — debug getProfile activo
 // ═══════════════════════════════════════════════════════════════
 
 import { Request, Response, NextFunction } from 'express';
