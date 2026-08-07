@@ -43,7 +43,7 @@ export async function refreshExchangeRate(): Promise<number> {
     const rate = parseFloat(rateStr);
     if (!rate || rate <= 0) throw new Error(`Tasa inválida extraída: ${match[1]}`);
 
-    await redis.setEx(REDIS_KEY, CACHE_TTL, rate.toString());
+    await redis.setex(REDIS_KEY, CACHE_TTL, rate.toString());
     logger.info(`Tasa BCV actualizada: 1 USD = ${rate} Bs.`);
     return rate;
   } catch (err) {
