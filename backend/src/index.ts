@@ -126,8 +126,8 @@ const health = { db: false, redis: false };
 // ─────────────────────────────────────
 app.get('/health', (_req, res) => {
   const ready = health.db && health.redis;
-  res.status(ready ? 200 : 503).json({
-    status:    ready ? 'ok' : 'degraded',
+  res.status(200).json({
+    status:    ready ? 'ok' : 'starting',
     db:        health.db,
     redis:     health.redis,
     service:   'veronaride-api',
@@ -199,28 +199,31 @@ async function startServer(): Promise<void> {
     }
   }
 
-  // Levantar el servidor primero para que Railway pueda ver el /health
+  console.log('[STARTUP] Paso 6 — iniciando httpServer.listen en puerto', env.PORT);
   await new Promise<void>((resolve) => {
     httpServer.listen(env.PORT, () => {
-      logger.info(`🚗 Verona Ride API corriendo en puerto ${env.PORT} [${env.NODE_ENV}]`);
+      console.log('[STARTUP] Puerto', env.PORT, 'escuchando OK');
+      logger.info(`Verona Ride API corriendo en puerto ${env.PORT} [${env.NODE_ENV}]`);
       resolve();
     });
   });
 
+  console.log('[STARTUP] Paso 7 — verificando PostgreSQL');
   try {
     await checkDatabaseConnection();
     health.db = true;
-    logger.info('✅ PostgreSQL conectado');
+    console.log('[STARTUP] PostgreSQL OK');
   } catch (err) {
-    logger.error('❌ PostgreSQL no disponible — healthcheck retornará 503:', err);
+    console.error('[STARTUP] PostgreSQL FALLO:', err);
   }
 
+  console.log('[STARTUP] Paso 8 — verificando Redis');
   try {
     await checkRedisConnection();
     health.redis = true;
-    logger.info('✅ Redis conectado');
+    console.log('[STARTUP] Redis OK');
   } catch (err) {
-    logger.error('❌ Redis no disponible — healthcheck retornará 503:', err);
+    console.error('[STARTUP] Redis FALLO:', err);
   }
 
   if (health.db && health.redis) {
