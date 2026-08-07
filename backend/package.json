@@ -1,6 +1,6 @@
 {
   "name": "@vride/backend",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Verona Ride Backend — Node.js + Express + Socket.io + PostgreSQL/PostGIS + Redis",
   "main": "dist/index.js",
