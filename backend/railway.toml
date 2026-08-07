@@ -1,3 +1,4 @@
 [build]
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
+buildCommand = "echo bust-cache-v2 && npm run build --workspace=@vride/backend"
