@@ -33,18 +33,10 @@ export async function refreshExchangeRate(): Promise<number> {
       },
     });
 
-    // Patrón 1: <div id="dolar">...<strong>756,70830000</strong>
-    let rateRaw: string | undefined;
-    const pat1 = html.match(/id=["']dolar["'][^>]*>[\s\S]{0,500}?<strong>([\d,\.]+)<\/strong>/i);
-    if (pat1) rateRaw = pat1[1];
-
-    // Patrón 2: texto "USD756,70830000" directo en la página
-    if (!rateRaw) {
-      const pat2 = html.match(/USD\s*([\d]{1,4}[,\.]\d{2,10})/i);
-      if (pat2) rateRaw = pat2[1];
-    }
-
-    if (!rateRaw) throw new Error('No se encontró la tasa USD en la página del BCV');
+    // Busca el patrón "USD756,70830000" confirmado en la página del BCV
+    const match = html.match(/USD\s*([\d]{1,4}[,\.]\d{2,10})/i);
+    if (!match) throw new Error('No se encontró la tasa USD en la página del BCV');
+    const rateRaw = match[1];
 
     // El BCV usa coma como separador decimal: "756,70830000" → 756.70830000
     const rateStr = rateRaw.replace(/\./g, '').replace(',', '.');
