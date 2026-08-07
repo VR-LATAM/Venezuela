@@ -14,7 +14,7 @@ import { router } from 'expo-router';
 import { BRAND_COLORS } from '@vride/shared';
 import { apiClient } from '../../src/services/apiClient';
 
-const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 
 interface TaxReport {
   year: number;
@@ -39,7 +39,7 @@ export default function TaxReportScreen() {
       const r = await apiClient.get('/driver/tax-report', { params: { year: y } });
       setReport(r.data.data);
     } catch {
-      Alert.alert('Error', 'Could not load tax report');
+      Alert.alert('Error', 'No se pudo cargar el informe fiscal');
     } finally {
       setLoading(false);
     }
@@ -53,7 +53,7 @@ export default function TaxReportScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Tax Report</Text>
+        <Text style={styles.headerTitle}>Informe fiscal</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
@@ -85,9 +85,9 @@ export default function TaxReportScreen() {
               <View style={styles.alertBox}>
                 <Text style={styles.alertIcon}>📋</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.alertTitle}>Form 1099-NEC Required</Text>
+                  <Text style={styles.alertTitle}>Informe fiscal anual requerido</Text>
                   <Text style={styles.alertText}>
-                    Your earnings exceed $600. You should receive or request a 1099-NEC form for tax year {year}.
+                    Tus ganancias superan el umbral de declaración para el año {year}. Conserva este informe para tu declaración.
                   </Text>
                 </View>
               </View>
@@ -95,9 +95,9 @@ export default function TaxReportScreen() {
               <View style={[styles.alertBox, { backgroundColor: '#F0FFF4', borderColor: '#86EFAC' }]}>
                 <Text style={styles.alertIcon}>✅</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.alertTitle, { color: '#15803D' }]}>Below 1099 threshold</Text>
+                  <Text style={[styles.alertTitle, { color: '#15803D' }]}>Por debajo del umbral de declaración</Text>
                   <Text style={[styles.alertText, { color: '#166534' }]}>
-                    Earnings under $600 for {year}. No 1099-NEC required.
+                    Ganancias menores al umbral para {year}. No se requiere declaración obligatoria.
                   </Text>
                 </View>
               </View>
@@ -107,35 +107,35 @@ export default function TaxReportScreen() {
             <View style={styles.cardsRow}>
               <View style={styles.summaryCard}>
                 <Text style={styles.scValue}>${report.net_earnings.toFixed(2)}</Text>
-                <Text style={styles.scLabel}>Net Earnings</Text>
+                <Text style={styles.scLabel}>Ganancias netas</Text>
               </View>
               <View style={styles.summaryCard}>
                 <Text style={[styles.scValue, { color: '#22C55E' }]}>${report.total_tips.toFixed(2)}</Text>
-                <Text style={styles.scLabel}>Tips Received</Text>
+                <Text style={styles.scLabel}>Propinas recibidas</Text>
               </View>
             </View>
 
             {/* Breakdown table */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Full Breakdown</Text>
+              <Text style={styles.sectionTitle}>Desglose completo</Text>
               <View style={styles.row}>
-                <Text style={styles.rowLabel}>Gross earnings (rides)</Text>
+                <Text style={styles.rowLabel}>Ganancias brutas (viajes)</Text>
                 <Text style={styles.rowValue}>${report.total_gross_earnings.toFixed(2)}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.rowLabel}>Platform commission</Text>
+                <Text style={styles.rowLabel}>Comisión de la plataforma</Text>
                 <Text style={[styles.rowValue, { color: '#DC2626' }]}>-${report.platform_commission.toFixed(2)}</Text>
               </View>
               <View style={[styles.row, styles.rowTotal]}>
-                <Text style={styles.rowTotalLabel}>Net earnings</Text>
+                <Text style={styles.rowTotalLabel}>Ganancias netas</Text>
                 <Text style={styles.rowTotalValue}>${report.net_earnings.toFixed(2)}</Text>
               </View>
               <View style={styles.row}>
-                <Text style={styles.rowLabel}>Tips (not commissionable)</Text>
+                <Text style={styles.rowLabel}>Propinas (sin comisión)</Text>
                 <Text style={[styles.rowValue, { color: '#22C55E' }]}>+${report.total_tips.toFixed(2)}</Text>
               </View>
               <View style={[styles.row, { borderBottomWidth: 0 }]}>
-                <Text style={styles.rowLabel}>Total rides completed</Text>
+                <Text style={styles.rowLabel}>Total de viajes completados</Text>
                 <Text style={styles.rowValue}>{report.total_rides}</Text>
               </View>
             </View>
@@ -143,7 +143,7 @@ export default function TaxReportScreen() {
             {/* Monthly chart */}
             {report.monthly_breakdown.length > 0 && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Monthly Earnings</Text>
+                <Text style={styles.sectionTitle}>Ganancias mensuales</Text>
                 {report.monthly_breakdown.map(m => {
                   const earned = parseFloat(m.earned);
                   const max = Math.max(...report.monthly_breakdown.map(x => parseFloat(x.earned)), 1);
@@ -164,9 +164,7 @@ export default function TaxReportScreen() {
             {/* IRS note */}
             <View style={styles.irsNote}>
               <Text style={styles.irsText}>
-                ⚠️ This report is for reference only. For official tax purposes,
-                consult a tax professional or the IRS guidelines for gig economy workers (Publication 334).
-                Self-employment tax applies to net earnings over $400.
+                ⚠️ Este informe es solo de referencia. Para efectos fiscales oficiales, consulta a un contador o asesora fiscal. Las regulaciones tributarias venezolanas pueden aplicar según tu actividad económica.
               </Text>
             </View>
           </>

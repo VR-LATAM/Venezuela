@@ -6,16 +6,16 @@ import { router } from 'expo-router';
 import { BRAND_COLORS } from '@vride/shared';
 
 const contacts = [
-  { icon: '📧', title: 'General Support', desc: 'Questions about rides, your account, or the app.', email: 'support@veronaride.app' },
-  { icon: '🚗', title: 'Become a Driver', desc: 'Interested in driving with Verona Ride?', email: 'drivers@veronaride.app' },
-  { icon: '🏢', title: 'Business Inquiries', desc: 'Partnerships and corporate transportation.', email: 'business@veronaride.app' },
+  { icon: '📧', title: 'Soporte general', desc: 'Preguntas sobre viajes, tu cuenta o la app.', email: 'support@veronaride.app' },
+  { icon: '🚗', title: 'Conviértete en conductor', desc: '¿Interesado en manejar con V-Ride Venezuela?', email: 'drivers@veronaride.app' },
+  { icon: '🏢', title: 'Consultas empresariales', desc: 'Alianzas y transporte corporativo.', email: 'business@veronaride.app' },
 ];
 
 const faqs = [
-  { q: 'Where is Verona Ride available?', a: 'Currently operating in Texas, expanding to other states.' },
-  { q: 'How are drivers verified?', a: 'Every driver undergoes a background check, DMV review, and vehicle inspection.' },
-  { q: 'Can I schedule a ride in advance?', a: 'Yes, up to 7 days in advance from the app.' },
-  { q: 'What if I need a wheelchair-accessible vehicle?', a: 'Select "Accessible" when booking and we\'ll match you with the right vehicle.' },
+  { q: '¿Dónde está disponible V-Ride Venezuela?', a: 'Actualmente operamos en Venezuela, expandiéndonos a nuevas ciudades.' },
+  { q: '¿Cómo se verifican los conductores?', a: 'Cada conductor pasa por una revisión de antecedentes, inspección de licencia y del vehículo.' },
+  { q: '¿Puedo programar un viaje con anticipación?', a: 'Sí, hasta 7 días de antelación desde la app.' },
+  { q: '¿Qué hago si necesito un vehículo accesible para silla de ruedas?', a: 'Selecciona "Accesible" al reservar y te asignaremos el vehículo adecuado.' },
 ];
 
 export default function ContactScreen() {
@@ -23,13 +23,13 @@ export default function ContactScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← Atrás</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Contact Us</Text>
+        <Text style={styles.headerTitle}>Contáctanos</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.intro}>We're here to help. Reach out anytime.</Text>
+        <Text style={styles.intro}>Estamos aquí para ayudarte. Escríbenos en cualquier momento.</Text>
 
         {contacts.map(c => (
           <TouchableOpacity key={c.email} style={styles.card} onPress={() => Linking.openURL(`mailto:${c.email}`)}>
@@ -43,7 +43,7 @@ export default function ContactScreen() {
           </TouchableOpacity>
         ))}
 
-        <Text style={styles.faqTitle}>Frequently Asked Questions</Text>
+        <Text style={styles.faqTitle}>Preguntas frecuentes</Text>
         {faqs.map(({ q, a }) => (
           <View key={q} style={styles.faqItem}>
             <Text style={styles.faqQ}>{q}</Text>

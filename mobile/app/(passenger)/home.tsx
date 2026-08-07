@@ -15,7 +15,7 @@ import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
+
 
 import { useAuthStore, useUser } from '../../src/store/authStore';
 import { useRideStore } from '../../src/store/rideStore';
@@ -48,14 +48,14 @@ interface Prediction {
 }
 
 const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string }[] = [
-  { key: 'standard',        label: 'Standard',      emoji: '🚗' },
-  { key: 'family',          label: 'Family',        emoji: '🚐' },
-  { key: 'executive',       label: 'Executive',     emoji: '🚙' },
-  { key: 'accessible',      label: 'Accessible',    emoji: '♿' },
-  { key: 'military',        label: 'Military',      emoji: '🎖️' },
-  { key: 'scheduled',       label: 'Scheduled',     emoji: '📅' },
-  { key: 'wait_and_return', label: 'Wait & Return', emoji: '⏳' },
-  { key: 'hourly',          label: 'Hourly',        emoji: '🕐' },
+  { key: 'standard',        label: 'Estándar',     emoji: '🚗' },
+  { key: 'family',          label: 'Familiar',     emoji: '🚐' },
+  { key: 'executive',       label: 'Ejecutivo',    emoji: '🚙' },
+  { key: 'accessible',      label: 'Accesible',    emoji: '♿' },
+  { key: 'military',        label: 'Militar',      emoji: '🎖️' },
+  { key: 'scheduled',       label: 'Programado',   emoji: '📅' },
+  { key: 'wait_and_return', label: 'Esperar y regresar', emoji: '⏳' },
+  { key: 'hourly',          label: 'Por hora',     emoji: '🕐' },
 ];
 
 const HOURLY_PACKAGES = [
@@ -73,7 +73,6 @@ const WAIT_TIMES = [
 ];
 
 export default function PassengerHomeScreen() {
-  const { t } = useTranslation();
   const user = useUser();
   const { logout } = useAuthStore();
 
@@ -94,7 +93,7 @@ export default function PassengerHomeScreen() {
   const [mapType, setMapType]               = useState<'hybrid' | 'standard'>('hybrid');
   const { pickAndUpload, uploading: uploadingPhoto } = usePhotoUpload();
   const [userLocation, setUserLocation]     = useState<Coords | null>(null);
-  const [pickupAddress, setPickupAddress]   = useState('My current location');
+  const [pickupAddress, setPickupAddress]   = useState('Mi ubicación actual');
   const [dropoffAddress, setDropoffAddress] = useState('');
   const [dropoffCoords, setDropoffCoords]   = useState<Coords | null>(null);
   const [isSearchingDest, setIsSearchingDest] = useState(false);
@@ -243,7 +242,7 @@ export default function PassengerHomeScreen() {
           const ride = await rideMobileService.getActiveRide();
           if (ride && ride.status === 'searching') {
             console.log('[Timeout] 4min sin respuesta — cancelando y forzando no_driver_found');
-            try { await cancelCurrentRide('Search timeout'); } catch { /* ignorar */ }
+            try { await cancelCurrentRide('Tiempo de búsqueda agotado'); } catch { /* ignorar */ }
             setSearchStatus('no_driver_found');
             Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
           }
@@ -283,7 +282,7 @@ export default function PassengerHomeScreen() {
   const initLocation = async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Permission required', t('errors.locationPermission'));
+      Alert.alert('Permiso requerido', 'Se necesita acceso a tu ubicación para solicitar un viaje.');
       return;
     }
     const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
@@ -295,7 +294,7 @@ export default function PassengerHomeScreen() {
       const [addr] = await Location.reverseGeocodeAsync(coords);
       if (addr) {
         const readable = [addr.street, addr.city, addr.region].filter(Boolean).join(', ');
-        setPickupAddress(readable || 'My current location');
+        setPickupAddress(readable || 'Mi ubicación actual');
       }
     } catch { /* mantener default */ }
   };
@@ -378,7 +377,7 @@ export default function PassengerHomeScreen() {
       }),
       socketService.on('passenger:ride_cancelled_by_driver', () => {
         setSearchStatus('cancelled');
-        Alert.alert('Ride cancelled', 'The driver cancelled. We will search for another.');
+        Alert.alert('Viaje cancelado', 'El conductor canceló. Buscaremos otro conductor.');
         resetPassengerState();
       }),
     ];
@@ -434,7 +433,7 @@ export default function PassengerHomeScreen() {
         confirmDestination(data.result.formatted_address, { latitude: lat, longitude: lng });
       }
     } catch {
-      Alert.alert('Error', 'Could not get location details. Try typing the full address.');
+      Alert.alert('Error', 'No se pudieron obtener los detalles de la ubicación. Intenta escribir la dirección completa.');
     } finally {
       setIsResolvingPlace(false);
     }
@@ -459,10 +458,10 @@ export default function PassengerHomeScreen() {
         const { lat, lng } = data.results[0].geometry.location;
         confirmDestination(data.results[0].formatted_address, { latitude: lat, longitude: lng });
       } else {
-        Alert.alert('Not found', 'Address not found. Try adding the city or state (e.g. "Katy Mills, TX").');
+        Alert.alert('No encontrada', 'Dirección no encontrada. Intenta agregar la ciudad (ej. "Av. Libertador, Caracas").');
       }
     } catch {
-      Alert.alert('Error', 'Could not search for that address. Check your connection.');
+      Alert.alert('Error', 'No se pudo buscar esa dirección. Verifica tu conexión.');
     } finally {
       setIsResolvingPlace(false);
     }
@@ -601,14 +600,14 @@ export default function PassengerHomeScreen() {
     if (!user?.photo_url) {
       Alert.alert(
         'Profile photo required',
-        'Please add a profile photo before requesting a ride. This helps your driver identify you.',
+        'Por favor agrega una foto de perfil antes de solicitar un viaje. Esto ayuda a tu conductor a identificarte.',
         [
-          { text: 'Later', style: 'cancel' },
+          { text: 'Después', style: 'cancel' },
           {
-            text: 'Add photo',
+            text: 'Agregar foto',
             onPress: async () => {
               const url = await pickAndUpload();
-              if (url) Alert.alert('Photo saved!', 'You can now request a ride.');
+              if (url) Alert.alert('¡Foto guardada!', 'Ya puedes solicitar un viaje.');
             },
           },
         ]
@@ -642,26 +641,26 @@ export default function PassengerHomeScreen() {
       const msg = err instanceof Error ? err.message : '';
       const code = axiosCode ?? msg;
       Alert.alert('Error',
-        code.includes('PAYMENT_METHOD_DECLINED') ? 'Your payment method could not be processed. Please check your card and try again.'
-        : code === 'ACTIVE_RIDE_EXISTS'           ? 'You already have an active ride.'
-        : code === 'NO_DRIVER_FOUND'              ? 'No drivers available nearby. Try again.'
-        : code === 'INVALID_STATE'                ? 'Service not available in your area.'
-        : 'Could not request ride. Please try again.'
+        code.includes('PAYMENT_METHOD_DECLINED') ? 'No se pudo procesar tu método de pago. Verifica y vuelve a intentarlo.'
+        : code === 'ACTIVE_RIDE_EXISTS'           ? 'Ya tienes un viaje activo.'
+        : code === 'NO_DRIVER_FOUND'              ? 'No hay conductores disponibles cerca. Intenta de nuevo.'
+        : code === 'INVALID_STATE'                ? 'Servicio no disponible en tu área.'
+        : 'No se pudo solicitar el viaje. Intenta de nuevo.'
       );
     }
   };
 
   const handleCancel = () => {
-    Alert.alert('Cancel ride', 'Are you sure?', [
+    Alert.alert('Cancelar viaje', '¿Estás seguro?', [
       { text: 'No', style: 'cancel' },
       {
-        text: 'Yes, cancel', style: 'destructive',
+        text: 'Sí, cancelar', style: 'destructive',
         onPress: async () => {
-          const fee = await cancelCurrentRide('Cancelled by passenger');
+          const fee = await cancelCurrentRide('Cancelado por el pasajero');
           if (fee > 0) {
             Alert.alert(
-              'Cancellation fee',
-              `A $${fee.toFixed(2)} cancellation fee was charged because the driver was already on the way.`,
+              'Cargo por cancelación',
+              `Se cobró $${fee.toFixed(2)} por cancelación porque el conductor ya estaba en camino.`,
               [{ text: 'OK', onPress: () => resetPassengerState() }]
             );
           } else {
@@ -687,23 +686,23 @@ export default function PassengerHomeScreen() {
       const result = await promoService.validate(promoCode.trim());
       setPromoDiscount(result.discount_percent);
       setPromoApplied(true);
-      Alert.alert('Promo applied! 🎉', `${result.discount_percent}% discount will be applied to your ride.`);
+      Alert.alert('¡Promo aplicada! 🎉', `Se aplicará un ${result.discount_percent}% de descuento a tu viaje.`);
     } catch (err: any) {
-      const msg = err?.response?.data?.message ?? 'Invalid promo code';
-      Alert.alert('Invalid code', msg);
+      const msg = err?.response?.data?.message ?? 'Código de promo inválido';
+      Alert.alert('Código inválido', msg);
     } finally {
       setPromoValidating(false);
     }
   };
 
   const requestLabel = () => {
-    if (selectedService === 'scheduled') return 'Schedule a Ride →';
+    if (selectedService === 'scheduled') return 'Programar un viaje →';
     const est = allEstimates[selectedService];
     if (est) {
       const name = SERVICE_OPTIONS.find(s => s.key === selectedService)?.label ?? '';
-      return `Request ${name}  ·  $${(est.total ?? 0).toFixed(2)}`;
+      return `Solicitar ${name}  ·  $${(est.total ?? 0).toFixed(2)}`;
     }
-    return t('passenger.requestRide');
+    return 'Solicitar viaje';
   };
 
   const canRequest = !!userLocation && !!dropoffCoords &&
@@ -735,7 +734,7 @@ export default function PassengerHomeScreen() {
         }}
       >
         {dropoffCoords && (
-          <Marker coordinate={dropoffCoords} title="Destination" description={dropoffAddress}>
+          <Marker coordinate={dropoffCoords} title="Destino" description={dropoffAddress}>
             <View style={styles.destMarker}>
               <Text style={styles.destMarkerText}>📍</Text>
             </View>
@@ -856,7 +855,7 @@ export default function PassengerHomeScreen() {
                   onPress={searchByText}
                   disabled={!searchQuery.trim()}
                 >
-                  <Text style={styles.searchBtnText}>Search</Text>
+                  <Text style={styles.searchBtnText}>Buscar</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -891,7 +890,7 @@ export default function PassengerHomeScreen() {
 
             {predictions.length === 0 && !isLoadingPredictions && searchQuery.length > 0 && (
               <Text style={styles.searchHint}>
-                Press Search or keep typing to see suggestions
+                Presiona Buscar o sigue escribiendo para ver sugerencias
               </Text>
             )}
           </SafeAreaView>
@@ -923,7 +922,7 @@ export default function PassengerHomeScreen() {
                     style={[styles.locationText, !dropoffAddress && styles.placeholderText]}
                     numberOfLines={1}
                   >
-                    {dropoffAddress || t('passenger.searchDestination')}
+                    {dropoffAddress || 'Buscar destino'}
                   </Text>
                   {dropoffAddress ? (
                     <TouchableOpacity
@@ -1009,7 +1008,7 @@ export default function PassengerHomeScreen() {
                             </Text>
                             {isSched ? (
                               <Text style={[styles.serviceCardBook, isActive && styles.textWhite]}>
-                                Book ahead →
+                                Reservar →
                               </Text>
                             ) : isLoadingEstimates ? (
                               <ActivityIndicator
@@ -1023,10 +1022,10 @@ export default function PassengerHomeScreen() {
                                   ${(est.total ?? 0).toFixed(2)}
                                 </Text>
                                 <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
-                                  {est.duration_minutes ?? 0} min · {(est.distance_miles ?? 0).toFixed(1)} mi
+                                  {est.duration_minutes ?? 0} min · {(est.distance_miles ?? 0).toFixed(1)} km
                                 </Text>
                                 {est.surge_multiplier > 1 && (
-                                  <Text style={styles.surgeTag}>⚡ Peak</Text>
+                                  <Text style={styles.surgeTag}>⚡ Alta demanda</Text>
                                 )}
                               </>
                             ) : (
@@ -1040,7 +1039,7 @@ export default function PassengerHomeScreen() {
                     {/* ── Selector de tiempo de espera (Wait & Return) ── */}
                     {selectedService === 'wait_and_return' && (
                       <View style={styles.subSelectorBox}>
-                        <Text style={styles.subSelectorTitle}>⏳ Estimated wait time at appointment</Text>
+                        <Text style={styles.subSelectorTitle}>⏳ Tiempo estimado de espera en la cita</Text>
                         <View style={styles.subSelectorRow}>
                           {WAIT_TIMES.map(w => (
                             <TouchableOpacity
@@ -1055,7 +1054,7 @@ export default function PassengerHomeScreen() {
                           ))}
                         </View>
                         <Text style={styles.subSelectorNote}>
-                          Driver charges ${(0.30).toFixed(2)}/min while waiting. Final cost uses actual wait time.
+                          El conductor cobra mientras espera. El costo final usa el tiempo real de espera.
                         </Text>
                       </View>
                     )}
@@ -1063,7 +1062,7 @@ export default function PassengerHomeScreen() {
                     {/* ── Selector de paquete de horas (Hourly Ride) ── */}
                     {selectedService === 'hourly' && (
                       <View style={styles.subSelectorBox}>
-                        <Text style={styles.subSelectorTitle}>🕐 Select your time package</Text>
+                        <Text style={styles.subSelectorTitle}>🕐 Selecciona tu paquete de tiempo</Text>
                         <View style={styles.subSelectorRow}>
                           {HOURLY_PACKAGES.map(p => (
                             <TouchableOpacity
@@ -1083,7 +1082,7 @@ export default function PassengerHomeScreen() {
                           ))}
                         </View>
                         <Text style={styles.subSelectorNote}>
-                          Fixed price · Multiple stops included · Driver stays with you
+                          Precio fijo · Múltiples paradas incluidas · El conductor se queda contigo
                         </Text>
                       </View>
                     )}
@@ -1112,14 +1111,14 @@ export default function PassengerHomeScreen() {
                 {/* Badge de pasajero frecuente */}
                 {isFrequentPassenger ? (
                   <View style={styles.loyaltyBadge}>
-                    <Text style={styles.loyaltyBadgeText}>🎉 10% frequent rider discount applied!</Text>
+                    <Text style={styles.loyaltyBadgeText}>🎉 ¡Descuento del 10% por viajero frecuente aplicado!</Text>
                   </View>
                 ) : (passengerRidesWeek >= 10 || passengerRidesMonth >= 40) ? (
                   <View style={[styles.loyaltyBadge, { backgroundColor: '#FFF7ED' }]}>
                     <Text style={[styles.loyaltyBadgeText, { color: '#C2410C' }]}>
                       {passengerRidesWeek >= 10
-                        ? `🔥 ${15 - passengerRidesWeek} more rides this week for 10% off!`
-                        : `🔥 ${50 - passengerRidesMonth} more rides this month for 10% off!`}
+                        ? `🔥 ¡${15 - passengerRidesWeek} viajes más esta semana para 10% de descuento!`
+                        : `🔥 ¡${50 - passengerRidesMonth} viajes más este mes para 10% de descuento!`}
                     </Text>
                   </View>
                 ) : null}
@@ -1131,7 +1130,7 @@ export default function PassengerHomeScreen() {
                       style={styles.promoInput}
                       value={promoCode}
                       onChangeText={setPromoCode}
-                      placeholder="Promo code"
+                      placeholder="Código de promo"
                       placeholderTextColor="#94A3B8"
                       autoCapitalize="characters"
                       maxLength={30}
@@ -1143,16 +1142,16 @@ export default function PassengerHomeScreen() {
                     >
                       {promoValidating
                         ? <ActivityIndicator color="#fff" size="small" />
-                        : <Text style={styles.promoBtnText}>Apply</Text>
+                        : <Text style={styles.promoBtnText}>Aplicar</Text>
                       }
                     </TouchableOpacity>
                   </View>
                 )}
                 {promoApplied && (
                   <View style={styles.promoApplied}>
-                    <Text style={styles.promoAppliedText}>🎉 {promoDiscount}% discount applied</Text>
+                    <Text style={styles.promoAppliedText}>🎉 {promoDiscount}% de descuento aplicado</Text>
                     <TouchableOpacity onPress={() => { setPromoApplied(false); setPromoCode(''); setPromoDiscount(0); }}>
-                      <Text style={styles.promoRemove}>Remove</Text>
+                      <Text style={styles.promoRemove}>Eliminar</Text>
                     </TouchableOpacity>
                   </View>
                 )}
@@ -1181,7 +1180,7 @@ export default function PassengerHomeScreen() {
         {searchStatus === 'requesting' && (
           <View style={styles.statusPanel}>
             <ActivityIndicator size="large" color={BRAND_COLORS.PRIMARY} />
-            <Text style={styles.statusTitle}>Processing request...</Text>
+            <Text style={styles.statusTitle}>Procesando solicitud...</Text>
           </View>
         )}
 
@@ -1191,8 +1190,8 @@ export default function PassengerHomeScreen() {
             <Animated.View style={[styles.pulseWrap, { transform: [{ scale: pulseAnim }] }]}>
               <Text style={styles.pulseEmoji}>🔍</Text>
             </Animated.View>
-            <Text style={styles.statusTitle}>{t('passenger.searching')}</Text>
-            <Text style={styles.statusSub}>Searching within {(searchRadiusKm * 0.621371).toFixed(1)} mi</Text>
+            <Text style={styles.statusTitle}>Buscando conductores...</Text>
+            <Text style={styles.statusSub}>Buscando en un radio de {searchRadiusKm.toFixed(1)} km</Text>
           </View>
         )}
 
@@ -1206,7 +1205,7 @@ export default function PassengerHomeScreen() {
                 size={52}
               />
               <View style={styles.driverDetails}>
-                <Text style={styles.driverName}>{assignedDriver.name ?? 'Driver'}</Text>
+                <Text style={styles.driverName}>{assignedDriver.name ?? 'Conductor'}</Text>
                 {(assignedDriver.vehicle_brand || assignedDriver.vehicle_model) ? (
                   <Text style={styles.driverCar}>
                     {[assignedDriver.vehicle_color, assignedDriver.vehicle_brand, assignedDriver.vehicle_model]
@@ -1221,23 +1220,23 @@ export default function PassengerHomeScreen() {
                 ⭐ {(Number(assignedDriver.rating_avg) || 5).toFixed(1)}
               </Text>
             </View>
-            <Text style={styles.statusTitle}>{t('passenger.driverArriving')}</Text>
+            <Text style={styles.statusTitle}>Tu conductor está en camino</Text>
             {driverEtaMinutes !== null && (
-              <Text style={styles.etaBadge}>🕐 ~{driverEtaMinutes} min away</Text>
+              <Text style={styles.etaBadge}>🕐 ~{driverEtaMinutes} min de distancia</Text>
             )}
             {driverWaitMinutes >= 5 && (
               <TouchableOpacity
                 style={styles.noShowBtn}
                 onPress={() => Alert.alert(
-                  'Driver not here?',
-                  'It has been over 5 minutes. Would you like to cancel and find another driver?',
+                  '¿El conductor no está?',
+                  'Han pasado más de 5 minutos. ¿Deseas cancelar y buscar otro conductor?',
                   [
-                    { text: 'Keep waiting', style: 'cancel' },
-                    { text: 'Find another driver', style: 'destructive', onPress: handleCancel },
+                    { text: 'Seguir esperando', style: 'cancel' },
+                    { text: 'Buscar otro conductor', style: 'destructive', onPress: handleCancel },
                   ]
                 )}
               >
-                <Text style={styles.noShowBtnText}>Driver not here? ({driverWaitMinutes} min)</Text>
+                <Text style={styles.noShowBtnText}>¿El conductor no está? ({driverWaitMinutes} min)</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -1247,7 +1246,7 @@ export default function PassengerHomeScreen() {
         {searchStatus === 'driver_arrived' && assignedDriver && (
           <View style={styles.arrivedPanel}>
             <Text style={styles.bigEmoji}>🎉</Text>
-            <Text style={styles.statusTitle}>{t('passenger.driverArrived')}</Text>
+            <Text style={styles.statusTitle}>¡Tu conductor llegó!</Text>
             <Text style={styles.statusSub}>
               {assignedDriver.vehicle_color} {assignedDriver.vehicle_brand} · {assignedDriver.vehicle_plate}
             </Text>
@@ -1258,10 +1257,10 @@ export default function PassengerHomeScreen() {
         {searchStatus === 'no_driver_found' && (
           <View style={styles.statusPanel}>
             <Text style={styles.bigEmoji}>😔</Text>
-            <Text style={styles.statusTitle}>{t('passenger.noDriversFound')}</Text>
-            <Text style={styles.statusSub}>No drivers available. Try again in a few minutes.</Text>
+            <Text style={styles.statusTitle}>No se encontraron conductores</Text>
+            <Text style={styles.statusSub}>No hay conductores disponibles. Intenta de nuevo en unos minutos.</Text>
             <TouchableOpacity style={styles.retryBtn} onPress={() => resetPassengerState()}>
-              <Text style={styles.retryBtnText}>{t('common.retry')}</Text>
+              <Text style={styles.retryBtnText}>Reintentar</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -1270,9 +1269,9 @@ export default function PassengerHomeScreen() {
         {searchStatus === 'cancelled' && (
           <View style={styles.statusPanel}>
             <Text style={styles.bigEmoji}>↩️</Text>
-            <Text style={styles.statusTitle}>Ride cancelled</Text>
+            <Text style={styles.statusTitle}>Viaje cancelado</Text>
             <TouchableOpacity style={styles.retryBtn} onPress={() => resetPassengerState()}>
-              <Text style={styles.retryBtnText}>Request new ride</Text>
+              <Text style={styles.retryBtnText}>Solicitar nuevo viaje</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -1284,7 +1283,7 @@ export default function PassengerHomeScreen() {
           style={styles.searchFloatBtn}
           onPress={() => { setPanelVisible(true); openSearch(); }}
         >
-          <Text style={styles.searchFloatBtnText}>🔎  Where to?</Text>
+          <Text style={styles.searchFloatBtnText}>🔎  ¿A dónde vas?</Text>
         </TouchableOpacity>
       )}
 
@@ -1292,7 +1291,7 @@ export default function PassengerHomeScreen() {
       {['requesting', 'searching', 'driver_assigned', 'driver_arrived', 'in_progress']
         .includes(searchStatus) && (
         <TouchableOpacity style={styles.cancelFloat} onPress={handleCancel}>
-          <Text style={styles.cancelFloatText}>✕ Cancel ride</Text>
+          <Text style={styles.cancelFloatText}>✕ Cancelar viaje</Text>
         </TouchableOpacity>
       )}
 
@@ -1317,7 +1316,7 @@ export default function PassengerHomeScreen() {
           onClose={() => { setTipModalVisible(false); router.push('/(passenger)/rating'); }}
           onSuccess={(amount) => {
             setTipModalVisible(false);
-            Alert.alert('Thanks! 🙏', `$${amount.toFixed(2)} tip sent to ${completedRideForTip.driverName}.`);
+            Alert.alert('¡Gracias! 🙏', `Propina de $${amount.toFixed(2)} enviada a ${completedRideForTip.driverName}.`);
             router.push('/(passenger)/rating');
           }}
         />
@@ -1326,7 +1325,7 @@ export default function PassengerHomeScreen() {
       {/* Route deviation banner */}
       {deviated && (
         <View style={styles.deviationBanner}>
-          <Text style={styles.deviationText}>🚨 Route deviation detected — if you feel unsafe, press SOS</Text>
+          <Text style={styles.deviationText}>🚨 Desvío de ruta detectado — si te sientes inseguro, presiona SOS</Text>
         </View>
       )}
 
@@ -1342,22 +1341,22 @@ export default function PassengerHomeScreen() {
             >
               <UserAvatar name={user?.name} photoUrl={user?.photo_url} size={64} />
               <View style={styles.menuAvatarInfo}>
-                <Text style={styles.menuAvatarName}>{user?.name ?? 'My account'}</Text>
+                <Text style={styles.menuAvatarName}>{user?.name ?? 'Mi cuenta'}</Text>
                 <Text style={styles.menuAvatarHint}>
-                  {uploadingPhoto ? 'Uploading...' : 'Tap to change photo'}
+                  {uploadingPhoto ? 'Subiendo...' : 'Toca para cambiar foto'}
                 </Text>
               </View>
             </TouchableOpacity>
 
             {[
-              { icon: '💳', label: 'Payment methods',      route: '/(passenger)/payments'              as const },
-              { icon: '📊', label: 'My spending',          route: '/(passenger)/spending'              as const },
-              { icon: '🗂️', label: 'Ride history',         route: '/(passenger)/history'               as const },
-              { icon: '📍', label: 'Favorite places',      route: '/(passenger)/favorites'             as const },
-              { icon: '♿', label: 'Accessibility profile', route: '/(passenger)/accessibility-profile' as const },
-              { icon: '🚨', label: 'Emergency contact',     route: '/(passenger)/emergency-contact'     as const },
-              { icon: '📄', label: 'Receipt history',       route: '/(passenger)/receipts'              as const },
-              { icon: '🔧', label: 'Special needs',         route: '/(passenger)/special-needs'         as const },
+              { icon: '💳', label: 'Métodos de pago',        route: '/(passenger)/payments'              as const },
+              { icon: '📊', label: 'Mi gasto',               route: '/(passenger)/spending'              as const },
+              { icon: '🗂️', label: 'Historial de viajes',    route: '/(passenger)/history'               as const },
+              { icon: '📍', label: 'Lugares favoritos',      route: '/(passenger)/favorites'             as const },
+              { icon: '♿', label: 'Perfil de accesibilidad', route: '/(passenger)/accessibility-profile' as const },
+              { icon: '🚨', label: 'Contacto de emergencia', route: '/(passenger)/emergency-contact'     as const },
+              { icon: '📄', label: 'Historial de recibos',   route: '/(passenger)/receipts'              as const },
+              { icon: '🔧', label: 'Necesidades especiales',  route: '/(passenger)/special-needs'         as const },
             ].map(item => (
               <TouchableOpacity
                 key={item.label}
@@ -1372,10 +1371,10 @@ export default function PassengerHomeScreen() {
             <View style={styles.menuDivider} />
 
             {[
-              { icon: 'ℹ️', label: 'About Us',        route: '/(info)/about'   as const },
-              { icon: '🔒', label: 'Privacy Policy',  route: '/(info)/privacy' as const },
-              { icon: '📋', label: 'Legal Notice',    route: '/(info)/legal'   as const },
-              { icon: '✉️', label: 'Contact Us',      route: '/(info)/contact' as const },
+              { icon: 'ℹ️', label: 'Acerca de',          route: '/(info)/about'   as const },
+              { icon: '🔒', label: 'Política de privacidad', route: '/(info)/privacy' as const },
+              { icon: '📋', label: 'Aviso legal',         route: '/(info)/legal'   as const },
+              { icon: '✉️', label: 'Contáctanos',         route: '/(info)/contact' as const },
             ].map(item => (
               <TouchableOpacity
                 key={item.label}
@@ -1391,11 +1390,11 @@ export default function PassengerHomeScreen() {
 
             <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); void handleLogout(); }}>
               <Text style={styles.menuItemIcon}>🚪</Text>
-              <Text style={[styles.menuItemText, { color: BRAND_COLORS.ALERT }]}>Log out</Text>
+              <Text style={[styles.menuItemText, { color: BRAND_COLORS.ALERT }]}>Cerrar sesión</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuCloseBtn} onPress={() => setMenuVisible(false)}>
-              <Text style={styles.menuCloseBtnText}>Close</Text>
+              <Text style={styles.menuCloseBtnText}>Cerrar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

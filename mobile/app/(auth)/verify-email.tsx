@@ -42,8 +42,8 @@ export default function VerifyEmailScreen() {
       } else {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
         Alert.alert(
-          'Email not verified yet',
-          'We could not confirm your verification. Please click the link in the email we sent you and try again.',
+          'Correo no verificado aún',
+          'No pudimos confirmar tu verificación. Haz clic en el enlace del correo que te enviamos e intenta de nuevo.',
           [{ text: 'OK' }]
         );
       }
@@ -59,9 +59,9 @@ export default function VerifyEmailScreen() {
       await resendVerificationEmail();
       setCooldown(RESEND_COOLDOWN_SECONDS);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      Alert.alert('Email sent', 'We sent a new verification email. Check your inbox and spam folder.', [{ text: 'OK' }]);
+      Alert.alert('Correo enviado', 'Enviamos un nuevo correo de verificación. Revisa tu bandeja y carpeta de spam.', [{ text: 'OK' }]);
     } catch {
-      Alert.alert('Error', 'Could not resend the email. Please try again in a moment.', [{ text: 'OK' }]);
+      Alert.alert('Error', 'No se pudo reenviar el correo. Intenta de nuevo en un momento.', [{ text: 'OK' }]);
     } finally {
       setIsResending(false);
     }
@@ -81,14 +81,14 @@ export default function VerifyEmailScreen() {
         </View>
 
         {/* Título */}
-        <Text style={styles.title}>Verify your email</Text>
+        <Text style={styles.title}>Verifica tu correo</Text>
         <Text style={styles.subtitle}>
-          We sent a verification link to:
+          Enviamos un enlace de verificación a:
         </Text>
-        <Text style={styles.email}>{pendingEmail ?? 'your email address'}</Text>
+        <Text style={styles.email}>{pendingEmail ?? 'tu dirección de correo'}</Text>
 
         <Text style={styles.instructions}>
-          Open your email, click the verification link, and then come back here and tap the button below.
+          Abre tu correo, haz clic en el enlace de verificación y luego regresa aquí y toca el botón de abajo.
         </Text>
 
         {/* Botón principal */}
@@ -97,12 +97,12 @@ export default function VerifyEmailScreen() {
           onPress={handleVerified}
           disabled={isChecking}
           accessibilityRole="button"
-          accessibilityLabel="I already verified my email"
+          accessibilityLabel="Ya verifiqué mi correo"
         >
           {isChecking ? (
             <ActivityIndicator color="#fff" size="small" />
           ) : (
-            <Text style={styles.buttonText}>I already verified my email</Text>
+            <Text style={styles.buttonText}>Ya verifiqué mi correo</Text>
           )}
         </TouchableOpacity>
 
@@ -118,8 +118,8 @@ export default function VerifyEmailScreen() {
           ) : (
             <Text style={[styles.resendText, cooldown > 0 && styles.resendTextDisabled]}>
               {cooldown > 0
-                ? `Resend email (${cooldown}s)`
-                : 'Resend verification email'}
+                ? `Reenviar correo (${cooldown}s)`
+                : 'Reenviar correo de verificación'}
             </Text>
           )}
         </TouchableOpacity>
@@ -130,13 +130,13 @@ export default function VerifyEmailScreen() {
           onPress={handleBack}
           accessibilityRole="button"
         >
-          <Text style={styles.backText}>Use a different email</Text>
+          <Text style={styles.backText}>Usar otro correo</Text>
         </TouchableOpacity>
 
         {/* Nota sobre spam */}
         <View style={styles.spamNote}>
           <Text style={styles.spamText}>
-            Don't see the email? Check your spam or junk folder.
+            ¿No ves el correo? Revisa tu carpeta de spam o correo no deseado.
           </Text>
         </View>
       </View>

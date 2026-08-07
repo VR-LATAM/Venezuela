@@ -43,10 +43,10 @@ interface RideHistoryItem {
 }
 
 const STATUS_LABEL: Record<string, { label: string; color: string }> = {
-  completed:          { label: 'Completed',    color: '#22C55E' },
-  cancelled_passenger:{ label: 'Cancelled',    color: BRAND_COLORS.ALERT },
-  cancelled_driver:   { label: 'Cancelled',    color: BRAND_COLORS.ALERT },
-  no_driver_found:    { label: 'No driver',    color: '#888' },
+  completed:          { label: 'Completado',   color: '#22C55E' },
+  cancelled_passenger:{ label: 'Cancelado',    color: BRAND_COLORS.ALERT },
+  cancelled_driver:   { label: 'Cancelado',    color: BRAND_COLORS.ALERT },
+  no_driver_found:    { label: 'Sin conductor', color: '#888' },
 };
 
 export default function HistoryScreen() {
@@ -74,7 +74,7 @@ export default function HistoryScreen() {
       setOffset(o + fetched.length);
       setHasMore(fetched.length === LIMIT);
     } catch {
-      Alert.alert('Error', 'Could not load trip history.');
+      Alert.alert('Error', 'No se pudo cargar el historial de viajes.');
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -121,19 +121,19 @@ export default function HistoryScreen() {
             encoding: FileSystem.EncodingType.Base64,
           });
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          Alert.alert('Downloaded', 'Receipt saved to your Downloads folder.');
+          Alert.alert('Descargado', 'Recibo guardado en tu carpeta de Descargas.');
         }
       } else {
         // iOS: share sheet con opción "Save to Files"
         await Sharing.shareAsync(result.uri, {
           mimeType: 'application/pdf',
-          dialogTitle: `Verona Ride Receipt — ${rideId.slice(0, 8).toUpperCase()}`,
+          dialogTitle: `Recibo V-Ride — ${rideId.slice(0, 8).toUpperCase()}`,
         });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      Alert.alert('Error', `Could not download the receipt.\n\n${msg}`);
+      Alert.alert('Error', `No se pudo descargar el recibo.\n\n${msg}`);
     } finally {
       setIsDownloading(false);
     }
@@ -180,7 +180,7 @@ export default function HistoryScreen() {
       <Modal visible animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={styles.modalSafe}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Trip detail</Text>
+            <Text style={styles.modalTitle}>Detalle del viaje</Text>
             <TouchableOpacity onPress={() => setSelected(null)} style={styles.closeBtn}>
               <Text style={styles.closeBtnText}>✕</Text>
             </TouchableOpacity>
@@ -194,7 +194,7 @@ export default function HistoryScreen() {
 
             {/* Ruta */}
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Route</Text>
+              <Text style={styles.sectionTitle}>Ruta</Text>
               <View style={styles.routeRow}>
                 <Text style={styles.routeIcon}>🟢</Text>
                 <Text style={styles.routeAddr}>{selected.pickup_address}</Text>
@@ -209,16 +209,16 @@ export default function HistoryScreen() {
             {selected.status === 'completed' && (
               <View style={styles.metricsRow}>
                 <View style={styles.metricBox}>
-                  <Text style={styles.metricVal}>{Number(selected.distance_km ?? 0).toFixed(1)} mi</Text>
-                  <Text style={styles.metricLbl}>Distance</Text>
+                  <Text style={styles.metricVal}>{Number(selected.distance_km ?? 0).toFixed(1)} km</Text>
+                  <Text style={styles.metricLbl}>Distancia</Text>
                 </View>
                 <View style={styles.metricBox}>
                   <Text style={styles.metricVal}>{selected.duration_minutes ?? 0} min</Text>
-                  <Text style={styles.metricLbl}>Duration</Text>
+                  <Text style={styles.metricLbl}>Duración</Text>
                 </View>
                 <View style={styles.metricBox}>
                   <Text style={styles.metricVal}>{selected.service_type.toUpperCase()}</Text>
-                  <Text style={styles.metricLbl}>Service</Text>
+                  <Text style={styles.metricLbl}>Servicio</Text>
                 </View>
               </View>
             )}
@@ -226,11 +226,11 @@ export default function HistoryScreen() {
             {/* Desglose de tarifa */}
             {selected.status === 'completed' && (
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Fare breakdown</Text>
+                <Text style={styles.sectionTitle}>Desglose de tarifa</Text>
                 {[
-                  ['Base fare',      selected.base_fare],
-                  ['Distance fare',  selected.distance_fare],
-                  ['Time fare',      selected.time_fare],
+                  ['Tarifa base',      selected.base_fare],
+                  ['Tarifa por distancia',  selected.distance_fare],
+                  ['Tarifa por tiempo',      selected.time_fare],
                 ].map(([label, val]) => (
                   <View key={String(label)} style={styles.fareRow}>
                     <Text style={styles.fareLbl}>{String(label)}</Text>
@@ -239,20 +239,20 @@ export default function HistoryScreen() {
                 ))}
                 {(selected.surge_multiplier ?? 1) > 1 && (
                   <View style={styles.fareRow}>
-                    <Text style={styles.fareLbl}>Surge multiplier ×{selected.surge_multiplier}</Text>
-                    <Text style={[styles.fareVal, { color: BRAND_COLORS.ALERT }]}>active</Text>
+                    <Text style={styles.fareLbl}>Multiplicador de alta demanda ×{selected.surge_multiplier}</Text>
+                    <Text style={[styles.fareVal, { color: BRAND_COLORS.ALERT }]}>activo</Text>
                   </View>
                 )}
                 <View style={[styles.fareRow, styles.fareRowTotal]}>
-                  <Text style={styles.fareTotalLbl}>Total charged</Text>
+                  <Text style={styles.fareTotalLbl}>Total cobrado</Text>
                   <Text style={styles.fareTotalVal}>${Number(selected.total_charged ?? 0).toFixed(2)}</Text>
                 </View>
                 <View style={styles.fareRow}>
-                  <Text style={styles.fareLbl}>Payment status</Text>
+                  <Text style={styles.fareLbl}>Estado de pago</Text>
                   <Text style={[styles.fareVal, {
                     color: selected.payment_status === 'completed' ? '#22C55E' : BRAND_COLORS.ALERT
                   }]}>
-                    {selected.payment_status === 'completed' ? '✓ Paid' : '⚠ Pending'}
+                    {selected.payment_status === 'completed' ? '✓ Pagado' : '⚠ Pendiente'}
                   </Text>
                 </View>
               </View>
@@ -268,7 +268,7 @@ export default function HistoryScreen() {
               >
                 {isDownloading
                   ? <ActivityIndicator color="#fff" />
-                  : <Text style={styles.receiptBtnText}>📄  Download PDF Receipt</Text>
+                  : <Text style={styles.receiptBtnText}>📄  Descargar recibo PDF</Text>
                 }
               </TouchableOpacity>
             )}
@@ -284,7 +284,7 @@ export default function HistoryScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Ride History</Text>
+        <Text style={styles.title}>Historial de viajes</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -302,7 +302,7 @@ export default function HistoryScreen() {
           ListEmptyComponent={
             <View style={styles.centered}>
               <Text style={{ fontSize: 48 }}>🗺️</Text>
-              <Text style={styles.emptyText}>No rides yet</Text>
+              <Text style={styles.emptyText}>Aún no hay viajes</Text>
             </View>
           }
         />

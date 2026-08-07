@@ -19,16 +19,16 @@ import { BRAND_COLORS } from '@vride/shared';
 const MAX_SELECTED = 5;
 
 const THANK_YOU_MESSAGES = [
-  "Thank you for the safe and comfortable ride! 🙏",
-  "Your punctuality made my day. Excellent service!",
-  "Very professional and friendly. Highly recommended!",
-  "The car was spotless and you were very courteous. Thank you!",
-  "I felt safe and comfortable the entire trip. Thank you!",
-  "You went above and beyond to help me. Much appreciated!",
-  "Great conversation and smooth driving. 5 stars all the way!",
-  "Thank you for being so patient and understanding!",
-  "Your knowledge of the routes saved us a lot of time. Thank you!",
-  "You treated me with the utmost respect and care. Truly appreciated!",
+  "¡Gracias por el viaje seguro y cómodo! 🙏",
+  "Tu puntualidad alegró mi día. ¡Excelente servicio!",
+  "Muy profesional y amable. ¡Muy recomendado!",
+  "El carro estaba impecable y fuiste muy cortés. ¡Gracias!",
+  "Me sentí seguro y cómodo durante todo el viaje. ¡Gracias!",
+  "Hiciste más de lo necesario para ayudarme. ¡Muy agradecido!",
+  "¡Buena conversación y manejo suave. 5 estrellas sin duda!",
+  "¡Gracias por ser tan paciente y comprensivo!",
+  "Tu conocimiento de las rutas nos ahorró mucho tiempo. ¡Gracias!",
+  "Me trataste con el mayor respeto y cuidado. ¡Muy agradecido!",
 ];
 
 export default function RatingScreen() {
@@ -66,7 +66,7 @@ export default function RatingScreen() {
         router.replace('/(passenger)/home');
       }, 1500);
     } catch {
-      Alert.alert('', 'Could not submit the rating. Please try again.');
+      Alert.alert('', 'No se pudo enviar la calificación. Inténtalo de nuevo.');
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +82,7 @@ export default function RatingScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.successContainer}>
           <Text style={styles.successEmoji}>✅</Text>
-          <Text style={styles.successTitle}>Thank you for your rating!</Text>
+          <Text style={styles.successTitle}>¡Gracias por tu calificación!</Text>
         </View>
       </SafeAreaView>
     );
@@ -99,10 +99,10 @@ export default function RatingScreen() {
         {/* Resumen del viaje */}
         <View style={styles.summary}>
           <Text style={styles.summaryEmoji}>🎉</Text>
-          <Text style={styles.summaryTitle}>You've arrived!</Text>
+          <Text style={styles.summaryTitle}>¡Has llegado!</Text>
           {totalCharged !== null && (
             <View style={styles.chargedRow}>
-              <Text style={styles.chargedLabel}>Total charged</Text>
+              <Text style={styles.chargedLabel}>Total cobrado</Text>
               <Text style={styles.chargedAmount}>${totalCharged.toFixed(2)}</Text>
             </View>
           )}
@@ -110,10 +110,10 @@ export default function RatingScreen() {
 
         {/* Calificar conductor */}
         <View style={styles.ratingSection}>
-          <Text style={styles.ratingTitle}>How was your ride?</Text>
+          <Text style={styles.ratingTitle}>¿Cómo estuvo tu viaje?</Text>
           {assignedDriver && (
             <Text style={styles.ratingSubtitle}>
-              Rate your ride with {assignedDriver.name}
+              Califica tu viaje con {assignedDriver.name}
             </Text>
           )}
 
@@ -128,7 +128,7 @@ export default function RatingScreen() {
                 }}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: score === star }}
-                accessibilityLabel={`${star} star${star > 1 ? 's' : ''}`}
+                accessibilityLabel={`${star} estrella${star > 1 ? 's' : ''}`}
               >
                 <Text style={[styles.star, star <= score && styles.starActive]}>★</Text>
               </TouchableOpacity>
@@ -136,20 +136,20 @@ export default function RatingScreen() {
           </View>
 
           <Text style={styles.scoreLabel}>
-            {score === 5 ? 'Excellent' :
-             score === 4 ? 'Very good' :
-             score === 3 ? 'Average' :
-             score === 2 ? 'Poor' : 'Very poor'}
+            {score === 5 ? 'Excelente' :
+             score === 4 ? 'Muy bueno' :
+             score === 3 ? 'Regular' :
+             score === 2 ? 'Malo' : 'Muy malo'}
           </Text>
         </View>
 
         {/* Mensajes de agradecimiento */}
         <View style={styles.messagesSection}>
           <Text style={styles.messagesTitle}>
-            Send a thank you message
+            Envía un mensaje de agradecimiento
           </Text>
           <Text style={styles.messagesSubtitle}>
-            Select up to {MAX_SELECTED} · {selectedMessages.length}/{MAX_SELECTED} chosen
+            Elige hasta {MAX_SELECTED} · {selectedMessages.length}/{MAX_SELECTED} seleccionados
           </Text>
 
           <View style={styles.chipsWrap}>
@@ -188,12 +188,12 @@ export default function RatingScreen() {
         >
           {isSubmitting
             ? <ActivityIndicator color="#fff" size="small" />
-            : <Text style={styles.submitButtonText}>Submit rating</Text>
+            : <Text style={styles.submitButtonText}>Enviar calificación</Text>
           }
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.skipText}>Omitir</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

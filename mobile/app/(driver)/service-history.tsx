@@ -65,7 +65,7 @@ export default function ServiceHistoryScreen() {
       setOffset(o + (data.data ?? []).length);
       setHasMore((data.data ?? []).length === LIMIT);
     } catch {
-      Alert.alert('Error', 'Could not load service history.');
+      Alert.alert('Error', 'No se pudo cargar el historial de servicios.');
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -88,13 +88,13 @@ export default function ServiceHistoryScreen() {
             </Text>
           </View>
           <View style={styles.cardHeaderInfo}>
-            <Text style={styles.passengerName}>{item.passenger_name ?? 'Passenger'}</Text>
+            <Text style={styles.passengerName}>{item.passenger_name ?? 'Pasajero'}</Text>
             <Text style={styles.cardDate}>
-              {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              {date.toLocaleDateString('es-VE', { month: 'short', day: 'numeric', year: 'numeric' })}
             </Text>
           </View>
           <View style={styles.amountBox}>
-            <Text style={styles.amountLabel}>Earned</Text>
+            <Text style={styles.amountLabel}>Ganado</Text>
             <Text style={styles.amountValue}>
               +${Number(item.driver_earnings ?? 0).toFixed(2)}
             </Text>
@@ -118,7 +118,7 @@ export default function ServiceHistoryScreen() {
         <View style={styles.metaRow}>
           {item.distance_km !== null && (
             <Text style={styles.metaChip}>
-              📏 {Number(item.distance_km).toFixed(1)} mi
+              📏 {Number(item.distance_km).toFixed(1)} km
             </Text>
           )}
           {item.duration_minutes !== null && (
@@ -140,22 +140,22 @@ export default function ServiceHistoryScreen() {
       {/* Resumen */}
       <View style={styles.summaryGrid}>
         <View style={styles.summaryCardMain}>
-          <Text style={styles.summaryMainLabel}>Total earned</Text>
+          <Text style={styles.summaryMainLabel}>Total ganado</Text>
           <Text style={styles.summaryMainAmount}>${summary.total.toFixed(2)}</Text>
-          <Text style={styles.summaryMainSub}>{summary.count} completed services</Text>
+          <Text style={styles.summaryMainSub}>{summary.count} servicios completados</Text>
         </View>
         <View style={styles.summaryCol}>
           <View style={styles.summaryCardSmall}>
-            <Text style={styles.summarySmallLabel}>This month</Text>
+            <Text style={styles.summarySmallLabel}>Este mes</Text>
             <Text style={styles.summarySmallAmount}>${summary.thisMonth.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryCardSmall}>
-            <Text style={styles.summarySmallLabel}>This week</Text>
+            <Text style={styles.summarySmallLabel}>Esta semana</Text>
             <Text style={styles.summarySmallAmount}>${summary.thisWeek.toFixed(2)}</Text>
           </View>
         </View>
       </View>
-      {rides.length > 0 && <Text style={styles.sectionTitle}>Services</Text>}
+      {rides.length > 0 && <Text style={styles.sectionTitle}>Servicios</Text>}
     </>
   );
 
@@ -165,7 +165,7 @@ export default function ServiceHistoryScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Service History</Text>
+        <Text style={styles.title}>Historial de servicios</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -189,7 +189,7 @@ export default function ServiceHistoryScreen() {
           ListEmptyComponent={
             <View style={styles.centered}>
               <Text style={{ fontSize: 48 }}>🗺️</Text>
-              <Text style={styles.emptyText}>No completed services yet</Text>
+              <Text style={styles.emptyText}>Aún no hay servicios completados</Text>
             </View>
           }
         />

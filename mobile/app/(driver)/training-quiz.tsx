@@ -58,7 +58,7 @@ export default function TrainingQuizScreen() {
       setCurrentIdx(0);
       setPhase('quiz');
     } catch {
-      Alert.alert('Error', 'Could not load the quiz. Please try again.', [
+      Alert.alert('Error', 'No se pudo cargar el examen. Intenta de nuevo.', [
         { text: 'OK', onPress: () => router.back() },
       ]);
     }
@@ -89,19 +89,19 @@ export default function TrainingQuizScreen() {
   const handleSubmit = async () => {
     if (!allAnswered) {
       Alert.alert(
-        'Incomplete',
-        `You have answered ${answeredCount} of ${questions.length} questions. Please answer all questions before submitting.`
+        'Incompleto',
+        `Has respondido ${answeredCount} de ${questions.length} preguntas. Responde todas antes de enviar.`
       );
       return;
     }
 
     Alert.alert(
-      'Submit Quiz?',
-      `You are about to submit your answers for ${questions.length} questions.`,
+      '¿Enviar examen?',
+      `Estás a punto de enviar tus respuestas para ${questions.length} preguntas.`,
       [
-        { text: 'Review answers', style: 'cancel' },
+        { text: 'Revisar respuestas', style: 'cancel' },
         {
-          text: 'Submit', style: 'default',
+          text: 'Enviar', style: 'default',
           onPress: async () => {
             setSubmitting(true);
             try {
@@ -115,7 +115,7 @@ export default function TrainingQuizScreen() {
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
               }
             } catch {
-              Alert.alert('Error', 'Could not submit quiz. Please try again.');
+              Alert.alert('Error', 'No se pudo enviar el examen. Intenta de nuevo.');
             } finally {
               setSubmitting(false);
             }
@@ -138,7 +138,7 @@ export default function TrainingQuizScreen() {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={BRAND_COLORS.PRIMARY} />
-        <Text style={styles.loadingText}>Loading quiz…</Text>
+        <Text style={styles.loadingText}>Cargando examen…</Text>
       </SafeAreaView>
     );
   }
@@ -152,34 +152,34 @@ export default function TrainingQuizScreen() {
           <View style={[styles.resultCard, result.passed ? styles.resultCardPass : styles.resultCardFail]}>
             <Text style={styles.resultEmoji}>{result.passed ? '🎓' : '📖'}</Text>
             <Text style={styles.resultTitle}>
-              {result.passed ? 'Congratulations!' : 'Keep studying!'}
+              {result.passed ? '¡Felicitaciones!' : '¡Sigue estudiando!'}
             </Text>
             <Text style={styles.resultSubtitle}>
               {result.passed
-                ? 'You passed this module.'
-                : `You need ${result.passing_score}/${result.total} to pass.`}
+                ? 'Aprobaste este módulo.'
+                : `Necesitas ${result.passing_score}/${result.total} para aprobar.`}
             </Text>
 
             <View style={styles.scoreRow}>
               <View style={styles.scoreBox}>
                 <Text style={styles.scoreNumber}>{result.score}</Text>
-                <Text style={styles.scoreLabel}>Correct</Text>
+                <Text style={styles.scoreLabel}>Correctas</Text>
               </View>
               <View style={styles.scoreBox}>
                 <Text style={styles.scoreNumber}>{result.total - result.score}</Text>
-                <Text style={styles.scoreLabel}>Incorrect</Text>
+                <Text style={styles.scoreLabel}>Incorrectas</Text>
               </View>
               <View style={styles.scoreBox}>
                 <Text style={[styles.scoreNumber, { color: result.passed ? BRAND_COLORS.ACCENT : BRAND_COLORS.ALERT }]}>
                   {pct}%
                 </Text>
-                <Text style={styles.scoreLabel}>Score</Text>
+                <Text style={styles.scoreLabel}>Puntaje</Text>
               </View>
             </View>
           </View>
 
           {/* Revisión de respuestas */}
-          <Text style={styles.reviewTitle}>Answer Review</Text>
+          <Text style={styles.reviewTitle}>Revisión de respuestas</Text>
           {questions.map((q, i) => {
             const selected = answers[q.id];
             const correct  = result.correct_answers[q.id];
@@ -193,12 +193,12 @@ export default function TrainingQuizScreen() {
                 <Text style={styles.reviewQText}>{q.question_text}</Text>
                 {!isRight && (
                   <View style={styles.reviewAnswerRow}>
-                    <Text style={styles.reviewWrongLabel}>Your answer:</Text>
+                    <Text style={styles.reviewWrongLabel}>Tu respuesta:</Text>
                     <Text style={styles.reviewWrongText}>{selectedOption?.text ?? '—'}</Text>
                   </View>
                 )}
                 <View style={styles.reviewAnswerRow}>
-                  <Text style={styles.reviewCorrectLabel}>Correct answer:</Text>
+                  <Text style={styles.reviewCorrectLabel}>Respuesta correcta:</Text>
                   <Text style={styles.reviewCorrectText}>{correctOption?.text ?? '—'}</Text>
                 </View>
               </View>
@@ -208,7 +208,7 @@ export default function TrainingQuizScreen() {
           <View style={styles.resultActions}>
             {!result.passed && (
               <TouchableOpacity style={styles.retryButton} onPress={handleRetry} activeOpacity={0.8}>
-                <Text style={styles.retryButtonText}>🔄 Try Again</Text>
+                <Text style={styles.retryButtonText}>🔄 Intentar de nuevo</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
@@ -217,7 +217,7 @@ export default function TrainingQuizScreen() {
               activeOpacity={0.8}
             >
               <Text style={styles.backButtonText}>
-                {result.passed ? '← Back to Training' : 'Back to Module'}
+                {result.passed ? '← Volver a certificaciones' : 'Volver al módulo'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -239,7 +239,7 @@ export default function TrainingQuizScreen() {
             {moduleTitle.replace(/^Module \d+: /, '')}
           </Text>
           <Text style={styles.headerSub}>
-            Question {currentIdx + 1} of {questions.length} · {answeredCount} answered
+            Pregunta {currentIdx + 1} de {questions.length} · {answeredCount} respondidas
           </Text>
         </View>
         <View style={{ width: 40 }} />
@@ -253,7 +253,7 @@ export default function TrainingQuizScreen() {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.quizContent}>
         {/* Pregunta */}
         <View style={styles.questionCard}>
-          <Text style={styles.questionNumber}>Question {currentIdx + 1}</Text>
+          <Text style={styles.questionNumber}>Pregunta {currentIdx + 1}</Text>
           <Text style={styles.questionText}>{currentQuestion.question_text}</Text>
         </View>
 
@@ -288,7 +288,7 @@ export default function TrainingQuizScreen() {
             onPress={handlePrev}
             disabled={currentIdx === 0}
           >
-            <Text style={styles.navBtnText}>← Prev</Text>
+            <Text style={styles.navBtnText}>← Anterior</Text>
           </TouchableOpacity>
 
           {currentIdx < questions.length - 1 ? (
@@ -296,7 +296,7 @@ export default function TrainingQuizScreen() {
               style={[styles.navBtn, styles.navBtnNext]}
               onPress={handleNext}
             >
-              <Text style={[styles.navBtnText, styles.navBtnNextText]}>Next →</Text>
+              <Text style={[styles.navBtnText, styles.navBtnNextText]}>Siguiente →</Text>
             </TouchableOpacity>
           ) : (
             <TouchableOpacity
@@ -307,7 +307,7 @@ export default function TrainingQuizScreen() {
               {submitting ? (
                 <ActivityIndicator color="#fff" size="small" />
               ) : (
-                <Text style={[styles.navBtnText, styles.navBtnSubmitText]}>Submit ✓</Text>
+                <Text style={[styles.navBtnText, styles.navBtnSubmitText]}>Enviar ✓</Text>
               )}
             </TouchableOpacity>
           )}

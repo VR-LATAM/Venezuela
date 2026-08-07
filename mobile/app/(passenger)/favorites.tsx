@@ -42,7 +42,7 @@ export default function FavoritesScreen() {
       setDestinations(dests);
       setDrivers(drvs);
     } catch {
-      Alert.alert('Error', 'Could not load favorites');
+      Alert.alert('Error', 'No se pudieron cargar los favoritos');
     } finally {
       setLoading(false);
     }
@@ -51,10 +51,10 @@ export default function FavoritesScreen() {
   useEffect(() => { load(); }, [load]);
 
   const handleDeleteDest = (id: string, name: string) => {
-    Alert.alert('Remove favorite', `Remove "${name}" from favorites?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Eliminar favorito', `¿Eliminar "${name}" de favoritos?`, [
+      { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Remove', style: 'destructive',
+        text: 'Eliminar', style: 'destructive',
         onPress: async () => {
           await favoritesService.deleteDestination(id);
           setDestinations(prev => prev.filter(d => d.id !== id));
@@ -64,10 +64,10 @@ export default function FavoritesScreen() {
   };
 
   const handleDeleteDriver = (driverId: string, name: string) => {
-    Alert.alert('Remove favorite driver', `Remove ${name} from favorites?`, [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert('Eliminar conductor favorito', `¿Eliminar a ${name} de favoritos?`, [
+      { text: 'Cancelar', style: 'cancel' },
       {
-        text: 'Remove', style: 'destructive',
+        text: 'Eliminar', style: 'destructive',
         onPress: async () => {
           await favoritesService.removeFavoriteDriver(driverId);
           setDrivers(prev => prev.filter(d => d.driver_id !== driverId));
@@ -78,7 +78,7 @@ export default function FavoritesScreen() {
 
   const handleSaveDest = async () => {
     if (!newName.trim() || !newAddress.trim()) {
-      Alert.alert('Required', 'Please enter a name and address');
+      Alert.alert('Requerido', 'Por favor ingresa un nombre y una dirección');
       return;
     }
     setSaving(true);
@@ -92,7 +92,7 @@ export default function FavoritesScreen() {
       setShowAddModal(false);
       setNewName(''); setNewAddress(''); setNewIcon('📍');
     } catch {
-      Alert.alert('Error', 'Could not save destination');
+      Alert.alert('Error', 'No se pudo guardar el destino');
     } finally {
       setSaving(false);
     }
@@ -105,7 +105,7 @@ export default function FavoritesScreen() {
         <Text style={styles.cardTitle}>{item.name}</Text>
         <Text style={styles.cardSub} numberOfLines={1}>{item.address}</Text>
         {item.use_count > 0 && (
-          <Text style={styles.cardMeta}>Used {item.use_count} time{item.use_count !== 1 ? 's' : ''}</Text>
+          <Text style={styles.cardMeta}>Usado {item.use_count} {item.use_count !== 1 ? 'veces' : 'vez'}</Text>
         )}
       </View>
       <TouchableOpacity onPress={() => handleDeleteDest(item.id, item.name)} style={styles.deleteBtn}>
@@ -140,7 +140,7 @@ export default function FavoritesScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Favorites</Text>
+        <Text style={styles.headerTitle}>Favoritos</Text>
         {tab === 'destinations' && (
           <TouchableOpacity onPress={() => setShowAddModal(true)} style={styles.addBtn}>
             <Text style={styles.addBtnText}>+</Text>
@@ -155,7 +155,7 @@ export default function FavoritesScreen() {
           onPress={() => setTab('destinations')}
         >
           <Text style={[styles.tabText, tab === 'destinations' && styles.tabTextActive]}>
-            📍 Places
+            📍 Lugares
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -163,7 +163,7 @@ export default function FavoritesScreen() {
           onPress={() => setTab('drivers')}
         >
           <Text style={[styles.tabText, tab === 'drivers' && styles.tabTextActive]}>
-            🧑 Drivers
+            🧑 Conductores
           </Text>
         </TouchableOpacity>
       </View>
@@ -179,8 +179,8 @@ export default function FavoritesScreen() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.emptyIcon}>📍</Text>
-              <Text style={styles.emptyText}>No saved places yet.</Text>
-              <Text style={styles.emptyMeta}>Tap + to add home, clinic, pharmacy…</Text>
+              <Text style={styles.emptyText}>Aún no hay lugares guardados.</Text>
+              <Text style={styles.emptyMeta}>Toca + para agregar casa, clínica, farmacia…</Text>
             </View>
           }
         />
@@ -193,8 +193,8 @@ export default function FavoritesScreen() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.emptyIcon}>🧑</Text>
-              <Text style={styles.emptyText}>No favorite drivers yet.</Text>
-              <Text style={styles.emptyMeta}>After a great ride, you can save the driver as a favorite.</Text>
+              <Text style={styles.emptyText}>Aún no hay conductores favoritos.</Text>
+              <Text style={styles.emptyMeta}>Después de un buen viaje, puedes guardar al conductor como favorito.</Text>
             </View>
           }
         />
@@ -204,27 +204,27 @@ export default function FavoritesScreen() {
       <Modal visible={showAddModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
-            <Text style={styles.modalTitle}>Add favorite place</Text>
+            <Text style={styles.modalTitle}>Agregar lugar favorito</Text>
 
-            <Text style={styles.label}>Name</Text>
+            <Text style={styles.label}>Nombre</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g. Home, Clinic, Pharmacy"
+              placeholder="Ej. Casa, Clínica, Farmacia"
               value={newName}
               onChangeText={setNewName}
               maxLength={50}
             />
 
-            <Text style={styles.label}>Address</Text>
+            <Text style={styles.label}>Dirección</Text>
             <TextInput
               style={styles.input}
-              placeholder="Full address"
+              placeholder="Dirección completa"
               value={newAddress}
               onChangeText={setNewAddress}
               multiline
             />
 
-            <Text style={styles.label}>Icon</Text>
+            <Text style={styles.label}>Ícono</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.iconRow}>
               {ICONS.map(icon => (
                 <TouchableOpacity
@@ -242,7 +242,7 @@ export default function FavoritesScreen() {
                 onPress={() => setShowAddModal(false)}
                 style={[styles.modalBtn, styles.modalBtnCancel]}
               >
-                <Text style={styles.modalBtnCancelText}>Cancel</Text>
+                <Text style={styles.modalBtnCancelText}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={handleSaveDest}
@@ -251,7 +251,7 @@ export default function FavoritesScreen() {
               >
                 {saving
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.modalBtnSaveText}>Save</Text>
+                  : <Text style={styles.modalBtnSaveText}>Guardar</Text>
                 }
               </TouchableOpacity>
             </View>

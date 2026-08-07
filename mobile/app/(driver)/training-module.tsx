@@ -39,7 +39,7 @@ export default function TrainingModuleScreen() {
         setStartedReading(true);
       }
     } catch {
-      Alert.alert('Error', 'Could not load this module. Please try again.');
+      Alert.alert('Error', 'No se pudo cargar este módulo. Intenta de nuevo.');
       router.back();
     } finally {
       setLoading(false);
@@ -80,7 +80,7 @@ export default function TrainingModuleScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>← Back</Text>
+          <Text style={styles.backBtnText}>← Volver</Text>
         </TouchableOpacity>
         <Text style={styles.headerCode}>{module.code}</Text>
         <View style={{ width: 60 }} />
@@ -99,20 +99,20 @@ export default function TrainingModuleScreen() {
         {/* Chip de estado */}
         {isPassed && (
           <View style={styles.passedChip}>
-            <Text style={styles.passedChipText}>✓ Passed — Score: {module.progress?.last_score}/{module.total_questions}</Text>
+            <Text style={styles.passedChipText}>✓ Aprobado — Puntaje: {module.progress?.last_score}/{module.total_questions}</Text>
           </View>
         )}
         {hasFailed && (
           <View style={styles.failedChip}>
-            <Text style={styles.failedChipText}>Last score: {module.progress?.last_score}/{module.total_questions} — Try again</Text>
+            <Text style={styles.failedChipText}>Último puntaje: {module.progress?.last_score}/{module.total_questions} — Intenta de nuevo</Text>
           </View>
         )}
 
         {/* Info del quiz */}
         <View style={styles.quizInfoBox}>
-          <Text style={styles.quizInfoText}>📝 {module.total_questions} questions · Pass {module.passing_score}/{module.total_questions}</Text>
+          <Text style={styles.quizInfoText}>📝 {module.total_questions} preguntas · Aprobar {module.passing_score}/{module.total_questions}</Text>
           {(module.progress?.attempts ?? 0) > 0 && (
-            <Text style={styles.quizInfoText}>🔄 {module.progress!.attempts} attempt{module.progress!.attempts !== 1 ? 's' : ''}</Text>
+            <Text style={styles.quizInfoText}>🔄 {module.progress!.attempts} intento{module.progress!.attempts !== 1 ? 's' : ''}</Text>
           )}
         </View>
 
@@ -131,7 +131,7 @@ export default function TrainingModuleScreen() {
       {/* Botón de acción fijo abajo */}
       <View style={styles.footer}>
         {!hasScrolled && !isPassed && !hasFailed && (
-          <Text style={styles.scrollHint}>↓ Scroll to the bottom to unlock the quiz</Text>
+          <Text style={styles.scrollHint}>↓ Desplázate hasta el final para desbloquear el examen</Text>
         )}
         <TouchableOpacity
           style={[
@@ -143,7 +143,7 @@ export default function TrainingModuleScreen() {
           activeOpacity={0.8}
         >
           <Text style={styles.quizButtonText}>
-            {isPassed ? '📝 Retake Quiz' : hasFailed ? '🔄 Retry Quiz' : '📝 Start Quiz'}
+            {isPassed ? '📝 Repetir examen' : hasFailed ? '🔄 Reintentar examen' : '📝 Comenzar examen'}
           </Text>
         </TouchableOpacity>
       </View>

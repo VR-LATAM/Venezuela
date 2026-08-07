@@ -15,25 +15,25 @@ import { useTrainingStore } from '../../src/store/trainingStore';
 import type { TrainingModule, ServiceType } from '../../src/services/trainingService';
 
 const SERVICE_LABELS: Record<ServiceType | 'prerequisite', { label: string; icon: string; desc: string }> = {
-  prerequisite: { label: 'Foundation',         icon: '📋', desc: 'Required for all service types' },
-  standard:     { label: 'Standard Service',   icon: '🚗', desc: 'Core door-to-door transportation' },
-  executive:    { label: 'Executive Service',  icon: '⭐', desc: 'Premium experience — 1.8x fare' },
-  accessible:   { label: 'Accessible Service', icon: '♿', desc: 'ADA-compliant wheelchair transport' },
-  scheduled:    { label: 'Scheduled Service',  icon: '📅', desc: 'Pre-booked rides for appointments' },
+  prerequisite: { label: 'Fundamentos',          icon: '📋', desc: 'Requerido para todos los tipos de servicio' },
+  standard:     { label: 'Servicio estándar',    icon: '🚗', desc: 'Transporte de puerta a puerta' },
+  executive:    { label: 'Servicio ejecutivo',   icon: '⭐', desc: 'Experiencia premium' },
+  accessible:   { label: 'Servicio accesible',   icon: '♿', desc: 'Transporte para silla de ruedas' },
+  scheduled:    { label: 'Servicio programado',  icon: '📅', desc: 'Viajes reservados con anticipación' },
 };
 
 function moduleBadge(module: TrainingModule): { label: string; color: string; bg: string } {
   const s = module.progress?.status;
-  if (s === 'passed')  return { label: '✓ Certified', color: BRAND_COLORS.ACCENT, bg: '#F0FFF4' };
-  if (s === 'failed')  return { label: '✗ Failed',    color: BRAND_COLORS.ALERT,  bg: '#FFF5F5' };
-  if (s === 'reading') return { label: '📖 Reading',  color: BRAND_COLORS.PRIMARY, bg: '#EFF6FF' };
-  return { label: 'Pending', color: '#888', bg: '#F5F5F5' };
+  if (s === 'passed')  return { label: '✓ Certificado', color: BRAND_COLORS.ACCENT, bg: '#F0FFF4' };
+  if (s === 'failed')  return { label: '✗ Reprobado',   color: BRAND_COLORS.ALERT,  bg: '#FFF5F5' };
+  if (s === 'reading') return { label: '📖 Leyendo',    color: BRAND_COLORS.PRIMARY, bg: '#EFF6FF' };
+  return { label: 'Pendiente', color: '#888', bg: '#F5F5F5' };
 }
 
 function certBadge(certified: boolean): { label: string; color: string; bg: string } {
   return certified
-    ? { label: '✓ Certified', color: BRAND_COLORS.ACCENT, bg: '#F0FFF4' }
-    : { label: 'Not certified', color: '#888', bg: '#F5F5F5' };
+    ? { label: '✓ Certificado', color: BRAND_COLORS.ACCENT, bg: '#F0FFF4' }
+    : { label: 'Sin certificar', color: '#888', bg: '#F5F5F5' };
 }
 
 type GroupKey = ServiceType | 'prerequisite';
@@ -75,9 +75,9 @@ function ModuleCard({ module, onPress }: { module: TrainingModule; onPress: () =
             {module.title.replace(/^(Module \d+: |VRN-TRN-\d+[\w-]*: )/, '')}
           </Text>
           <Text style={styles.moduleMeta}>
-            {module.total_questions} questions · Pass {module.passing_score}/{module.total_questions}
+            {module.total_questions} preguntas · Aprobar {module.passing_score}/{module.total_questions}
             {(module.progress?.attempts ?? 0) > 0
-              ? ` · ${module.progress!.attempts} attempt${module.progress!.attempts !== 1 ? 's' : ''}`
+              ? ` · ${module.progress!.attempts} intento${module.progress!.attempts !== 1 ? 's' : ''}`
               : ''}
           </Text>
         </View>
@@ -104,7 +104,7 @@ function ServiceGroup({
 }) {
   const info = SERVICE_LABELS[groupKey];
   const badge = groupKey === 'prerequisite'
-    ? (prerequisitesPassed ? { label: '✓ Complete', color: BRAND_COLORS.ACCENT, bg: '#F0FFF4' } : { label: 'Required', color: '#F59E0B', bg: '#FFF9E6' })
+    ? (prerequisitesPassed ? { label: '✓ Completado', color: BRAND_COLORS.ACCENT, bg: '#F0FFF4' } : { label: 'Requerido', color: '#F59E0B', bg: '#FFF9E6' })
     : certBadge(certified);
 
   const locked = groupKey !== 'prerequisite' && !prerequisitesPassed;
@@ -126,7 +126,7 @@ function ServiceGroup({
 
       {locked ? (
         <View style={styles.lockedNotice}>
-          <Text style={styles.lockedText}>🔒 Complete the Foundation module first</Text>
+          <Text style={styles.lockedText}>🔒 Completa primero el módulo de Fundamentos</Text>
         </View>
       ) : (
         modules.map(m => (
@@ -161,7 +161,7 @@ export default function TrainingScreen() {
     return (
       <SafeAreaView style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={BRAND_COLORS.PRIMARY} />
-        <Text style={styles.loadingText}>Loading certifications…</Text>
+        <Text style={styles.loadingText}>Cargando certificaciones…</Text>
       </SafeAreaView>
     );
   }
@@ -174,9 +174,9 @@ export default function TrainingScreen() {
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backBtnText}>← Back</Text>
+          <Text style={styles.backBtnText}>← Volver</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Service Certifications</Text>
+        <Text style={styles.headerTitle}>Certificaciones de servicio</Text>
         <View style={{ width: 60 }} />
       </View>
 
@@ -188,10 +188,10 @@ export default function TrainingScreen() {
           <Text style={styles.progressEmoji}>{status.isComplete ? '🎓' : '📚'}</Text>
           <View style={{ flex: 1 }}>
             <Text style={styles.progressTitle}>
-              {status.isComplete ? 'All certifications complete!' : 'Complete your certifications to go online'}
+              {status.isComplete ? '¡Todas las certificaciones completadas!' : 'Completa tus certificaciones para conectarte'}
             </Text>
             <Text style={styles.progressSub}>
-              {certifiedServices.length} of 4 services certified
+              {certifiedServices.length} de 4 servicios certificados
             </Text>
           </View>
         </View>
@@ -204,7 +204,7 @@ export default function TrainingScreen() {
         }
       >
         <Text style={styles.intro}>
-          Read each module and pass the exam to unlock that service type. Start with the Foundation module.
+          Lee cada módulo y aprueba el examen para desbloquear ese tipo de servicio. Comienza con el módulo de Fundamentos.
         </Text>
         {groups.map(g => (
           <ServiceGroup

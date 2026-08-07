@@ -20,21 +20,21 @@ import { BRAND_COLORS } from '@vride/shared';
 // Opciones de categoría
 // ─────────────────────────────────────
 const CATEGORIES: { key: SpecialNeedsCategory; label: string; emoji: string; desc: string }[] = [
-  { key: 'none',              label: 'No special needs',         emoji: '✅', desc: 'Standard passenger' },
-  { key: 'pregnant',          label: 'Pregnant woman',           emoji: '🤰', desc: 'Needs extra care and comfort' },
-  { key: 'wheelchair',        label: 'Wheelchair user',          emoji: '♿', desc: 'Requires wheelchair-accessible vehicle' },
-  { key: 'visual_impairment', label: 'Visual impairment',        emoji: '👁️', desc: 'Blind or low vision' },
-  { key: 'hearing_impairment',label: 'Hearing impairment',       emoji: '🦻', desc: 'Deaf or hard of hearing' },
-  { key: 'elderly',           label: 'Older adult',              emoji: '👴', desc: 'Senior passenger' },
-  { key: 'minor',             label: 'Minor (child)',            emoji: '🧒', desc: 'Passenger under 18' },
-  { key: 'medical',           label: 'Medical patient',          emoji: '🏥', desc: 'Medical condition or equipment' },
+  { key: 'none',              label: 'Sin necesidades especiales', emoji: '✅', desc: 'Pasajero estándar' },
+  { key: 'pregnant',          label: 'Mujer embarazada',           emoji: '🤰', desc: 'Necesita cuidado y comodidad extra' },
+  { key: 'wheelchair',        label: 'Usuario de silla de ruedas', emoji: '♿', desc: 'Requiere vehículo accesible para silla de ruedas' },
+  { key: 'visual_impairment', label: 'Discapacidad visual',        emoji: '👁️', desc: 'Ciego o baja visión' },
+  { key: 'hearing_impairment',label: 'Discapacidad auditiva',      emoji: '🦻', desc: 'Sordo o hipoacúsico' },
+  { key: 'elderly',           label: 'Adulto mayor',               emoji: '👴', desc: 'Pasajero de la tercera edad' },
+  { key: 'minor',             label: 'Menor de edad',              emoji: '🧒', desc: 'Pasajero menor de 18 años' },
+  { key: 'medical',           label: 'Paciente médico',            emoji: '🏥', desc: 'Condición médica o equipo especial' },
 ];
 
 const COMM_METHODS: { key: string; label: string }[] = [
-  { key: 'verbal',        label: 'Verbal communication' },
-  { key: 'text',          label: 'Text / written messages' },
-  { key: 'sign_language', label: 'Sign language' },
-  { key: 'lip_reading',   label: 'Lip reading' },
+  { key: 'verbal',        label: 'Comunicación verbal' },
+  { key: 'text',          label: 'Texto / mensajes escritos' },
+  { key: 'sign_language', label: 'Lenguaje de señas' },
+  { key: 'lip_reading',   label: 'Lectura de labios' },
 ];
 
 export default function SpecialNeedsScreen() {
@@ -120,12 +120,12 @@ export default function SpecialNeedsScreen() {
 
       await passengerMobileService.updateSpecialNeeds(payload);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Saved', 'Your profile has been updated successfully.', [
+      Alert.alert('Guardado', 'Tu perfil ha sido actualizado correctamente.', [
         { text: 'OK', onPress: () => router.back() },
       ]);
     } catch {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Error', 'Could not save your profile. Please try again.');
+      Alert.alert('Error', 'No se pudo guardar tu perfil. Inténtalo de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -164,18 +164,18 @@ export default function SpecialNeedsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Special Needs Profile</Text>
+        <Text style={styles.title}>Perfil de necesidades especiales</Text>
         <View style={styles.backBtn} />
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Text style={styles.hint}>
-          This information helps drivers prepare for your trip and provide better service.
-          It is confidential and only shared with your assigned driver.
+          Esta información ayuda a los conductores a prepararse para tu viaje y brindarte un mejor servicio.
+          Es confidencial y solo se comparte con tu conductor asignado.
         </Text>
 
         {/* Categorías — selección múltiple */}
-        <Text style={styles.sectionTitle}>Select all that apply</Text>
+        <Text style={styles.sectionTitle}>Selecciona todo lo que aplique</Text>
         {CATEGORIES.map(cat => {
           const selected = has(cat.key);
           return (
@@ -203,18 +203,18 @@ export default function SpecialNeedsScreen() {
         {/* Movilidad */}
         {showMobility && (
           <>
-            <Text style={styles.sectionTitle}>Mobility assistance</Text>
-            <ToggleRow label="I need help getting in/out of the vehicle"
+            <Text style={styles.sectionTitle}>Asistencia de movilidad</Text>
+            <ToggleRow label="Necesito ayuda para subir/bajar del vehículo"
               value={needsPhysicalHelp} onChange={setNeedsPhysicalHelp} />
-            <ToggleRow label="I use a wheelchair"
+            <ToggleRow label="Uso silla de ruedas"
               value={usesWheelchair} onChange={v => { setUsesWheelchair(v); if (v) setNeedsRamp(true); }} />
-            <ToggleRow label="I use a walker/rollator"
+            <ToggleRow label="Uso andador/rollator"
               value={usesWalker} onChange={setUsesWalker} />
-            <ToggleRow label="I use a cane"
+            <ToggleRow label="Uso bastón"
               value={usesCane} onChange={setUsesCane} />
-            <ToggleRow label="I need a wheelchair ramp"
+            <ToggleRow label="Necesito rampa para silla de ruedas"
               value={needsRamp} onChange={setNeedsRamp} />
-            <ToggleRow label="I will travel with a companion"
+            <ToggleRow label="Viajaré con un acompañante"
               value={travelingWithCompanion} onChange={setTravelingWithCompanion} />
           </>
         )}
@@ -222,10 +222,10 @@ export default function SpecialNeedsScreen() {
         {/* Visual */}
         {showVisual && (
           <>
-            <Text style={styles.sectionTitle}>Visual impairment</Text>
-            <ToggleRow label="I travel with a guide dog"
+            <Text style={styles.sectionTitle}>Discapacidad visual</Text>
+            <ToggleRow label="Viajo con un perro guía"
               value={guideDog} onChange={setGuideDog} />
-            <ToggleRow label="I need the driver to guide me to/from the vehicle"
+            <ToggleRow label="Necesito que el conductor me guíe al/del vehículo"
               value={needsPhysicalHelp} onChange={setNeedsPhysicalHelp} />
           </>
         )}
@@ -233,14 +233,14 @@ export default function SpecialNeedsScreen() {
         {/* Hearing */}
         {showHearing && (
           <>
-            <Text style={styles.sectionTitle}>Hearing impairment</Text>
+            <Text style={styles.sectionTitle}>Discapacidad auditiva</Text>
           </>
         )}
 
         {/* Método de comunicación */}
         {showCommMethod && (
           <>
-            <Text style={styles.sectionTitle}>Preferred communication method</Text>
+            <Text style={styles.sectionTitle}>Método de comunicación preferido</Text>
             {COMM_METHODS.map(m => {
               const sel = commMethod === m.key;
               return (
@@ -260,17 +260,17 @@ export default function SpecialNeedsScreen() {
         {/* Médico */}
         {showMedical && (
           <>
-            <Text style={styles.sectionTitle}>Medical equipment</Text>
-            <ToggleRow label="I carry medical equipment (oxygen tank, IV, etc.)"
+            <Text style={styles.sectionTitle}>Equipo médico</Text>
+            <ToggleRow label="Llevo equipo médico (tanque de oxígeno, suero, etc.)"
               value={carriesMedEquipment} onChange={setCarriesMedEquipment} />
             {carriesMedEquipment && (
               <View style={styles.field}>
-                <Text style={styles.fieldLabel}>Describe the equipment</Text>
+                <Text style={styles.fieldLabel}>Describe el equipo</Text>
                 <TextInput
                   style={styles.input}
                   value={medEquipmentDetails}
                   onChangeText={setMedEquipmentDetails}
-                  placeholder="e.g. portable oxygen tank"
+                  placeholder="Ej. tanque de oxígeno portátil"
                   placeholderTextColor="#aaa"
                   maxLength={200}
                 />
@@ -282,10 +282,10 @@ export default function SpecialNeedsScreen() {
         {/* Menor */}
         {showMinor && (
           <>
-            <Text style={styles.sectionTitle}>Minor passenger</Text>
-            <ToggleRow label="Needs a baby/booster seat"
+            <Text style={styles.sectionTitle}>Pasajero menor de edad</Text>
+            <ToggleRow label="Necesita silla de bebé / asiento elevador"
               value={needsBabySeat} onChange={setNeedsBabySeat} />
-            <ToggleRow label="Can travel without an adult companion"
+            <ToggleRow label="Puede viajar sin acompañante adulto"
               value={canTravelAlone} onChange={setCanTravelAlone} />
           </>
         )}
@@ -293,8 +293,8 @@ export default function SpecialNeedsScreen() {
         {/* Elderly - can travel alone */}
         {has('elderly') && (
           <>
-            <Text style={styles.sectionTitle}>Independence</Text>
-            <ToggleRow label="Can travel without a companion"
+            <Text style={styles.sectionTitle}>Independencia</Text>
+            <ToggleRow label="Puede viajar sin acompañante"
               value={canTravelAlone} onChange={setCanTravelAlone} />
           </>
         )}
@@ -302,29 +302,29 @@ export default function SpecialNeedsScreen() {
         {/* Contacto de emergencia */}
         {!has('none') && categories.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Emergency contact</Text>
+            <Text style={styles.sectionTitle}>Contacto de emergencia</Text>
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Contact name</Text>
+              <Text style={styles.fieldLabel}>Nombre del contacto</Text>
               <TextInput style={styles.input} value={emergencyName}
                 onChangeText={setEmergencyName}
-                autoCapitalize="words" placeholder="Full name" placeholderTextColor="#aaa" />
+                autoCapitalize="words" placeholder="Nombre completo" placeholderTextColor="#aaa" />
             </View>
             <View style={styles.field}>
-              <Text style={styles.fieldLabel}>Contact phone</Text>
+              <Text style={styles.fieldLabel}>Teléfono del contacto</Text>
               <TextInput style={styles.input} value={emergencyPhone}
                 onChangeText={setEmergencyPhone}
-                keyboardType="phone-pad" placeholder="(555) 123-4567" placeholderTextColor="#aaa" />
+                keyboardType="phone-pad" placeholder="(0412) 123-4567" placeholderTextColor="#aaa" />
             </View>
           </>
         )}
 
         {/* Instrucciones especiales */}
-        <Text style={styles.sectionTitle}>Special instructions for the driver</Text>
+        <Text style={styles.sectionTitle}>Instrucciones especiales para el conductor</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           value={specialInstructions}
           onChangeText={setSpecialInstructions}
-          placeholder="Any additional information the driver should know..."
+          placeholder="Cualquier información adicional que el conductor deba saber..."
           placeholderTextColor="#aaa"
           multiline
           numberOfLines={4}
@@ -340,7 +340,7 @@ export default function SpecialNeedsScreen() {
         >
           {saving
             ? <ActivityIndicator color="#fff" size="small" />
-            : <Text style={styles.saveBtnText}>Save profile</Text>
+            : <Text style={styles.saveBtnText}>Guardar perfil</Text>
           }
         </TouchableOpacity>
       </ScrollView>

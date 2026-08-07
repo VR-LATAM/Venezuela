@@ -21,8 +21,8 @@ i18n
       es: { translation: es },
       en: { translation: en },
     },
-    lng: 'en',
-    fallbackLng: 'en',
+    lng: 'es',
+    fallbackLng: 'es',
     interpolation: {
       escapeValue: false, // React ya escapa el HTML
     },

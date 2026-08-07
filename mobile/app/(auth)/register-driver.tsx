@@ -19,7 +19,6 @@ import {
   ActivityIndicator, Alert, ScrollView, Modal, FlatList, Image,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { useAuthStore } from '../../src/store/authStore';
@@ -28,93 +27,88 @@ import { BRAND_COLORS } from '@vride/shared';
 import LicenseScanner from '../../src/components/common/LicenseScanner';
 import { AAMVAData } from '../../src/utils/aamvaParser';
 
-// ─────────────────────────────────────
-// Estados de EE.UU.
-// ─────────────────────────────────────
-const US_STATES = [
-  { code: 'TX', name: 'Texas (active)' },
-  { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
-  { code: 'AZ', name: 'Arizona' }, { code: 'AR', name: 'Arkansas' },
-  { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
-  { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' },
-  { code: 'FL', name: 'Florida' }, { code: 'GA', name: 'Georgia' },
-  { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
-  { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' },
-  { code: 'IA', name: 'Iowa' }, { code: 'KS', name: 'Kansas' },
-  { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
-  { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' },
-  { code: 'MA', name: 'Massachusetts' }, { code: 'MI', name: 'Michigan' },
-  { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
-  { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' },
-  { code: 'NE', name: 'Nebraska' }, { code: 'NV', name: 'Nevada' },
-  { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
-  { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' },
-  { code: 'NC', name: 'North Carolina' }, { code: 'ND', name: 'North Dakota' },
-  { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
-  { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' },
-  { code: 'RI', name: 'Rhode Island' }, { code: 'SC', name: 'South Carolina' },
-  { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
-  { code: 'UT', name: 'Utah' }, { code: 'VT', name: 'Vermont' },
-  { code: 'VA', name: 'Virginia' }, { code: 'WA', name: 'Washington' },
-  { code: 'WV', name: 'West Virginia' }, { code: 'WI', name: 'Wisconsin' },
-  { code: 'WY', name: 'Wyoming' },
+const VE_STATES = [
+  { code: 'DC', name: 'Distrito Capital' },
+  { code: 'AM', name: 'Amazonas' },
+  { code: 'AN', name: 'Anzoátegui' },
+  { code: 'AP', name: 'Apure' },
+  { code: 'AR', name: 'Aragua' },
+  { code: 'BA', name: 'Barinas' },
+  { code: 'BO', name: 'Bolívar' },
+  { code: 'CA', name: 'Carabobo' },
+  { code: 'CO', name: 'Cojedes' },
+  { code: 'DA', name: 'Delta Amacuro' },
+  { code: 'FA', name: 'Falcón' },
+  { code: 'GU', name: 'Guárico' },
+  { code: 'LA', name: 'Lara' },
+  { code: 'ME', name: 'Mérida' },
+  { code: 'MI', name: 'Miranda' },
+  { code: 'MO', name: 'Monagas' },
+  { code: 'NE', name: 'Nueva Esparta' },
+  { code: 'PO', name: 'Portuguesa' },
+  { code: 'SU', name: 'Sucre' },
+  { code: 'TA', name: 'Táchira' },
+  { code: 'TR', name: 'Trujillo' },
+  { code: 'VA', name: 'Vargas (La Guaira)' },
+  { code: 'YA', name: 'Yaracuy' },
+  { code: 'ZU', name: 'Zulia' },
 ];
 
 const SERVICE_OPTIONS = [
-  { key: 'standard',   label: 'Standard',    emoji: '🚗' },
-  { key: 'executive',  label: 'Executive',   emoji: '🚙' },
-  { key: 'accessible', label: 'Accessible',  emoji: '♿' },
-  { key: 'scheduled',  label: 'Scheduled',   emoji: '📅' },
-  { key: 'hourly',     label: 'By the hour', emoji: '⏱️' },
+  { key: 'standard',   label: 'Estándar',       emoji: '🚗' },
+  { key: 'executive',  label: 'Ejecutivo',       emoji: '🚙' },
+  { key: 'accessible', label: 'Accesible',       emoji: '♿' },
+  { key: 'scheduled',  label: 'Programado',      emoji: '📅' },
+  { key: 'hourly',     label: 'Por hora',        emoji: '⏱️' },
 ];
 
 const LANGUAGE_OPTIONS = [
-  { key: 'english', label: 'English', emoji: '🇺🇸' },
-  { key: 'spanish', label: 'Spanish', emoji: '🇲🇽' },
-  { key: 'french',  label: 'French',  emoji: '🇫🇷' },
-  { key: 'portuguese', label: 'Portuguese', emoji: '🇧🇷' },
-  { key: 'mandarin', label: 'Mandarin', emoji: '🇨🇳' },
-  { key: 'arabic',  label: 'Arabic',  emoji: '🇸🇦' },
-  { key: 'sign_language', label: 'Sign Language', emoji: '🤟' },
+  { key: 'spanish',      label: 'Español',    emoji: '🇻🇪' },
+  { key: 'english',      label: 'Inglés',     emoji: '🇺🇸' },
+  { key: 'portuguese',   label: 'Portugués',  emoji: '🇧🇷' },
+  { key: 'french',       label: 'Francés',    emoji: '🇫🇷' },
+  { key: 'mandarin',     label: 'Mandarín',   emoji: '🇨🇳' },
+  { key: 'arabic',       label: 'Árabe',      emoji: '🇸🇦' },
+  { key: 'sign_language',label: 'Lengua de señas', emoji: '🤟' },
 ];
 
 const MUSIC_OPTIONS = [
-  { key: 'off',        label: 'Radio off',       emoji: '🔇' },
-  { key: 'any',        label: 'No preference',   emoji: '🎵' },
+  { key: 'off',        label: 'Sin música',      emoji: '🔇' },
+  { key: 'any',        label: 'Sin preferencia', emoji: '🎵' },
   { key: 'pop',        label: 'Pop',             emoji: '🎤' },
   { key: 'rock',       label: 'Rock',            emoji: '🎸' },
-  { key: 'latin',      label: 'Reggaeton/Latin', emoji: '🕺' },
+  { key: 'latin',      label: 'Reguetón/Latin',  emoji: '🕺' },
   { key: 'jazz',       label: 'Jazz/Blues',      emoji: '🎺' },
-  { key: 'classical',  label: 'Classical',       emoji: '🎻' },
-  { key: 'country',    label: 'Country',         emoji: '🤠' },
-  { key: 'gospel',     label: 'Gospel/Christian',emoji: '🙏' },
+  { key: 'classical',  label: 'Clásica',         emoji: '🎻' },
+  { key: 'salsa',      label: 'Salsa/Merengue',  emoji: '💃' },
+  { key: 'gospel',     label: 'Cristiana',       emoji: '🙏' },
   { key: 'hiphop',     label: 'Hip Hop/R&B',     emoji: '🎧' },
-  { key: 'news',       label: 'News/Talk radio', emoji: '📻' },
-  { key: 'custom',     label: 'Favorite artist', emoji: '⭐' },
+  { key: 'news',       label: 'Noticias/Radio',  emoji: '📻' },
+  { key: 'custom',     label: 'Artista favorito',emoji: '⭐' },
 ];
 
 const EQUIPMENT_OPTIONS = [
-  { key: 'wheelchair_ramp', label: 'Wheelchair ramp',    emoji: '♿' },
-  { key: 'baby_seat',       label: 'Baby/child seat',    emoji: '👶' },
-  { key: 'oxygen_support',  label: 'Oxygen support',     emoji: '🫁' },
-  { key: 'hearing_loop',    label: 'Hearing loop',       emoji: '🔊' },
-  { key: 'visual_aid',      label: 'Visual aid support', emoji: '👁️' },
-  { key: 'dashcam',         label: 'Dashcam installed',  emoji: '📹' },
-  { key: 'usb_charger',     label: 'USB charger',        emoji: '🔌' },
-  { key: 'wifi',            label: 'WiFi in vehicle',    emoji: '📶' },
+  { key: 'wheelchair_ramp', label: 'Rampa para silla',  emoji: '♿' },
+  { key: 'baby_seat',       label: 'Silla de bebé',     emoji: '👶' },
+  { key: 'oxygen_support',  label: 'Soporte de oxígeno',emoji: '🫁' },
+  { key: 'hearing_loop',    label: 'Bucle auditivo',    emoji: '🔊' },
+  { key: 'visual_aid',      label: 'Apoyo visual',      emoji: '👁️' },
+  { key: 'dashcam',         label: 'Dashcam instalada', emoji: '📹' },
+  { key: 'usb_charger',     label: 'Cargador USB',      emoji: '🔌' },
+  { key: 'wifi',            label: 'WiFi en vehículo',  emoji: '📶' },
 ];
 
 const CERTIFICATION_OPTIONS = [
-  { key: 'medical_exam',        label: 'Current Medical Exam',            emoji: '🏥', docType: 'cert_medical_exam'        as DocumentType },
-  { key: 'defensive_driving',   label: 'Defensive Driving',               emoji: '🚦', docType: 'cert_defensive_driving'   as DocumentType },
-  { key: 'first_aid',           label: 'First Aid',                       emoji: '🩹', docType: 'cert_first_aid'           as DocumentType },
-  { key: 'senior_transport',    label: 'Senior Passenger Transport',      emoji: '👴', docType: 'cert_senior_transport'    as DocumentType },
-  { key: 'pregnant_transport',  label: 'Pregnant Women Transport',        emoji: '🤰', docType: 'cert_pregnant_transport'  as DocumentType },
-  { key: 'disability_transport',label: 'Physical Disability Transport',   emoji: '🦽', docType: 'cert_disability_transport' as DocumentType },
-  { key: 'visual_impairment',   label: 'Visual Impairment Transport',     emoji: '🦯', docType: 'cert_visual_impairment'   as DocumentType },
-  { key: 'hearing_impairment',  label: 'Hearing Impairment Transport',    emoji: '🦻', docType: 'cert_hearing_impairment'  as DocumentType },
-  { key: 'wheelchair_vehicle',  label: 'Wheelchair Accessible Vehicle',   emoji: '🚐', docType: 'cert_wheelchair_vehicle'  as DocumentType },
-  { key: 'cpr',                 label: 'CPR Certification',               emoji: '❤️', docType: 'cert_cpr'                as DocumentType },
+  { key: 'medical_exam',        label: 'Examen médico vigente',           emoji: '🏥', docType: 'cert_medical_exam'        as DocumentType },
+  { key: 'defensive_driving',   label: 'Manejo defensivo',                emoji: '🚦', docType: 'cert_defensive_driving'   as DocumentType },
+  { key: 'first_aid',           label: 'Primeros auxilios',               emoji: '🩹', docType: 'cert_first_aid'           as DocumentType },
+  { key: 'senior_transport',    label: 'Transporte de adultos mayores',   emoji: '👴', docType: 'cert_senior_transport'    as DocumentType },
+  { key: 'pregnant_transport',  label: 'Transporte de embarazadas',       emoji: '🤰', docType: 'cert_pregnant_transport'  as DocumentType },
+  { key: 'disability_transport',label: 'Transporte de discapacitados',    emoji: '🦽', docType: 'cert_disability_transport' as DocumentType },
+  { key: 'visual_impairment',   label: 'Discapacidad visual',             emoji: '🦯', docType: 'cert_visual_impairment'   as DocumentType },
+  { key: 'hearing_impairment',  label: 'Discapacidad auditiva',           emoji: '🦻', docType: 'cert_hearing_impairment'  as DocumentType },
+  { key: 'wheelchair_vehicle',  label: 'Vehículo accesible para silla',   emoji: '🚐', docType: 'cert_wheelchair_vehicle'  as DocumentType },
+  { key: 'cpr',                 label: 'Certificación RCP',               emoji: '❤️', docType: 'cert_cpr'                as DocumentType },
 ];
 
 // Documentos requeridos (todos excepto accessible_cert y certificaciones)
@@ -135,7 +129,6 @@ const emptyDoc = (): DocState => ({ uri: null, uploading: false, uploaded: false
 const TOTAL_STEPS = 8;
 
 export default function RegisterDriverScreen() {
-  const { t } = useTranslation();
   const { registerDriver, setDriverWizardActive, isLoading: isCreatingAccount } = useAuthStore();
 
   const [step, setStep] = useState(1);
@@ -154,7 +147,7 @@ export default function RegisterDriverScreen() {
   const [dateOfBirth, setDateOfBirth]         = useState('');
   const [ssnLast4, setSsnLast4]               = useState('');
   const [homeAddress, setHomeAddress]         = useState('');
-  const [stateCode, setStateCode]             = useState('TX');
+  const [stateCode, setStateCode]             = useState('DC');
   const [referralCode, setReferralCode]       = useState('');
 
   // ── PASO 2: Licencia ──
@@ -180,7 +173,7 @@ export default function RegisterDriverScreen() {
   const [certExpiries, setCertExpiries] = useState<Record<string, string>>({});
 
   // ── PASO 7: Idiomas, equipamiento y preferencias ──
-  const [languages, setLanguages]               = useState<string[]>(['english']);
+  const [languages, setLanguages]               = useState<string[]>(['spanish']);
   const [specialEquipment, setSpecialEquipment] = useState<string[]>([]);
   const [smokes, setSmokes]                     = useState(false);
   const [longDistanceAvailable, setLongDistanceAvailable] = useState(false);
@@ -211,7 +204,7 @@ export default function RegisterDriverScreen() {
     cert_cpr:                 emptyDoc(),
   });
 
-  const selectedStateName = US_STATES.find(s => s.code === stateCode)?.name ?? stateCode;
+  const selectedStateName = VE_STATES.find(s => s.code === stateCode)?.name ?? stateCode;
 
   // ─────────────────────────────────────
   // Handler del scanner PDF417 — mapea datos AAMVA al formulario
@@ -223,7 +216,7 @@ export default function RegisterDriverScreen() {
       const parts = data.expiryDate.split('/');
       if (parts.length >= 3) setLicenseExpiry(`${parts[0]}/${parts[2]}`);
     }
-    if (data.state && US_STATES.find(s => s.code === data.state)) {
+    if (data.state && VE_STATES.find(s => s.code === data.state)) {
       setStateCode(data.state);
     }
   };
@@ -235,7 +228,7 @@ export default function RegisterDriverScreen() {
     if (!perm.granted) {
       const camPerm = await ImagePicker.requestCameraPermissionsAsync();
       if (!camPerm.granted) {
-        Alert.alert('Permission required', 'We need camera or gallery access for your profile photo.');
+        Alert.alert('Permiso requerido', 'Necesitamos acceso a la cámara o galería para tu foto de perfil.');
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -246,9 +239,9 @@ export default function RegisterDriverScreen() {
       if (!result.canceled && result.assets[0]) setProfilePhotoUri(result.assets[0].uri);
       return;
     }
-    Alert.alert('Profile photo', 'Choose an option', [
+    Alert.alert('Foto de perfil', 'Elige una opción', [
       {
-        text: 'Take selfie',
+        text: 'Tomar selfie',
         onPress: async () => {
           const result = await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -259,7 +252,7 @@ export default function RegisterDriverScreen() {
         },
       },
       {
-        text: 'Choose from gallery',
+        text: 'Elegir de galería',
         onPress: async () => {
           const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -268,7 +261,7 @@ export default function RegisterDriverScreen() {
           if (!result.canceled && result.assets[0]) setProfilePhotoUri(result.assets[0].uri);
         },
       },
-      { text: 'Cancel', style: 'cancel' },
+      { text: 'Cancelar', style: 'cancel' },
     ]);
   };
 
@@ -284,10 +277,10 @@ export default function RegisterDriverScreen() {
 
     if (!permResult.granted) {
       Alert.alert(
-        'Permission required',
+        'Permiso requerido',
         useCamera
-          ? 'We need camera access to take your photo.'
-          : 'We need gallery access to upload documents.'
+          ? 'Necesitamos acceso a la cámara para tomar la foto.'
+          : 'Necesitamos acceso a la galería para subir documentos.'
       );
       return;
     }
@@ -330,8 +323,8 @@ export default function RegisterDriverScreen() {
         ...prev,
         [docType]: { uri: null, uploading: false, uploaded: false },
       }));
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      Alert.alert('Upload error', msg);
+      const msg = err instanceof Error ? err.message : 'Error desconocido';
+      Alert.alert('Error al subir', msg);
     }
   }, []);
 
@@ -340,28 +333,28 @@ export default function RegisterDriverScreen() {
   // ─────────────────────────────────────
   const handleStep1 = async () => {
     if (!name.trim() || name.trim().length < 2) {
-      Alert.alert('', 'Name must be at least 2 characters'); return;
+      Alert.alert('', 'El nombre debe tener al menos 2 caracteres'); return;
     }
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      Alert.alert('', 'Enter a valid email address'); return;
+      Alert.alert('', 'Ingresa un correo válido'); return;
     }
     if (!password || password.length < 6) {
-      Alert.alert('', 'Password must be at least 6 characters'); return;
+      Alert.alert('', 'La contraseña debe tener al menos 6 caracteres'); return;
     }
     if (password !== confirmPassword) {
-      Alert.alert('', 'Passwords do not match'); return;
+      Alert.alert('', 'Las contraseñas no coinciden'); return;
     }
     if (!phone.trim() || phone.trim().length < 10) {
-      Alert.alert('', 'Phone number is required for drivers'); return;
+      Alert.alert('', 'El teléfono es requerido para conductores'); return;
     }
     if (!dateOfBirth.trim()) {
-      Alert.alert('', 'Date of birth is required'); return;
+      Alert.alert('', 'La fecha de nacimiento es requerida'); return;
     }
     if (!homeAddress.trim()) {
-      Alert.alert('', 'Home address is required'); return;
+      Alert.alert('', 'La dirección de residencia es requerida'); return;
     }
     if (!profilePhotoUri) {
-      Alert.alert('', 'Profile photo is required'); return;
+      Alert.alert('', 'La foto de perfil es requerida'); return;
     }
 
     try {
@@ -390,15 +383,15 @@ export default function RegisterDriverScreen() {
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
-        '📧 Check your email',
-        `We sent a verification email to ${email.trim()}. You will need to verify it to activate your account once you finish registration.`,
-        [{ text: 'Got it, continue →', onPress: () => setStep(2) }]
+        '📧 Verifica tu correo',
+        `Enviamos un correo de verificación a ${email.trim()}. Deberás verificarlo para activar tu cuenta al terminar el registro.`,
+        [{ text: 'Entendido, continuar →', onPress: () => setStep(2) }]
       );
     } catch (err) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      const msg = err instanceof Error ? err.message : 'Error creating account';
+      const msg = err instanceof Error ? err.message : 'Error al crear la cuenta';
       Alert.alert('Error', msg === 'ALREADY_REGISTERED'
-        ? 'An account with this email already exists.'
+        ? 'Ya existe una cuenta con este correo.'
         : msg
       );
     }
@@ -409,13 +402,13 @@ export default function RegisterDriverScreen() {
   // ─────────────────────────────────────
   const handleStep2 = async () => {
     if (!licenseNumber.trim()) {
-      Alert.alert('', 'License number is required'); return;
+      Alert.alert('', 'El número de licencia es requerido'); return;
     }
     if (!licenseExpiry.trim()) {
-      Alert.alert('', 'License expiry date is required'); return;
+      Alert.alert('', 'La fecha de vencimiento de la licencia es requerida'); return;
     }
     if (!docs.license_front.uploaded || !docs.license_back.uploaded) {
-      Alert.alert('', 'Upload the front and back photo of your license'); return;
+      Alert.alert('', 'Sube la foto del frente y dorso de tu licencia'); return;
     }
     try {
       await driverMobileService.updateProfile({
@@ -424,8 +417,8 @@ export default function RegisterDriverScreen() {
       });
       setStep(3);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Unknown error';
-      Alert.alert('Error (paso 2)', msg);
+      const msg = err instanceof Error ? err.message : 'Error desconocido';
+      Alert.alert('Error (paso 2)', msg || 'Intenta de nuevo.');
     }
   };
 
@@ -433,16 +426,16 @@ export default function RegisterDriverScreen() {
   // PASO 3 → Guardar vehículo
   // ─────────────────────────────────────
   const handleStep3 = async () => {
-    if (!vehiclePlate.trim()) { Alert.alert('', 'Vehicle plate is required'); return; }
-    if (!vehicleBrand.trim()) { Alert.alert('', 'Vehicle brand is required'); return; }
-    if (!vehicleModel.trim()) { Alert.alert('', 'Vehicle model is required'); return; }
-    if (!vehicleYear.trim())  { Alert.alert('', 'Vehicle year is required'); return; }
-    if (!vehicleColor.trim()) { Alert.alert('', 'Vehicle color is required'); return; }
-    if (services.length === 0) { Alert.alert('', 'Select at least one service type'); return; }
+    if (!vehiclePlate.trim()) { Alert.alert('', 'La placa del vehículo es requerida'); return; }
+    if (!vehicleBrand.trim()) { Alert.alert('', 'La marca del vehículo es requerida'); return; }
+    if (!vehicleModel.trim()) { Alert.alert('', 'El modelo del vehículo es requerido'); return; }
+    if (!vehicleYear.trim())  { Alert.alert('', 'El año del vehículo es requerido'); return; }
+    if (!vehicleColor.trim()) { Alert.alert('', 'El color del vehículo es requerido'); return; }
+    if (services.length === 0) { Alert.alert('', 'Selecciona al menos un tipo de servicio'); return; }
 
     const year = parseInt(vehicleYear.trim(), 10);
     if (isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
-      Alert.alert('', 'Enter a valid vehicle year (e.g. 2018)'); return;
+      Alert.alert('', 'Ingresa un año de vehículo válido (ej. 2018)'); return;
     }
 
     try {
@@ -459,7 +452,7 @@ export default function RegisterDriverScreen() {
       setStep(4);
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
-      Alert.alert('', msg || 'Could not save vehicle data. Please try again.');
+      Alert.alert('', msg || 'No se pudo guardar la información del vehículo. Intenta de nuevo.');
     }
   };
 
@@ -468,16 +461,16 @@ export default function RegisterDriverScreen() {
   // ─────────────────────────────────────
   const handleStep4 = async () => {
     if (!insuranceCompany.trim()) {
-      Alert.alert('', 'Insurance company name is required'); return;
+      Alert.alert('', 'El nombre de la aseguradora es requerido'); return;
     }
     if (!insurancePolicyNumber.trim()) {
-      Alert.alert('', 'Policy number is required'); return;
+      Alert.alert('', 'El número de póliza es requerido'); return;
     }
     if (!insuranceExpiry.trim()) {
-      Alert.alert('', 'Insurance expiry date is required'); return;
+      Alert.alert('', 'La fecha de vencimiento del seguro es requerida'); return;
     }
     if (!docs.insurance.uploaded) {
-      Alert.alert('', 'Upload your insurance policy document'); return;
+      Alert.alert('', 'Sube el documento de tu póliza de seguro'); return;
     }
     try {
       await driverMobileService.updateProfile({
@@ -487,7 +480,7 @@ export default function RegisterDriverScreen() {
       });
       setStep(5);
     } catch {
-      Alert.alert('', 'Could not save insurance data. Please try again.');
+      Alert.alert('', 'No se pudo guardar la información del seguro. Intenta de nuevo.');
     }
   };
 
@@ -500,10 +493,10 @@ export default function RegisterDriverScreen() {
     ];
     const missing = vehiclePhotos.filter(d => !docs[d].uploaded);
     if (missing.length > 0) {
-      Alert.alert('', `Missing ${missing.length} vehicle photo(s)`); return;
+      Alert.alert('', `Faltan ${missing.length} foto(s) del vehículo`); return;
     }
     if (!docs.selfie.uploaded) {
-      Alert.alert('', 'We need your selfie to verify your identity'); return;
+      Alert.alert('', 'Necesitamos tu selfie para verificar tu identidad'); return;
     }
     setStep(6);
   };
@@ -528,7 +521,7 @@ export default function RegisterDriverScreen() {
       try {
         await driverMobileService.updateProfile({ certifications });
       } catch {
-        Alert.alert('', 'Could not save certifications. Please try again.');
+        Alert.alert('', 'No se pudieron guardar las certificaciones. Intenta de nuevo.');
         return;
       }
     }
@@ -540,7 +533,7 @@ export default function RegisterDriverScreen() {
   // ─────────────────────────────────────
   const handleStep7 = async () => {
     if (languages.length === 0) {
-      Alert.alert('', 'Select at least one language'); return;
+      Alert.alert('', 'Selecciona al menos un idioma'); return;
     }
     try {
       await driverMobileService.updateProfile({
@@ -553,7 +546,7 @@ export default function RegisterDriverScreen() {
       });
       setStep(8);
     } catch {
-      Alert.alert('', 'Could not save preferences. Please try again.');
+      Alert.alert('', 'No se pudieron guardar las preferencias. Intenta de nuevo.');
     }
   };
 
@@ -572,8 +565,8 @@ export default function RegisterDriverScreen() {
       Alert.alert(
         'Error',
         msg.startsWith('MISSING_DOCUMENTS')
-          ? 'Required documents are missing. Go back to the previous step.'
-          : 'Could not submit the application. Please try again.'
+          ? 'Faltan documentos requeridos. Regresa al paso anterior.'
+          : 'No se pudo enviar la solicitud. Intenta de nuevo.'
       );
     } finally {
       setIsSubmittingReview(false);
@@ -596,10 +589,10 @@ export default function RegisterDriverScreen() {
 
     const handlePress = () => {
       if (bothOptions) {
-        Alert.alert('Upload photo', 'Choose an option', [
-          { text: '📷 Take photo', onPress: () => pickAndUpload(docType, true) },
-          { text: '📎 Choose from gallery', onPress: () => pickAndUpload(docType, false) },
-          { text: 'Cancel', style: 'cancel' },
+        Alert.alert('Subir foto', 'Elige una opción', [
+          { text: '📷 Tomar foto', onPress: () => pickAndUpload(docType, true) },
+          { text: '📎 Elegir de galería', onPress: () => pickAndUpload(docType, false) },
+          { text: 'Cancelar', style: 'cancel' },
         ]);
       } else {
         pickAndUpload(docType, useCamera);
@@ -609,9 +602,9 @@ export default function RegisterDriverScreen() {
     return (
       <View style={styles.docItem}>
         <View style={styles.docInfo}>
-          <Text style={styles.docLabel}>{label}{optional ? ' (optional)' : ' *'}</Text>
+          <Text style={styles.docLabel}>{label}{optional ? ' (opcional)' : ' *'}</Text>
           {doc.uploaded && (
-            <Text style={styles.docDone}>✓ Uploaded</Text>
+            <Text style={styles.docDone}>✓ Subido</Text>
           )}
         </View>
         {doc.uri && doc.uploaded && (
@@ -631,7 +624,7 @@ export default function RegisterDriverScreen() {
             <ActivityIndicator color="#fff" size="small" />
           ) : (
             <Text style={styles.docButtonText}>
-              {doc.uploaded ? 'Change' : '📷 Upload'}
+              {doc.uploaded ? 'Cambiar' : '📷 Subir'}
             </Text>
           )}
         </TouchableOpacity>
@@ -643,14 +636,14 @@ export default function RegisterDriverScreen() {
   // Barra de progreso
   // ─────────────────────────────────────
   const stepLabels = [
-    'Personal info',
-    "Driver's license",
-    'Vehicle info',
-    'Insurance',
-    'Vehicle photos',
-    'Certifications',
-    'Languages & equipment',
-    'Review & submit',
+    'Datos personales',
+    'Licencia de conducir',
+    'Vehículo',
+    'Seguro',
+    'Fotos del vehículo',
+    'Certificaciones',
+    'Idiomas y equipamiento',
+    'Revisión y envío',
   ];
 
   const progressPercent = ((step - 1) / (TOTAL_STEPS - 1)) * 100;
@@ -663,13 +656,13 @@ export default function RegisterDriverScreen() {
           onPress={() => step === 1 ? router.back() : setStep(step - 1)}
           style={styles.backButton}
           accessibilityRole="button"
-          accessibilityLabel="Back"
+          accessibilityLabel="Atrás"
         >
           <Text style={styles.backText}>←</Text>
         </TouchableOpacity>
         <View style={styles.headerCenter}>
-          <Text style={styles.headerTitle}>Driver Registration</Text>
-          <Text style={styles.headerStep}>Step {step} of {TOTAL_STEPS} — {stepLabels[step - 1]}</Text>
+          <Text style={styles.headerTitle}>Registro de conductor</Text>
+          <Text style={styles.headerStep}>Paso {step} de {TOTAL_STEPS} — {stepLabels[step - 1]}</Text>
         </View>
         <View style={styles.backButton} />
       </View>
@@ -695,18 +688,18 @@ export default function RegisterDriverScreen() {
           {step === 1 && (
             <View>
               <Text style={styles.stepHint}>
-                Create your account. All information is kept confidential and secure.
+                Crea tu cuenta. Toda tu información es confidencial y segura.
               </Text>
 
               {/* ── FOTO DE PERFIL ── */}
               <View style={styles.photoSection}>
-                <TouchableOpacity style={styles.photoContainer} onPress={handlePickProfilePhoto} accessibilityRole="button" accessibilityLabel="Add profile photo">
+                <TouchableOpacity style={styles.photoContainer} onPress={handlePickProfilePhoto} accessibilityRole="button" accessibilityLabel="Agregar foto de perfil">
                   {profilePhotoUri ? (
                     <Image source={{ uri: profilePhotoUri }} style={styles.photoPreview} />
                   ) : (
                     <View style={styles.photoPlaceholder}>
                       <Text style={styles.photoPlaceholderIcon}>📷</Text>
-                      <Text style={styles.photoPlaceholderText}>Add photo *</Text>
+                      <Text style={styles.photoPlaceholderText}>Agregar foto *</Text>
                     </View>
                   )}
                   <View style={styles.photoEditBadge}>
@@ -714,31 +707,31 @@ export default function RegisterDriverScreen() {
                   </View>
                 </TouchableOpacity>
                 <Text style={styles.photoHint}>
-                  Passengers will see your photo during the ride. <Text style={styles.photoRequired}>Required.</Text>
+                  Los pasajeros verán tu foto durante el viaje. <Text style={styles.photoRequired}>Requerida.</Text>
                 </Text>
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Full name *</Text>
+                <Text style={styles.label}>Nombre completo *</Text>
                 <TextInput style={styles.input} value={name} onChangeText={setName}
-                  autoCapitalize="words" placeholder="Your full name" placeholderTextColor="#aaa" />
+                  autoCapitalize="words" placeholder="Tu nombre completo" placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Email *</Text>
+                <Text style={styles.label}>Correo electrónico *</Text>
                 <TextInput style={styles.input} value={email} onChangeText={setEmail}
                   keyboardType="email-address" autoCapitalize="none" autoCorrect={false}
-                  placeholder="your@email.com" placeholderTextColor="#aaa" />
+                  placeholder="tu@email.com" placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Password *</Text>
+                <Text style={styles.label}>Contraseña *</Text>
                 <View style={styles.passwordRow}>
                   <TextInput style={[styles.input, styles.passwordInput]}
                     value={password} onChangeText={setPassword}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none" autoCorrect={false}
-                    placeholder="Minimum 6 characters" placeholderTextColor="#aaa" />
+                    placeholder="Mínimo 6 caracteres" placeholderTextColor="#aaa" />
                   <TouchableOpacity style={styles.eyeBtn}
                     onPress={() => setShowPassword(!showPassword)}>
                     <Text style={styles.eyeText}>{showPassword ? '🙈' : '👁️'}</Text>
@@ -747,42 +740,42 @@ export default function RegisterDriverScreen() {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Confirm password *</Text>
+                <Text style={styles.label}>Confirmar contraseña *</Text>
                 <TextInput style={styles.input} value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry={!showPassword}
                   autoCapitalize="none" autoCorrect={false}
-                  placeholder="Repeat your password" placeholderTextColor="#aaa" />
+                  placeholder="Repite tu contraseña" placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Phone *</Text>
+                <Text style={styles.label}>Teléfono *</Text>
                 <TextInput style={styles.input} value={phone} onChangeText={setPhone}
-                  keyboardType="phone-pad" placeholder="(555) 123-4567" placeholderTextColor="#aaa" />
+                  keyboardType="phone-pad" placeholder="(0412) 123-4567" placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Date of birth *</Text>
+                <Text style={styles.label}>Fecha de nacimiento *</Text>
                 <TextInput style={styles.input} value={dateOfBirth} onChangeText={setDateOfBirth}
-                  placeholder="MM/DD/YYYY" placeholderTextColor="#aaa"
+                  placeholder="DD/MM/AAAA" placeholderTextColor="#aaa"
                   keyboardType="numbers-and-punctuation" maxLength={10} />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>SSN last 4 digits (optional)</Text>
+                <Text style={styles.label}>Cédula de identidad (opcional)</Text>
                 <TextInput style={styles.input} value={ssnLast4} onChangeText={setSsnLast4}
-                  keyboardType="number-pad" placeholder="XXXX" placeholderTextColor="#aaa" maxLength={4}
+                  keyboardType="number-pad" placeholder="V-12345678" placeholderTextColor="#aaa" maxLength={10}
                   secureTextEntry />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Home address *</Text>
+                <Text style={styles.label}>Dirección de residencia *</Text>
                 <TextInput style={styles.input} value={homeAddress} onChangeText={setHomeAddress}
-                  autoCapitalize="words" placeholder="123 Main St, City, TX" placeholderTextColor="#aaa" />
+                  autoCapitalize="words" placeholder="Av. Principal, Caracas" placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>State *</Text>
+                <Text style={styles.label}>Estado *</Text>
                 <TouchableOpacity style={styles.picker} onPress={() => setShowStatePicker(true)}>
                   <Text style={styles.pickerText}>{selectedStateName}</Text>
                   <Text style={styles.pickerArrow}>▼</Text>
@@ -790,11 +783,11 @@ export default function RegisterDriverScreen() {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Referral code (optional)</Text>
+                <Text style={styles.label}>Código de referido (opcional)</Text>
                 <TextInput style={styles.input} value={referralCode}
                   onChangeText={setReferralCode}
                   autoCapitalize="characters" autoCorrect={false}
-                  placeholder="Referral code (optional)" placeholderTextColor="#aaa" />
+                  placeholder="Código de referido (opcional)" placeholderTextColor="#aaa" />
               </View>
 
               <TouchableOpacity
@@ -803,7 +796,7 @@ export default function RegisterDriverScreen() {
                 accessibilityRole="button">
                 {isCreatingAccount
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.primaryButtonText}>Create account and continue →</Text>
+                  : <Text style={styles.primaryButtonText}>Crear cuenta y continuar →</Text>
                 }
               </TouchableOpacity>
             </View>
@@ -815,22 +808,22 @@ export default function RegisterDriverScreen() {
           {step === 2 && (
             <View>
               <Text style={styles.stepHint}>
-                We need your valid U.S. driver's license. This also serves as your government-issued identity document.
+                Necesitamos tu licencia de conducir vigente. También sirve como documento de identidad.
               </Text>
 
               <View style={styles.field}>
-                <Text style={styles.label}>License number *</Text>
+                <Text style={styles.label}>Número de licencia *</Text>
                 <TextInput style={styles.input} value={licenseNumber}
                   onChangeText={setLicenseNumber}
                   autoCapitalize="characters" autoCorrect={false}
-                  placeholder="License number" placeholderTextColor="#aaa" />
+                  placeholder="Número de licencia" placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Expiry date *</Text>
+                <Text style={styles.label}>Fecha de vencimiento *</Text>
                 <TextInput style={styles.input} value={licenseExpiry}
                   onChangeText={setLicenseExpiry}
-                  placeholder="MM/YYYY" placeholderTextColor="#aaa"
+                  placeholder="MM/AAAA" placeholderTextColor="#aaa"
                   keyboardType="numbers-and-punctuation" />
               </View>
 
@@ -839,19 +832,19 @@ export default function RegisterDriverScreen() {
                   style={styles.scanBtn}
                   onPress={() => setShowScanner(true)}
                   accessibilityRole="button"
-                  accessibilityLabel="Scan license barcode"
+                  accessibilityLabel="Escanear código de barras"
                 >
-                  <Text style={styles.scanBtnText}>Scan barcode (back of license)</Text>
+                  <Text style={styles.scanBtnText}>Escanear código de barras (dorso de la licencia)</Text>
                 </TouchableOpacity>
               )}
 
-              <Text style={styles.subSectionTitle}>License photos — both sides required *</Text>
+              <Text style={styles.subSectionTitle}>Fotos de licencia — ambos lados requeridos *</Text>
               <View style={styles.docSideRow}>
                 <View style={styles.docSideCol}>
-                  <DocUploadButton docType="license_front" label="Front" bothOptions />
+                  <DocUploadButton docType="license_front" label="Frente" bothOptions />
                 </View>
                 <View style={styles.docSideCol}>
-                  <DocUploadButton docType="license_back" label="Back" bothOptions />
+                  <DocUploadButton docType="license_back" label="Dorso" bothOptions />
                 </View>
               </View>
 
@@ -864,7 +857,7 @@ export default function RegisterDriverScreen() {
 
               <TouchableOpacity style={styles.primaryButton} onPress={handleStep2}
                 accessibilityRole="button">
-                <Text style={styles.primaryButtonText}>Continue to vehicle →</Text>
+                <Text style={styles.primaryButtonText}>Continuar al vehículo →</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -875,11 +868,11 @@ export default function RegisterDriverScreen() {
           {step === 3 && (
             <View>
               <Text style={styles.stepHint}>
-                The vehicle must be less than 15 years old.
+                El vehículo debe tener menos de 15 años de antigüedad.
               </Text>
 
               <View style={styles.field}>
-                <Text style={styles.label}>License plate *</Text>
+                <Text style={styles.label}>Placa del vehículo *</Text>
                 <TextInput style={styles.input} value={vehiclePlate}
                   onChangeText={setVehiclePlate}
                   autoCapitalize="characters" autoCorrect={false}
@@ -888,22 +881,22 @@ export default function RegisterDriverScreen() {
 
               <View style={styles.twoCol}>
                 <View style={[styles.field, styles.colHalf]}>
-                  <Text style={styles.label}>Brand *</Text>
+                  <Text style={styles.label}>Marca *</Text>
                   <TextInput style={styles.input} value={vehicleBrand}
                     onChangeText={setVehicleBrand}
                     autoCapitalize="words" placeholder="Toyota" placeholderTextColor="#aaa" />
                 </View>
                 <View style={[styles.field, styles.colHalf]}>
-                  <Text style={styles.label}>Model *</Text>
+                  <Text style={styles.label}>Modelo *</Text>
                   <TextInput style={styles.input} value={vehicleModel}
                     onChangeText={setVehicleModel}
-                    autoCapitalize="words" placeholder="Camry" placeholderTextColor="#aaa" />
+                    autoCapitalize="words" placeholder="Corolla" placeholderTextColor="#aaa" />
                 </View>
               </View>
 
               <View style={styles.twoCol}>
                 <View style={[styles.field, styles.colHalf]}>
-                  <Text style={styles.label}>Year *</Text>
+                  <Text style={styles.label}>Año *</Text>
                   <TextInput style={styles.input} value={vehicleYear}
                     onChangeText={setVehicleYear}
                     keyboardType="number-pad" placeholder="2020" placeholderTextColor="#aaa" />
@@ -912,20 +905,20 @@ export default function RegisterDriverScreen() {
                   <Text style={styles.label}>Color *</Text>
                   <TextInput style={styles.input} value={vehicleColor}
                     onChangeText={setVehicleColor}
-                    autoCapitalize="words" placeholder="White" placeholderTextColor="#aaa" />
+                    autoCapitalize="words" placeholder="Blanco" placeholderTextColor="#aaa" />
                 </View>
               </View>
 
               <View style={styles.twoCol}>
                 <View style={[styles.field, styles.colHalf]}>
-                  <Text style={styles.label}>VIN</Text>
+                  <Text style={styles.label}>Serial (VIN)</Text>
                   <TextInput style={styles.input} value={vehicleVin}
                     onChangeText={setVehicleVin}
                     autoCapitalize="characters" autoCorrect={false}
-                    placeholder="VIN (optional)" placeholderTextColor="#aaa" maxLength={17} />
+                    placeholder="VIN (opcional)" placeholderTextColor="#aaa" maxLength={17} />
                 </View>
                 <View style={[styles.field, styles.colHalf]}>
-                  <Text style={styles.label}>Seats</Text>
+                  <Text style={styles.label}>Asientos</Text>
                   <TextInput style={styles.input} value={vehicleSeats}
                     onChangeText={setVehicleSeats}
                     keyboardType="number-pad" placeholder="4" placeholderTextColor="#aaa" />
@@ -933,7 +926,7 @@ export default function RegisterDriverScreen() {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Service types you will offer *</Text>
+                <Text style={styles.label}>Tipos de servicio que ofrecerás *</Text>
                 <View style={styles.servicesGrid}>
                   {SERVICE_OPTIONS.map(svc => {
                     const selected = services.includes(svc.key);
@@ -962,7 +955,7 @@ export default function RegisterDriverScreen() {
 
               <TouchableOpacity style={styles.primaryButton} onPress={handleStep3}
                 accessibilityRole="button">
-                <Text style={styles.primaryButtonText}>Continue to insurance →</Text>
+                <Text style={styles.primaryButtonText}>Continuar al seguro →</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -973,38 +966,38 @@ export default function RegisterDriverScreen() {
           {step === 4 && (
             <View>
               <Text style={styles.stepHint}>
-                Provide your vehicle insurance information. Commercial or rideshare insurance is required.
+                Proporciona los datos del seguro de tu vehículo. Se requiere seguro comercial o de transporte.
               </Text>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Insurance company *</Text>
+                <Text style={styles.label}>Aseguradora *</Text>
                 <TextInput style={styles.input} value={insuranceCompany}
                   onChangeText={setInsuranceCompany}
-                  autoCapitalize="words" placeholder="State Farm, GEICO, etc." placeholderTextColor="#aaa" />
+                  autoCapitalize="words" placeholder="Mapfre, Seguros Caracas, etc." placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Policy number *</Text>
+                <Text style={styles.label}>Número de póliza *</Text>
                 <TextInput style={styles.input} value={insurancePolicyNumber}
                   onChangeText={setInsurancePolicyNumber}
                   autoCapitalize="characters" autoCorrect={false}
-                  placeholder="Policy number" placeholderTextColor="#aaa" />
+                  placeholder="Número de póliza" placeholderTextColor="#aaa" />
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Policy expiry date *</Text>
+                <Text style={styles.label}>Fecha de vencimiento de la póliza *</Text>
                 <TextInput style={styles.input} value={insuranceExpiry}
                   onChangeText={setInsuranceExpiry}
-                  placeholder="MM/YYYY" placeholderTextColor="#aaa"
+                  placeholder="MM/AAAA" placeholderTextColor="#aaa"
                   keyboardType="numbers-and-punctuation" />
               </View>
 
-              <Text style={styles.subSectionTitle}>Insurance document</Text>
-              <DocUploadButton docType="insurance" label="Insurance policy document" />
+              <Text style={styles.subSectionTitle}>Documento del seguro</Text>
+              <DocUploadButton docType="insurance" label="Póliza de seguro" />
 
               <TouchableOpacity style={styles.primaryButton} onPress={handleStep4}
                 accessibilityRole="button">
-                <Text style={styles.primaryButtonText}>Continue to vehicle photos →</Text>
+                <Text style={styles.primaryButtonText}>Continuar a fotos del vehículo →</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1015,28 +1008,28 @@ export default function RegisterDriverScreen() {
           {step === 5 && (
             <View>
               <Text style={styles.stepHint}>
-                Take clear, well-lit photos. All documents are confidential.
+                Toma fotos claras y bien iluminadas. Todos los documentos son confidenciales.
               </Text>
 
-              <Text style={styles.subSectionTitle}>Vehicle photos</Text>
-              <DocUploadButton docType="vehicle_front"    label="Front of vehicle" />
-              <DocUploadButton docType="vehicle_back"     label="Back of vehicle" />
-              <DocUploadButton docType="vehicle_left"     label="Left side" />
-              <DocUploadButton docType="vehicle_right"    label="Right side" />
+              <Text style={styles.subSectionTitle}>Fotos del vehículo</Text>
+              <DocUploadButton docType="vehicle_front"    label="Frente del vehículo" />
+              <DocUploadButton docType="vehicle_back"     label="Parte trasera" />
+              <DocUploadButton docType="vehicle_left"     label="Lado izquierdo" />
+              <DocUploadButton docType="vehicle_right"    label="Lado derecho" />
               <DocUploadButton docType="vehicle_interior" label="Interior" />
 
-              <Text style={styles.subSectionTitle}>Identity verification</Text>
+              <Text style={styles.subSectionTitle}>Verificación de identidad</Text>
               <Text style={styles.selfieHint}>
-                Take a clear selfie so we can verify your identity. It will be shown to passengers.
+                Toma una selfie clara para verificar tu identidad. Los pasajeros la verán.
               </Text>
-              <DocUploadButton docType="selfie" label="Take selfie" useCamera />
+              <DocUploadButton docType="selfie" label="Tomar selfie" useCamera />
 
               <DocUploadButton docType="accessible_cert"
-                label="Accessible vehicle certificate" optional />
+                label="Certificado de vehículo accesible" optional />
 
               <TouchableOpacity style={styles.primaryButton} onPress={handleStep5}
                 accessibilityRole="button">
-                <Text style={styles.primaryButtonText}>Continue to certifications →</Text>
+                <Text style={styles.primaryButtonText}>Continuar a certificaciones →</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1047,8 +1040,8 @@ export default function RegisterDriverScreen() {
           {step === 6 && (
             <View>
               <Text style={styles.stepHint}>
-                Select the certifications you have. Upload the certificate photo and expiry date for each one.
-                All certifications are optional but increase your chances of getting more rides.
+                Selecciona las certificaciones que tienes. Sube la foto del certificado y la fecha de vencimiento.
+                Todas son opcionales pero aumentan tus posibilidades de conseguir más viajes.
               </Text>
 
               {CERTIFICATION_OPTIONS.map(cert => {
@@ -1065,14 +1058,14 @@ export default function RegisterDriverScreen() {
                         style={[styles.input, { marginTop: 8 }]}
                         value={certExpiries[cert.key] ?? ''}
                         onChangeText={v => setCertExpiries(prev => ({ ...prev, [cert.key]: v }))}
-                        placeholder="Expiry date MM/YYYY (optional)"
+                        placeholder="Vencimiento MM/AAAA (opcional)"
                         placeholderTextColor="#aaa"
                         keyboardType="numbers-and-punctuation"
                       />
                     )}
                     <DocUploadButton
                       docType={cert.docType}
-                      label="Certificate document"
+                      label="Documento del certificado"
                       optional
                     />
                   </View>
@@ -1081,7 +1074,7 @@ export default function RegisterDriverScreen() {
 
               <TouchableOpacity style={styles.primaryButton} onPress={handleStep6}
                 accessibilityRole="button">
-                <Text style={styles.primaryButtonText}>Continue to languages →</Text>
+                <Text style={styles.primaryButtonText}>Continuar a idiomas →</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1092,11 +1085,11 @@ export default function RegisterDriverScreen() {
           {step === 7 && (
             <View>
               <Text style={styles.stepHint}>
-                Tell passengers what languages you speak, what equipment your vehicle has, and your availability.
+                Cuéntale a los pasajeros qué idiomas hablas, qué equipamiento tiene tu vehículo y tu disponibilidad.
               </Text>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Languages spoken *</Text>
+                <Text style={styles.label}>Idiomas que hablas *</Text>
                 <View style={styles.servicesGrid}>
                   {LANGUAGE_OPTIONS.map(lang => {
                     const selected = languages.includes(lang.key);
@@ -1122,7 +1115,7 @@ export default function RegisterDriverScreen() {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Vehicle equipment (optional)</Text>
+                <Text style={styles.label}>Equipamiento del vehículo (opcional)</Text>
                 <View style={styles.servicesGrid}>
                   {EQUIPMENT_OPTIONS.map(eq => {
                     const selected = specialEquipment.includes(eq.key);
@@ -1149,9 +1142,9 @@ export default function RegisterDriverScreen() {
 
               {/* Preferencia musical */}
               <View style={styles.field}>
-                <Text style={styles.label}>Music preference</Text>
+                <Text style={styles.label}>Preferencia musical</Text>
                 <Text style={styles.stepHint}>
-                  Passengers will see this before requesting a ride.
+                  Los pasajeros verán esto antes de solicitar un viaje.
                 </Text>
                 <View style={styles.servicesGrid}>
                   {MUSIC_OPTIONS.map(opt => {
@@ -1180,7 +1173,7 @@ export default function RegisterDriverScreen() {
                     style={[styles.input, { marginTop: 10 }]}
                     value={musicArtist}
                     onChangeText={setMusicArtist}
-                    placeholder="Favorite artist name"
+                    placeholder="Nombre del artista favorito"
                     placeholderTextColor="#aaa"
                     autoCapitalize="words"
                   />
@@ -1189,7 +1182,7 @@ export default function RegisterDriverScreen() {
 
               {/* Toggles de salud y disponibilidad */}
               <View style={styles.field}>
-                <Text style={styles.label}>Availability & health</Text>
+                <Text style={styles.label}>Disponibilidad y salud</Text>
 
                 <TouchableOpacity
                   style={styles.toggleRow}
@@ -1203,8 +1196,8 @@ export default function RegisterDriverScreen() {
                   <View style={styles.toggleInfo}>
                     <Text style={styles.toggleEmoji}>🛣️</Text>
                     <View>
-                      <Text style={styles.toggleLabel}>Available for long distance trips</Text>
-                      <Text style={styles.toggleDesc}>Trips over 50 miles / multi-city</Text>
+                      <Text style={styles.toggleLabel}>Disponible para viajes largos</Text>
+                      <Text style={styles.toggleDesc}>Viajes inter-ciudades o más de 80 km</Text>
                     </View>
                   </View>
                   <View style={[styles.toggleSwitch, longDistanceAvailable && styles.toggleSwitchOn]}>
@@ -1224,8 +1217,8 @@ export default function RegisterDriverScreen() {
                   <View style={styles.toggleInfo}>
                     <Text style={styles.toggleEmoji}>🚬</Text>
                     <View>
-                      <Text style={styles.toggleLabel}>I smoke</Text>
-                      <Text style={styles.toggleDesc}>Passengers with health conditions may avoid smokers</Text>
+                      <Text style={styles.toggleLabel}>Fumo</Text>
+                      <Text style={styles.toggleDesc}>Los pasajeros con condiciones de salud pueden evitar fumadores</Text>
                     </View>
                   </View>
                   <View style={[styles.toggleSwitch, smokes && styles.toggleSwitchOn]}>
@@ -1236,7 +1229,7 @@ export default function RegisterDriverScreen() {
 
               <TouchableOpacity style={styles.primaryButton} onPress={handleStep7}
                 accessibilityRole="button">
-                <Text style={styles.primaryButtonText}>Review and submit →</Text>
+                <Text style={styles.primaryButtonText}>Revisar y enviar →</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -1247,68 +1240,68 @@ export default function RegisterDriverScreen() {
           {step === 8 && (
             <View>
               <View style={styles.reviewCard}>
-                <Text style={styles.reviewTitle}>✅ Ready to submit</Text>
+                <Text style={styles.reviewTitle}>✅ Listo para enviar</Text>
                 <Text style={styles.reviewDesc}>
-                  Review that all information is correct before submitting your application.
+                  Revisa que toda la información sea correcta antes de enviar tu solicitud.
                 </Text>
 
                 <View style={styles.reviewSection}>
-                  <Text style={styles.reviewSectionTitle}>Personal information</Text>
-                  <ReviewRow label="Name"        value={name} />
-                  <ReviewRow label="Email"       value={email} />
-                  <ReviewRow label="Phone"       value={phone} />
-                  <ReviewRow label="Date of birth" value={dateOfBirth} />
-                  <ReviewRow label="Address"     value={homeAddress} />
-                  <ReviewRow label="State"       value={stateCode} />
+                  <Text style={styles.reviewSectionTitle}>Datos personales</Text>
+                  <ReviewRow label="Nombre"        value={name} />
+                  <ReviewRow label="Correo"        value={email} />
+                  <ReviewRow label="Teléfono"      value={phone} />
+                  <ReviewRow label="Fecha de nac." value={dateOfBirth} />
+                  <ReviewRow label="Dirección"     value={homeAddress} />
+                  <ReviewRow label="Estado"        value={stateCode} />
                 </View>
 
                 <View style={styles.reviewSection}>
-                  <Text style={styles.reviewSectionTitle}>Driver's license</Text>
-                  <ReviewRow label="License #"  value={licenseNumber} />
-                  <ReviewRow label="Expiry"     value={licenseExpiry} />
+                  <Text style={styles.reviewSectionTitle}>Licencia de conducir</Text>
+                  <ReviewRow label="Licencia #"   value={licenseNumber} />
+                  <ReviewRow label="Vencimiento"  value={licenseExpiry} />
                 </View>
 
                 <View style={styles.reviewSection}>
-                  <Text style={styles.reviewSectionTitle}>Vehicle</Text>
-                  <ReviewRow label="Plate"    value={vehiclePlate.toUpperCase()} />
-                  <ReviewRow label="Vehicle"  value={`${vehicleBrand} ${vehicleModel} ${vehicleYear}`} />
-                  <ReviewRow label="Color"    value={vehicleColor} />
-                  {vehicleVin ? <ReviewRow label="VIN" value={vehicleVin} /> : null}
-                  <ReviewRow label="Seats"    value={vehicleSeats} />
-                  <ReviewRow label="Services" value={services.map(s =>
+                  <Text style={styles.reviewSectionTitle}>Vehículo</Text>
+                  <ReviewRow label="Placa"     value={vehiclePlate.toUpperCase()} />
+                  <ReviewRow label="Vehículo"  value={`${vehicleBrand} ${vehicleModel} ${vehicleYear}`} />
+                  <ReviewRow label="Color"     value={vehicleColor} />
+                  {vehicleVin ? <ReviewRow label="Serial" value={vehicleVin} /> : null}
+                  <ReviewRow label="Asientos"  value={vehicleSeats} />
+                  <ReviewRow label="Servicios" value={services.map(s =>
                     SERVICE_OPTIONS.find(o => o.key === s)?.label ?? s
                   ).join(', ')} />
                 </View>
 
                 <View style={styles.reviewSection}>
-                  <Text style={styles.reviewSectionTitle}>Insurance</Text>
-                  <ReviewRow label="Company"  value={insuranceCompany} />
-                  <ReviewRow label="Policy #" value={insurancePolicyNumber} />
-                  <ReviewRow label="Expiry"   value={insuranceExpiry} />
+                  <Text style={styles.reviewSectionTitle}>Seguro</Text>
+                  <ReviewRow label="Aseguradora" value={insuranceCompany} />
+                  <ReviewRow label="Póliza #"    value={insurancePolicyNumber} />
+                  <ReviewRow label="Vencimiento" value={insuranceExpiry} />
                 </View>
 
                 <View style={styles.reviewSection}>
-                  <Text style={styles.reviewSectionTitle}>Languages</Text>
-                  <ReviewRow label="Languages" value={languages.map(l =>
+                  <Text style={styles.reviewSectionTitle}>Idiomas</Text>
+                  <ReviewRow label="Idiomas" value={languages.map(l =>
                     LANGUAGE_OPTIONS.find(o => o.key === l)?.label ?? l
                   ).join(', ')} />
                 </View>
 
                 {specialEquipment.length > 0 && (
                   <View style={styles.reviewSection}>
-                    <Text style={styles.reviewSectionTitle}>Vehicle equipment</Text>
-                    <ReviewRow label="Equipment" value={specialEquipment.map(e =>
+                    <Text style={styles.reviewSectionTitle}>Equipamiento</Text>
+                    <ReviewRow label="Equipamiento" value={specialEquipment.map(e =>
                       EQUIPMENT_OPTIONS.find(o => o.key === e)?.label ?? e
                     ).join(', ')} />
                   </View>
                 )}
 
                 <View style={styles.reviewSection}>
-                  <Text style={styles.reviewSectionTitle}>Preferences</Text>
-                  <ReviewRow label="Long distance trips" value={longDistanceAvailable ? 'Yes' : 'No'} />
-                  <ReviewRow label="Smoker" value={smokes ? 'Yes' : 'No'} />
+                  <Text style={styles.reviewSectionTitle}>Preferencias</Text>
+                  <ReviewRow label="Viajes largos"  value={longDistanceAvailable ? 'Sí' : 'No'} />
+                  <ReviewRow label="Fumador"        value={smokes ? 'Sí' : 'No'} />
                   <ReviewRow
-                    label="Music"
+                    label="Música"
                     value={musicPreference === 'custom' && musicArtist
                       ? musicArtist
                       : MUSIC_OPTIONS.find(o => o.key === musicPreference)?.label ?? musicPreference}
@@ -1316,11 +1309,11 @@ export default function RegisterDriverScreen() {
                 </View>
 
                 <View style={styles.reviewSection}>
-                  <Text style={styles.reviewSectionTitle}>Uploaded documents</Text>
+                  <Text style={styles.reviewSectionTitle}>Documentos subidos</Text>
                   {REQUIRED_DOCS.map(d => (
                     <ReviewRow key={d}
                       label={d.replace(/_/g, ' ')}
-                      value={docs[d].uploaded ? '✓ Uploaded' : '✗ Pending'}
+                      value={docs[d].uploaded ? '✓ Subido' : '✗ Pendiente'}
                       valueColor={docs[d].uploaded ? BRAND_COLORS.ACCENT : BRAND_COLORS.ALERT}
                     />
                   ))}
@@ -1328,11 +1321,11 @@ export default function RegisterDriverScreen() {
 
                 {CERTIFICATION_OPTIONS.some(c => docs[c.docType].uploaded) && (
                   <View style={styles.reviewSection}>
-                    <Text style={styles.reviewSectionTitle}>Certifications</Text>
+                    <Text style={styles.reviewSectionTitle}>Certificaciones</Text>
                     {CERTIFICATION_OPTIONS.filter(c => docs[c.docType].uploaded).map(c => (
                       <ReviewRow key={c.key}
                         label={c.label}
-                        value="✓ Uploaded"
+                        value="✓ Subido"
                         valueColor={BRAND_COLORS.ACCENT}
                       />
                     ))}
@@ -1342,7 +1335,7 @@ export default function RegisterDriverScreen() {
 
               <View style={styles.infoBox}>
                 <Text style={styles.infoText}>
-                  📋 Our team will review your application within 24-48 hours. You will receive a notification once approved.
+                  📋 Nuestro equipo revisará tu solicitud en 24-48 horas. Recibirás una notificación una vez aprobado.
                 </Text>
               </View>
 
@@ -1354,7 +1347,7 @@ export default function RegisterDriverScreen() {
               >
                 {isSubmittingReview
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.primaryButtonText}>Submit application</Text>
+                  : <Text style={styles.primaryButtonText}>Enviar solicitud</Text>
                 }
               </TouchableOpacity>
             </View>
@@ -1373,13 +1366,13 @@ export default function RegisterDriverScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalSheet}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Select state</Text>
+              <Text style={styles.modalTitle}>Seleccionar estado</Text>
               <TouchableOpacity onPress={() => setShowStatePicker(false)}>
                 <Text style={styles.modalClose}>✕</Text>
               </TouchableOpacity>
             </View>
             <FlatList
-              data={US_STATES}
+              data={VE_STATES}
               keyExtractor={(item) => item.code}
               renderItem={({ item }) => (
                 <TouchableOpacity

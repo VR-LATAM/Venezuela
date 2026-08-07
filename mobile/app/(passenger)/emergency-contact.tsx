@@ -31,7 +31,7 @@ export default function EmergencyContactScreen() {
   }, []);
 
   const handleSave = async () => {
-    if (!name.trim()) { Alert.alert('Required', 'Please enter a name'); return; }
+    if (!name.trim()) { Alert.alert('Requerido', 'Por favor ingresa un nombre'); return; }
     setSaving(true);
     try {
       await apiClient.patch('/passenger/emergency-contact', {
@@ -40,12 +40,12 @@ export default function EmergencyContactScreen() {
         email: email.trim() || undefined,
       });
       Alert.alert(
-        'Saved',
-        `${name} will be notified by email if you activate the SOS button during a ride.`,
+        'Guardado',
+        `${name} será notificado por correo electrónico si activas el botón SOS durante un viaje.`,
         [{ text: 'OK', onPress: () => router.back() }]
       );
     } catch {
-      Alert.alert('Error', 'Could not save. Please try again.');
+      Alert.alert('Error', 'No se pudo guardar. Inténtalo de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -63,46 +63,46 @@ export default function EmergencyContactScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Emergency Contact</Text>
+        <Text style={styles.headerTitle}>Contacto de emergencia</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.infoBox}>
           <Text style={styles.infoIcon}>🚨</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.infoTitle}>Who gets notified on SOS?</Text>
+            <Text style={styles.infoTitle}>¿Quién recibe la alerta SOS?</Text>
             <Text style={styles.infoText}>
-              When you press and hold the SOS button during a ride, this person receives
-              an automatic email with your location and the time of the alert.
+              Cuando mantienes presionado el botón SOS durante un viaje, esta persona recibe
+              un correo automático con tu ubicación y la hora de la alerta.
             </Text>
           </View>
         </View>
 
-        <Text style={styles.label}>Full name *</Text>
+        <Text style={styles.label}>Nombre completo *</Text>
         <TextInput
           style={styles.input}
           value={name}
           onChangeText={setName}
-          placeholder="e.g. Maria Labrador"
+          placeholder="Ej. María Labrador"
           maxLength={100}
         />
 
-        <Text style={styles.label}>Phone number (optional)</Text>
+        <Text style={styles.label}>Teléfono (opcional)</Text>
         <TextInput
           style={styles.input}
           value={phone}
           onChangeText={setPhone}
-          placeholder="+1 (555) 000-0000"
+          placeholder="(0412) 123-4567"
           keyboardType="phone-pad"
           maxLength={20}
         />
 
-        <Text style={styles.label}>Email address (recommended)</Text>
+        <Text style={styles.label}>Correo electrónico (recomendado)</Text>
         <TextInput
           style={styles.input}
           value={email}
           onChangeText={setEmail}
-          placeholder="contact@email.com"
+          placeholder="contacto@correo.com"
           keyboardType="email-address"
           autoCapitalize="none"
           maxLength={100}
@@ -110,7 +110,7 @@ export default function EmergencyContactScreen() {
 
         <View style={styles.noteBox}>
           <Text style={styles.noteText}>
-            At least one of phone or email is required for the alert to be sent.
+            Se requiere al menos teléfono o correo para que la alerta pueda enviarse.
           </Text>
         </View>
       </ScrollView>
@@ -123,7 +123,7 @@ export default function EmergencyContactScreen() {
         >
           {saving
             ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.saveBtnText}>Save Emergency Contact</Text>
+            : <Text style={styles.saveBtnText}>Guardar contacto de emergencia</Text>
           }
         </TouchableOpacity>
       </View>

@@ -87,10 +87,10 @@ export default function RideScreen() {
   const flatListRef   = useRef<FlatList>(null);
 
   const QUICK_MESSAGES = [
-    "I'll be right there",
-    "I'm in the lobby",
-    "Please come to the entrance",
-    "Running 2 minutes late",
+    "Ya voy para allá",
+    "Estoy en el lobby",
+    "Por favor ven a la entrada",
+    "Llego en 2 minutos",
   ];
 
   const nearbyAlertShown  = useRef(false);
@@ -132,7 +132,7 @@ export default function RideScreen() {
         if (distanceMiles < 0.3) {
           nearbyAlertShown.current = true;
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          Alert.alert('🚗 Driver nearby', 'Your driver is less than 0.3 miles away. Get ready!');
+          Alert.alert('🚗 Conductor cerca', 'Tu conductor está a menos de 500 m. ¡Prepárate!');
         }
       }
     }
@@ -152,8 +152,8 @@ export default function RideScreen() {
       setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 400);
       if (paymentStatus === 'failed') {
         Alert.alert(
-          'Payment issue',
-          `Your ride ($${(totalCharged ?? 0).toFixed(2)}) could not be charged. Please update your payment method.`,
+          'Problema de pago',
+          `Tu viaje ($${(totalCharged ?? 0).toFixed(2)}) no pudo ser cobrado. Por favor actualiza tu método de pago.`,
           [{ text: 'OK', onPress: () => router.replace('/(passenger)/rating') }]
         );
       } else {
@@ -167,7 +167,7 @@ export default function RideScreen() {
     });
 
     const unsubCancelled = socketService.on('passenger:ride_cancelled_by_driver', () => {
-      Alert.alert('Ride cancelled', 'The driver cancelled the ride.');
+      Alert.alert('Viaje cancelado', 'El conductor canceló el viaje.');
       resetPassengerState();
       router.replace('/(passenger)/home');
     });
@@ -208,12 +208,12 @@ export default function RideScreen() {
   // ─────────────────────────────────────
   const handleEmergency = () => {
     Alert.alert(
-      '🚨 Activate SOS',
-      'Send an emergency alert to the Verona Ride team?',
+      '🚨 Activar SOS',
+      '¿Enviar una alerta de emergencia al equipo de V-Ride?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Yes, activate',
+          text: 'Sí, activar',
           style: 'destructive',
           onPress: async () => {
             setIsSosActive(true);
@@ -226,15 +226,15 @@ export default function RideScreen() {
               });
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
               Alert.alert(
-                '🚨 SOS activated',
-                'The Verona Ride team has been notified. You can also call 911.',
+                '🚨 SOS activado',
+                'El equipo de V-Ride ha sido notificado. También puedes llamar al 911.',
                 [
-                  { text: 'Call 911', onPress: () => Linking.openURL('tel:911') },
+                  { text: 'Llamar al 911', onPress: () => Linking.openURL('tel:911') },
                   { text: 'OK' },
                 ]
               );
             } catch {
-              Alert.alert('Error', 'Could not send the alert. Call 911 directly.');
+              Alert.alert('Error', 'No se pudo enviar la alerta. Llama al 911 directamente.');
             }
           },
         },
@@ -254,8 +254,8 @@ export default function RideScreen() {
         recordingRef.current = null;
         setIsRecording(false);
         Alert.alert(
-          'Recording saved',
-          'The audio recording has been saved to your device for dispute resolution purposes.',
+          'Grabación guardada',
+          'La grabación de audio ha sido guardada en tu dispositivo para fines de resolución de disputas.',
           [{ text: 'OK' }]
         );
         console.log(`Recording saved at: ${uri}`);
@@ -268,17 +268,17 @@ export default function RideScreen() {
     // Solicitar permiso y empezar grabación
     const { granted } = await Audio.requestPermissionsAsync();
     if (!granted) {
-      Alert.alert('Permission required', 'Microphone access is needed to record audio.');
+      Alert.alert('Permiso requerido', 'Se necesita acceso al micrófono para grabar audio.');
       return;
     }
 
     Alert.alert(
-      'Record trip audio',
-      'This recording is stored on your device only and can be used as evidence if you need to report an issue.',
+      'Grabar audio del viaje',
+      'Esta grabación se almacena solo en tu dispositivo y puede usarse como evidencia si necesitas reportar un problema.',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Start recording',
+          text: 'Iniciar grabación',
           onPress: async () => {
             try {
               await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
@@ -289,7 +289,7 @@ export default function RideScreen() {
               setIsRecording(true);
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             } catch {
-              Alert.alert('Error', 'Could not start recording. Please try again.');
+              Alert.alert('Error', 'No se pudo iniciar la grabación. Inténtalo de nuevo.');
             }
           },
         },
@@ -311,14 +311,14 @@ export default function RideScreen() {
     const minutesElapsed = (Date.now() - rideStartTime.current.getTime()) / 60000;
     const hasFee = minutesElapsed > 2;
     Alert.alert(
-      'Cancel ride',
+      'Cancelar viaje',
       hasFee
-        ? 'A $3.00 cancellation fee applies since more than 2 minutes have passed. Do you want to cancel?'
-        : 'Do you want to cancel this ride?',
+        ? 'Se aplica un cargo de cancelación de $3.00 ya que han pasado más de 2 minutos. ¿Deseas cancelar?'
+        : '¿Deseas cancelar este viaje?',
       [
-        { text: 'Keep ride', style: 'cancel' },
+        { text: 'Mantener viaje', style: 'cancel' },
         {
-          text: 'Cancel ride',
+          text: 'Cancelar viaje',
           style: 'destructive',
           onPress: async () => {
             if (!currentRide?.id) return;
@@ -328,7 +328,7 @@ export default function RideScreen() {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
               router.replace('/(passenger)/home');
             } catch {
-              Alert.alert('Error', 'Could not cancel the ride. Please try again.');
+              Alert.alert('Error', 'No se pudo cancelar el viaje. Inténtalo de nuevo.');
             } finally {
               setIsCancelling(false);
             }
@@ -346,11 +346,11 @@ export default function RideScreen() {
         `/ride/${currentRide.id}/share`
       );
       await Share.share({
-        message: `Track my ride in real time:\n${data.shareUrl}`,
-        title:   'Verona Ride trip tracking',
+        message: `Sigue mi viaje en tiempo real:\n${data.shareUrl}`,
+        title:   'Seguimiento de viaje V-Ride',
       });
     } catch {
-      Alert.alert('Error', 'Could not generate tracking link.');
+      Alert.alert('Error', 'No se pudo generar el enlace de seguimiento.');
     } finally {
       setIsSharing(false);
     }
@@ -417,7 +417,7 @@ export default function RideScreen() {
         {dropoffLat && dropoffLng && (
           <Marker
             coordinate={{ latitude: dropoffLat, longitude: dropoffLng }}
-            title="Destination"
+            title="Destino"
           >
             <View style={{ backgroundColor: '#fff', borderRadius: 20, padding: 2, borderWidth: 2, borderColor: BRAND_COLORS.ALERT }}>
               <Text style={{ fontSize: 20 }}>📍</Text>
@@ -453,9 +453,9 @@ export default function RideScreen() {
         <View style={styles.header}>
           <View style={styles.statusBadge}>
             <View style={styles.statusDot} />
-            <Text style={styles.statusText}>Trip in progress</Text>
+            <Text style={styles.statusText}>Viaje en curso</Text>
             {etaMinutes !== null && (
-              <Text style={styles.etaText}>  ·  {etaMinutes} min  {distanceMiles !== null ? `· ${distanceMiles} mi` : ''}</Text>
+              <Text style={styles.etaText}>  ·  {etaMinutes} min  {distanceMiles !== null ? `· ${distanceMiles} km` : ''}</Text>
             )}
           </View>
         </View>
@@ -473,7 +473,7 @@ export default function RideScreen() {
             />
             <View style={styles.driverInfo}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={styles.driverName}>{assignedDriver.name ?? 'Driver'}</Text>
+                <Text style={styles.driverName}>{assignedDriver.name ?? 'Conductor'}</Text>
                 {(() => {
                   const badge = getDriverBadge(assignedDriver.total_rides ?? 0, Number(assignedDriver.rating_avg) || 5);
                   return (
@@ -507,7 +507,7 @@ export default function RideScreen() {
           <View style={styles.destinationRow}>
             <Text style={styles.destinationIcon}>📍</Text>
             <View style={styles.destinationInfo}>
-              <Text style={styles.destinationLabel}>Destination</Text>
+              <Text style={styles.destinationLabel}>Destino</Text>
               <Text style={styles.destinationAddress} numberOfLines={2}>
                 {currentRide.dropoff_address}
               </Text>
@@ -521,17 +521,17 @@ export default function RideScreen() {
             style={styles.actionBtn}
             onPress={() => {
               Alert.alert(
-                'Call driver',
-                'For your privacy, direct calls are not available. Use the chat to communicate with your driver.',
+                'Llamar al conductor',
+                'Por tu privacidad, las llamadas directas no están disponibles. Usa el chat para comunicarte con tu conductor.',
                 [
-                  { text: 'Cancel', style: 'cancel' },
-                  { text: 'Open chat', onPress: () => setChatOpen(true) },
+                  { text: 'Cancelar', style: 'cancel' },
+                  { text: 'Abrir chat', onPress: () => setChatOpen(true) },
                 ]
               );
             }}
           >
             <Text style={styles.actionEmoji}>📞</Text>
-            <Text style={styles.actionLabel}>Call</Text>
+            <Text style={styles.actionLabel}>Llamar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -540,6 +540,7 @@ export default function RideScreen() {
           >
             <Text style={styles.actionEmoji}>💬</Text>
             <Text style={styles.actionLabel}>Chat</Text>
+
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -548,7 +549,7 @@ export default function RideScreen() {
             disabled={isSharing}
           >
             <Text style={styles.actionEmoji}>📤</Text>
-            <Text style={styles.actionLabel}>{isSharing ? '...' : 'Share'}</Text>
+            <Text style={styles.actionLabel}>{isSharing ? '...' : 'Compartir'}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -557,7 +558,7 @@ export default function RideScreen() {
           >
             <Text style={styles.actionEmoji}>{isRecording ? '⏹️' : '🎙️'}</Text>
             <Text style={[styles.actionLabel, isRecording && { color: BRAND_COLORS.ALERT }]}>
-              {isRecording ? 'Stop' : 'Record'}
+              {isRecording ? 'Detener' : 'Grabar'}
             </Text>
           </TouchableOpacity>
 
@@ -567,7 +568,7 @@ export default function RideScreen() {
             disabled={isCancelling}
           >
             <Text style={styles.actionEmoji}>✕</Text>
-            <Text style={[styles.actionLabel, { color: BRAND_COLORS.ALERT }]}>Cancel</Text>
+            <Text style={[styles.actionLabel, { color: BRAND_COLORS.ALERT }]}>Cancelar</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -586,7 +587,7 @@ export default function RideScreen() {
           <View style={styles.chatOverlay}>
             <View style={styles.chatSheet}>
               <View style={styles.chatHeader}>
-                <Text style={styles.chatTitle}>Chat with driver</Text>
+                <Text style={styles.chatTitle}>Chat con el conductor</Text>
                 <TouchableOpacity onPress={() => setChatOpen(false)}>
                   <Text style={styles.chatClose}>✕</Text>
                 </TouchableOpacity>
@@ -599,7 +600,7 @@ export default function RideScreen() {
                 style={styles.chatMessages}
                 contentContainerStyle={{ padding: 12, gap: 8 }}
                 ListEmptyComponent={
-                  <Text style={styles.chatEmpty}>No messages yet. Say hello!</Text>
+                  <Text style={styles.chatEmpty}>Aún no hay mensajes. ¡Di hola!</Text>
                 }
                 renderItem={({ item }) => (
                   <View style={[styles.bubble, item.fromMe ? styles.bubbleMe : styles.bubbleThem]}>
@@ -624,7 +625,7 @@ export default function RideScreen() {
                   style={styles.chatInput}
                   value={chatMessage}
                   onChangeText={setChatMessage}
-                  placeholder="Type a message..."
+                  placeholder="Escribe un mensaje..."
                   placeholderTextColor="#aaa"
                   returnKeyType="send"
                   onSubmitEditing={() => sendMessage(chatMessage)}
@@ -634,7 +635,7 @@ export default function RideScreen() {
                   onPress={() => sendMessage(chatMessage)}
                   disabled={!chatMessage.trim()}
                 >
-                  <Text style={styles.chatSendText}>Send</Text>
+                  <Text style={styles.chatSendText}>Enviar</Text>
                 </TouchableOpacity>
               </View>
             </View>

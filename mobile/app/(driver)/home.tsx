@@ -75,33 +75,33 @@ const STATUS_CONFIG: Record<DriverStatus, {
   emoji: string; title: string; description: string; color: string; bgColor: string;
 }> = {
   pending: {
-    emoji: '📋', title: 'Complete your registration',
-    description: 'Upload your documents and submit your application for review.',
+    emoji: '📋', title: 'Completa tu registro',
+    description: 'Sube tus documentos y envía tu solicitud para revisión.',
     color: '#F59E0B', bgColor: '#FFFBEB',
   },
   under_review: {
-    emoji: '🔍', title: 'Under review',
-    description: 'Reviewing your application. We will notify you within 24-48 hours.',
+    emoji: '🔍', title: 'En revisión',
+    description: 'Estamos revisando tu solicitud. Te notificaremos en 24-48 horas.',
     color: BRAND_COLORS.PRIMARY, bgColor: '#EFF6FF',
   },
   active: {
-    emoji: '✅', title: 'Account active',
-    description: 'You can go online and receive ride requests.',
+    emoji: '✅', title: 'Cuenta activa',
+    description: 'Puedes conectarte y recibir solicitudes de viaje.',
     color: BRAND_COLORS.ACCENT, bgColor: '#F0FFF4',
   },
   inactive: {
-    emoji: '⏸️', title: 'Account inactive',
-    description: 'Contact support to reactivate your account.',
+    emoji: '⏸️', title: 'Cuenta inactiva',
+    description: 'Contacta a soporte para reactivar tu cuenta.',
     color: '#888', bgColor: '#F5F5F5',
   },
   suspended: {
-    emoji: '🚫', title: 'Account suspended',
-    description: 'Your account has been suspended. Contact support.',
+    emoji: '🚫', title: 'Cuenta suspendida',
+    description: 'Tu cuenta ha sido suspendida. Contacta a soporte.',
     color: BRAND_COLORS.ALERT, bgColor: '#FFF5F5',
   },
   rejected: {
-    emoji: '❌', title: 'Application not approved',
-    description: 'Review the reason, fix your documents and resubmit.',
+    emoji: '❌', title: 'Solicitud no aprobada',
+    description: 'Revisa el motivo, corrige tus documentos y reenvía.',
     color: BRAND_COLORS.ALERT, bgColor: '#FFF5F5',
   },
 };
@@ -474,12 +474,12 @@ export default function DriverHomeScreen() {
       setActiveRide(null);
       setActivePhase(null);
       setAssignedPassenger(null);
-      Alert.alert('Ride cancelled', 'The passenger cancelled the ride.');
+      Alert.alert('Viaje cancelado', 'El pasajero canceló el viaje.');
     });
 
     // El viaje fue tomado por otro conductor
     socketService.on('driver:ride_already_taken', () => {
-      Alert.alert('', 'This ride was already taken by another driver.');
+      Alert.alert('', 'Este viaje ya fue tomado por otro conductor.');
     });
 
     // Info del pasajero al aceptar el viaje
@@ -495,7 +495,7 @@ export default function DriverHomeScreen() {
   const startGPS = useCallback(async () => {
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert('Location permission', 'We need your location to show you on the map.');
+      Alert.alert('Permiso de ubicación', 'Necesitamos tu ubicación para mostrarte en el mapa.');
       return;
     }
 
@@ -636,7 +636,7 @@ export default function DriverHomeScreen() {
   const handleToggleOnline = async () => {
     if (driver?.status !== 'active') return;
     if (activeRide) {
-      Alert.alert('', 'You cannot go offline during an active ride.');
+      Alert.alert('', 'No puedes desconectarte durante un viaje activo.');
       return;
     }
 
@@ -652,11 +652,11 @@ export default function DriverHomeScreen() {
       const certifiedServices = certifications.certified_services ?? [];
       if (certifiedServices.length === 0) {
         Alert.alert(
-          'Certification required',
-          'You must pass at least one service certification exam before going online.',
+          'Certificación requerida',
+          'Debes aprobar al menos un examen de certificación de servicio antes de conectarte.',
           [
-            { text: 'Go to Certifications', onPress: () => router.push('/(driver)/training') },
-            { text: 'Later', style: 'cancel' },
+            { text: 'Ir a Certificaciones', onPress: () => router.push('/(driver)/training') },
+            { text: 'Después', style: 'cancel' },
           ]
         );
         return;
@@ -681,15 +681,15 @@ export default function DriverHomeScreen() {
       const code = err?.response?.data?.code;
       if (code === 'TRAINING_INCOMPLETE') {
         Alert.alert(
-          'Training required',
-          'You must complete all required training modules before going online.',
+          'Capacitación requerida',
+          'Debes completar todos los módulos de capacitación antes de conectarte.',
           [
-            { text: 'Go to Training', onPress: () => router.push('/(driver)/training') },
-            { text: 'Later', style: 'cancel' },
+            { text: 'Ir a Capacitación', onPress: () => router.push('/(driver)/training') },
+            { text: 'Después', style: 'cancel' },
           ]
         );
       } else {
-        Alert.alert('', 'Could not change your status. Check your connection.');
+        Alert.alert('', 'No se pudo cambiar tu estado. Verifica tu conexión.');
       }
     } finally {
       setIsTogglingOnline(false);
@@ -745,7 +745,7 @@ export default function DriverHomeScreen() {
       setActivePhase('arrived');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
-      Alert.alert('', 'Could not mark arrival. Try again.');
+      Alert.alert('', 'No se pudo marcar la llegada. Intenta de nuevo.');
     } finally {
       setIsActionLoading(false);
     }
@@ -760,7 +760,7 @@ export default function DriverHomeScreen() {
       setActivePhase('in_progress');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
-      Alert.alert('', 'Could not start the ride. Try again.');
+      Alert.alert('', 'No se pudo iniciar el viaje. Intenta de nuevo.');
     } finally {
       setIsActionLoading(false);
     }
@@ -781,12 +781,12 @@ export default function DriverHomeScreen() {
 
   const handleEndWait = () => {
     Alert.alert(
-      'Passenger is back?',
-      'End the wait and start the return trip?',
+      '¿El pasajero regresó?',
+      '¿Finalizar la espera e iniciar el regreso?',
       [
-        { text: 'Not yet', style: 'cancel' },
+        { text: 'Todavía no', style: 'cancel' },
         {
-          text: 'Yes, start return',
+          text: 'Sí, iniciar regreso',
           onPress: async () => {
             if (!activeRide) return;
             setIsActionLoading(true);
@@ -806,12 +806,12 @@ export default function DriverHomeScreen() {
 
   const handleCompleteRide = () => {
     Alert.alert(
-      'Finish ride',
-      'Confirm the passenger has reached their destination?',
+      'Finalizar viaje',
+      '¿Confirmas que el pasajero llegó a su destino?',
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Yes, finish',
+          text: 'Sí, finalizar',
           onPress: async () => {
             if (!activeRide) return;
             setIsActionLoading(true);
@@ -828,16 +828,16 @@ export default function DriverHomeScreen() {
 
               // Preguntar al conductor si quiere dejar una nota al pasajero
               Alert.alert(
-                'Leave a note? (optional)',
-                'You can leave a short note for the passenger — e.g. "Left your cane on the back seat".',
+                '¿Dejar una nota? (opcional)',
+                'Puedes dejar una nota breve para el pasajero — ej. "Dejé su bastón en el asiento trasero".',
                 [
-                  { text: 'Skip', onPress: () => router.push('/(driver)/rating') },
+                  { text: 'Omitir', onPress: () => router.push('/(driver)/rating') },
                   {
-                    text: 'Add note',
+                    text: 'Agregar nota',
                     onPress: () => {
                       Alert.prompt?.(
-                        'Note for passenger',
-                        'Max 500 characters',
+                        'Nota para el pasajero',
+                        'Máximo 500 caracteres',
                         async (note) => {
                           if (note?.trim()) {
                             rideMobileService.addDriverNotes(completedRideId, note.trim()).catch(() => {});
@@ -852,7 +852,7 @@ export default function DriverHomeScreen() {
                 ]
               );
             } catch (err) {
-              Alert.alert('', 'Could not finish the ride. Please try again.');
+              Alert.alert('', 'No se pudo finalizar el viaje. Intenta de nuevo.');
             } finally {
               setIsActionLoading(false);
             }
@@ -864,7 +864,7 @@ export default function DriverHomeScreen() {
 
   const handleLogout = async () => {
     if (isOnline) {
-      Alert.alert('', 'Please go offline before signing out.');
+      Alert.alert('', 'Desconéctate antes de cerrar sesión.');
       return;
     }
     socketService.disconnect();
@@ -904,7 +904,7 @@ export default function DriverHomeScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={BRAND_COLORS.PRIMARY} />
-          <Text style={styles.loadingText}>Loading profile...</Text>
+          <Text style={styles.loadingText}>Cargando perfil...</Text>
         </View>
       </SafeAreaView>
     );
@@ -921,8 +921,8 @@ export default function DriverHomeScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.inactiveHeader}>
           <View style={styles.logo}><Image source={require('../../assets/logo.png')} style={{ width: 28, height: 28 }} resizeMode="contain" /></View>
-          <Text style={styles.inactiveHeaderTitle}>Verona Ride Driver</Text>
-          <TouchableOpacity onPress={handleLogout}><Text style={styles.logoutText}>Sign out</Text></TouchableOpacity>
+          <Text style={styles.inactiveHeaderTitle}>Verona Ride Conductor</Text>
+          <TouchableOpacity onPress={handleLogout}><Text style={styles.logoutText}>Cerrar sesión</Text></TouchableOpacity>
         </View>
 
         <ScrollView
@@ -936,13 +936,13 @@ export default function DriverHomeScreen() {
 
             {status === 'rejected' && driver?.rejection_reason && (
               <View style={styles.reasonBox}>
-                <Text style={styles.reasonLabel}>Reason:</Text>
+                <Text style={styles.reasonLabel}>Motivo:</Text>
                 <Text style={styles.reasonText}>{driver.rejection_reason}</Text>
               </View>
             )}
             {status === 'suspended' && driver?.suspension_reason && (
               <View style={styles.reasonBox}>
-                <Text style={styles.reasonLabel}>Reason:</Text>
+                <Text style={styles.reasonLabel}>Motivo:</Text>
                 <Text style={styles.reasonText}>{driver.suspension_reason}</Text>
               </View>
             )}
@@ -953,7 +953,7 @@ export default function DriverHomeScreen() {
               style={[styles.actionButton, { backgroundColor: '#F59E0B' }]}
               onPress={() => router.push('/(auth)/register-driver')}
             >
-              <Text style={styles.actionButtonText}>Complete registration</Text>
+              <Text style={styles.actionButtonText}>Completar registro</Text>
             </TouchableOpacity>
           )}
 
@@ -962,17 +962,17 @@ export default function DriverHomeScreen() {
               style={[styles.actionButton, { backgroundColor: BRAND_COLORS.ALERT }]}
               onPress={() => router.push('/(auth)/register-driver')}
             >
-              <Text style={styles.actionButtonText}>Fix and resubmit</Text>
+              <Text style={styles.actionButtonText}>Corregir y reenviar</Text>
             </TouchableOpacity>
           )}
 
           <View style={styles.profileCard}>
-            <Text style={styles.profileCardTitle}>Profile</Text>
-            <ProfileRow label="Email" value={user?.email ?? ''} />
-            <ProfileRow label="Phone" value={user?.phone ?? '—'} />
-            <ProfileRow label="State" value={user?.state_code ?? 'TX'} />
+            <Text style={styles.profileCardTitle}>Perfil</Text>
+            <ProfileRow label="Correo" value={user?.email ?? ''} />
+            <ProfileRow label="Teléfono" value={user?.phone ?? '—'} />
+            <ProfileRow label="Estado" value={user?.state_code ?? 'DC'} />
             {driver?.referral_code && (
-              <ProfileRow label="Referral code" value={driver.referral_code} />
+              <ProfileRow label="Código de referido" value={driver.referral_code} />
             )}
           </View>
         </ScrollView>
@@ -1108,14 +1108,14 @@ export default function DriverHomeScreen() {
               <Text style={styles.headerName}>{user?.name?.split(' ')[0]}</Text>
               <View style={styles.onlineBadge}>
                 <View style={[styles.onlineDot, { backgroundColor: isOnline ? BRAND_COLORS.ACCENT : '#ccc' }]} />
-                <Text style={styles.onlineBadgeText}>{isOnline ? 'Online' : 'Offline'}</Text>
+                <Text style={styles.onlineBadgeText}>{isOnline ? 'En línea' : 'Desconectado'}</Text>
               </View>
             </View>
           </View>
 
           {/* Ganancias de hoy */}
           <View style={styles.earningsChip}>
-            <Text style={styles.earningsLabel}>Today</Text>
+            <Text style={styles.earningsLabel}>Hoy</Text>
             <Text style={styles.earningsAmount}>
               ${(Number(driver?.available_balance) || 0).toFixed(2)}
             </Text>
@@ -1130,7 +1130,7 @@ export default function DriverHomeScreen() {
       {/* ── BANNER DE LLEGADA ── */}
       {arrivalBanner && (
         <View style={styles.arrivalBanner}>
-          <Text style={styles.arrivalBannerText}>🏁 You are arriving at the destination!</Text>
+          <Text style={styles.arrivalBannerText}>🏁 ¡Estás llegando al destino!</Text>
         </View>
       )}
 
@@ -1169,9 +1169,9 @@ export default function DriverHomeScreen() {
               >
                 <Text style={styles.trainingBannerEmoji}>🎓</Text>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.trainingBannerTitle}>Certification required to go online</Text>
+                  <Text style={styles.trainingBannerTitle}>Certificación requerida para conectarte</Text>
                   <Text style={styles.trainingBannerSub}>
-                    Pass at least one service exam to start receiving rides · Tap to begin
+                    Aprueba al menos un examen de servicio para recibir viajes · Toca para comenzar
                   </Text>
                 </View>
                 <Text style={styles.trainingBannerArrow}>›</Text>
@@ -1188,10 +1188,10 @@ export default function DriverHomeScreen() {
                 <Text style={styles.trainingBannerEmoji}>✅</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.trainingBannerTitle, { color: BRAND_COLORS.ACCENT }]}>
-                    {certifications!.certified_services.length} service{certifications!.certified_services.length !== 1 ? 's' : ''} certified
+                    {certifications!.certified_services.length} servicio{certifications!.certified_services.length !== 1 ? 's' : ''} certificado{certifications!.certified_services.length !== 1 ? 's' : ''}
                   </Text>
                   <Text style={styles.trainingBannerSub}>
-                    Complete more exams to unlock additional services · Tap to continue
+                    Completa más exámenes para desbloquear servicios adicionales · Toca para continuar
                   </Text>
                 </View>
                 <Text style={styles.trainingBannerArrow}>›</Text>
@@ -1209,40 +1209,40 @@ export default function DriverHomeScreen() {
                 elite:    '#22C55E',
               };
               const tierLabels: Record<string, string> = {
-                standard: '15% commission',
-                silver:   '14% commission',
-                elite:    '13% commission',
+                standard: '15% de comisión',
+                silver:   '14% de comisión',
+                elite:    '13% de comisión',
               };
               return (
                 <>
                   <View style={[styles.badgeRow, { backgroundColor: badge.color + '18' }]}>
                     <Text style={{ fontSize: 20 }}>{badge.emoji}</Text>
                     <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
-                    <Text style={styles.badgeHint}> · {driver.total_rides ?? 0} trips</Text>
+                    <Text style={styles.badgeHint}> · {driver.total_rides ?? 0} viajes</Text>
                   </View>
                   {commission && (
                     <View style={[styles.commissionCard, { borderLeftColor: tierColors[commission.tier] ?? '#94A3B8' }]}>
                       <View style={styles.commissionRow}>
-                        <Text style={styles.commissionLabel}>Your commission rate</Text>
+                        <Text style={styles.commissionLabel}>Tu tasa de comisión</Text>
                         <Text style={[styles.commissionRate, { color: tierColors[commission.tier] }]}>
                           {tierLabels[commission.tier]}
                         </Text>
                       </View>
                       {commission.nextTierRides !== null && commission.ratingAvg >= 4.75 ? (
                         <Text style={styles.commissionHint}>
-                          {commission.nextTierRides} more rides this year → {Math.round(commission.nextTierRate * 100)}%
+                          {commission.nextTierRides} viajes más este año → {Math.round(commission.nextTierRate * 100)}%
                         </Text>
                       ) : commission.ratingAvg < 4.75 ? (
                         <Text style={[styles.commissionHint, { color: '#EF4444' }]}>
-                          ⚠️ Rating below 4.75 — maintain rating to unlock lower rates
+                          ⚠️ Calificación por debajo de 4.75 — mantén tu calificación para desbloquear tarifas menores
                         </Text>
                       ) : (
                         <Text style={styles.commissionHint}>
-                          🏆 Elite rate — best commission! Resets January 1st.
+                          🏆 Tarifa élite — ¡mejor comisión! Se reinicia el 1 de enero.
                         </Text>
                       )}
                       <Text style={styles.commissionProgress}>
-                        {commission.ridesThisYear} rides this year
+                        {commission.ridesThisYear} viajes este año
                       </Text>
                     </View>
                   )}
@@ -1259,21 +1259,21 @@ export default function DriverHomeScreen() {
               >
                 <Text style={styles.docAlertText}>
                   {alert.is_expired ? '🚫' : '⚠️'}{' '}
-                  {alert.document_type === 'license' ? "Driver's license" : 'Insurance'}{' '}
-                  {alert.is_expired ? 'EXPIRED' : `expires in ${alert.days_left} day${alert.days_left !== 1 ? 's' : ''}`}
+                  {alert.document_type === 'license' ? 'Licencia' : 'Seguro'}{' '}
+                  {alert.is_expired ? 'VENCIDA' : `vence en ${alert.days_left} día${alert.days_left !== 1 ? 's' : ''}`}
                   {' — '}
                   <Text style={{ textDecorationLine: 'underline' }}
                     onPress={() => router.push('/(driver)/stats')}>
-                    View details
+                    Ver detalles
                   </Text>
                 </Text>
               </View>
             ))}
 
             <View style={styles.statsRow}>
-              <StatCard label="Rides" value={String(driver?.total_rides ?? 0)} />
-              <StatCard label="This month" value={String(driver?.rides_this_month ?? 0)} />
-              <StatCard label="Rating" value={`${(Number(driver?.rating_avg) || 5).toFixed(1)} ⭐`} />
+              <StatCard label="Viajes" value={String(driver?.total_rides ?? 0)} />
+              <StatCard label="Este mes" value={String(driver?.rides_this_month ?? 0)} />
+              <StatCard label="Calificación" value={`${(Number(driver?.rating_avg) || 5).toFixed(1)} ⭐`} />
             </View>
 
             {/* Botón toggle — grande para accesibilidad */}
@@ -1286,7 +1286,7 @@ export default function DriverHomeScreen() {
               disabled={isTogglingOnline}
               accessibilityRole="switch"
               accessibilityState={{ checked: isOnline }}
-              accessibilityLabel={isOnline ? 'Go offline' : 'Go online to receive rides'}
+              accessibilityLabel={isOnline ? 'Desconectarte' : 'Conectarte para recibir viajes'}
             >
               {isTogglingOnline ? (
                 <ActivityIndicator color="#fff" size="small" />
@@ -1294,7 +1294,7 @@ export default function DriverHomeScreen() {
                 <>
                   <Text style={styles.onlineToggleEmoji}>{isOnline ? '🟢' : '⚫'}</Text>
                   <Text style={styles.onlineToggleText}>
-                    {isOnline ? 'Online — Tap to go offline' : 'Tap to go online'}
+                    {isOnline ? 'En línea — Toca para desconectarte' : 'Toca para conectarte'}
                   </Text>
                 </>
               )}
@@ -1302,7 +1302,7 @@ export default function DriverHomeScreen() {
 
             {isOnline && (
               <Text style={styles.onlineHint}>
-                You are visible to nearby passengers. Wait for a request.
+                Eres visible para pasajeros cercanos. Espera una solicitud.
               </Text>
             )}
           </View>
@@ -1321,7 +1321,7 @@ export default function DriverHomeScreen() {
               <View style={styles.panelHandle} />
               <View style={styles.panelToggleBtn}>
                 <Text style={styles.panelToggleArrow}>{panelExpanded ? '▼' : '▲'}</Text>
-                <Text style={styles.panelToggleLabel}>{panelExpanded ? 'Hide' : 'Show'}</Text>
+                <Text style={styles.panelToggleLabel}>{panelExpanded ? 'Ocultar' : 'Mostrar'}</Text>
               </View>
             </TouchableOpacity>
 
@@ -1338,7 +1338,7 @@ export default function DriverHomeScreen() {
                     />
                     <View style={styles.passengerInfo}>
                       <Text style={styles.passengerName}>{assignedPassenger.name}</Text>
-                      <Text style={styles.passengerLabel}>Passenger</Text>
+                      <Text style={styles.passengerLabel}>Pasajero</Text>
                     </View>
                     {assignedPassenger.patient_phone && (
                       <TouchableOpacity
@@ -1346,7 +1346,7 @@ export default function DriverHomeScreen() {
                         onPress={() => Linking.openURL(`tel:${assignedPassenger.patient_phone}`)}
                       >
                         <Text style={styles.callPatientIcon}>📞</Text>
-                        <Text style={styles.callPatientText}>Call</Text>
+                        <Text style={styles.callPatientText}>Llamar</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -1357,7 +1357,7 @@ export default function DriverHomeScreen() {
                   <View style={styles.rideAddressRow}>
                     <View style={[styles.addrDot, { backgroundColor: BRAND_COLORS.ACCENT }]} />
                     <View style={styles.addrInfo}>
-                      <Text style={styles.addrLabel}>Pickup</Text>
+                      <Text style={styles.addrLabel}>Recogida</Text>
                       <Text style={styles.addrText} numberOfLines={1}>
                         {activeRide.pickup_address}
                       </Text>
@@ -1366,7 +1366,7 @@ export default function DriverHomeScreen() {
                   <View style={styles.rideAddressRow}>
                     <View style={[styles.addrDot, { backgroundColor: BRAND_COLORS.ALERT }]} />
                     <View style={styles.addrInfo}>
-                      <Text style={styles.addrLabel}>Destination</Text>
+                      <Text style={styles.addrLabel}>Destino</Text>
                       <Text style={styles.addrText} numberOfLines={1}>
                         {activeRide.dropoff_address}
                       </Text>
@@ -1385,7 +1385,7 @@ export default function DriverHomeScreen() {
               >
                 {isActionLoading
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.rideActionText}>📍 I arrived at the pickup point</Text>
+                  : <Text style={styles.rideActionText}>📍 Llegué al punto de recogida</Text>
                 }
               </TouchableOpacity>
             )}
@@ -1398,7 +1398,7 @@ export default function DriverHomeScreen() {
               >
                 {isActionLoading
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.rideActionText}>🚀 Start ride</Text>
+                  : <Text style={styles.rideActionText}>🚀 Iniciar viaje</Text>
                 }
               </TouchableOpacity>
             )}
@@ -1411,7 +1411,7 @@ export default function DriverHomeScreen() {
               >
                 {isActionLoading
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.rideActionText}>✅ Complete ride</Text>
+                  : <Text style={styles.rideActionText}>✅ Completar viaje</Text>
                 }
               </TouchableOpacity>
             )}
@@ -1425,14 +1425,14 @@ export default function DriverHomeScreen() {
               >
                 {isActionLoading
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.rideActionText}>⏳ Arrived — Start Waiting</Text>
+                  : <Text style={styles.rideActionText}>⏳ Llegué — Iniciar espera</Text>
                 }
               </TouchableOpacity>
             )}
 
             {activePhase === 'in_progress' && (activeRide as any)?.service_type === 'wait_and_return' && waitStartedAt && (
               <View style={styles.waitTimerBox}>
-                <Text style={styles.waitTimerLabel}>⏱ Waiting at appointment</Text>
+                <Text style={styles.waitTimerLabel}>⏱ Esperando en cita</Text>
                 <Text style={styles.waitTimerValue}>
                   {String(Math.floor(waitElapsedSec / 60)).padStart(2, '0')}:{String(waitElapsedSec % 60).padStart(2, '0')}
                 </Text>
@@ -1442,7 +1442,7 @@ export default function DriverHomeScreen() {
                   onPress={handleEndWait}
                   disabled={isActionLoading}
                 >
-                  <Text style={styles.rideActionText}>🚗 Passenger is back — Start Return</Text>
+                  <Text style={styles.rideActionText}>🚗 El pasajero regresó — Iniciar retorno</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -1456,7 +1456,7 @@ export default function DriverHomeScreen() {
               >
                 {isActionLoading
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.rideActionText}>✅ Complete ride</Text>
+                  : <Text style={styles.rideActionText}>✅ Completar viaje</Text>
                 }
               </TouchableOpacity>
             )}
@@ -1485,27 +1485,27 @@ export default function DriverHomeScreen() {
                 <TouchableOpacity
                   style={styles.cancelRideBtn}
                   onPress={() => Alert.alert(
-                    'Cancel ride',
-                    'Are you sure you want to cancel this ride?',
+                    'Cancelar viaje',
+                    '¿Estás seguro de que quieres cancelar este viaje?',
                     [
                       { text: 'No', style: 'cancel' },
                       {
-                        text: 'Yes, cancel',
+                        text: 'Sí, cancelar',
                         style: 'destructive',
                         onPress: async () => {
                           try {
-                            if (activeRide) await rideMobileService.cancelRide(activeRide.id, 'Cancelled by driver');
+                            if (activeRide) await rideMobileService.cancelRide(activeRide.id, 'Cancelado por el conductor');
                             setActiveRide(null);
                             setActivePhase(null);
                           } catch {
-                            Alert.alert('Error', 'Could not cancel the ride. Try again.');
+                            Alert.alert('Error', 'No se pudo cancelar el viaje. Intenta de nuevo.');
                           }
                         },
                       },
                     ]
                   )}
                 >
-                  <Text style={styles.cancelRideBtnText}>✕ Cancel ride</Text>
+                  <Text style={styles.cancelRideBtnText}>✕ Cancelar viaje</Text>
                 </TouchableOpacity>
 
                 <SOSButton
@@ -1534,7 +1534,7 @@ export default function DriverHomeScreen() {
           <View style={styles.chatOverlay}>
             <View style={styles.chatSheet}>
               <View style={styles.chatHeader}>
-                <Text style={styles.chatTitle}>Chat with passenger</Text>
+                <Text style={styles.chatTitle}>Chat con pasajero</Text>
                 <TouchableOpacity onPress={() => setChatOpen(false)}>
                   <Text style={styles.chatClose}>✕</Text>
                 </TouchableOpacity>
@@ -1545,7 +1545,7 @@ export default function DriverHomeScreen() {
                 keyExtractor={(_, i) => String(i)}
                 style={styles.chatMessages}
                 contentContainerStyle={{ padding: 12, gap: 8 }}
-                ListEmptyComponent={<Text style={styles.chatEmpty}>No messages yet.</Text>}
+                ListEmptyComponent={<Text style={styles.chatEmpty}>Sin mensajes aún.</Text>}
                 renderItem={({ item }) => (
                   <View style={[styles.bubble, item.fromMe ? styles.bubbleMe : styles.bubbleThem]}>
                     <Text style={[styles.bubbleText, item.fromMe ? styles.bubbleTextMe : styles.bubbleTextThem]}>
@@ -1560,7 +1560,7 @@ export default function DriverHomeScreen() {
                   style={styles.chatInput}
                   value={chatMessage}
                   onChangeText={setChatMessage}
-                  placeholder="Type a message..."
+                  placeholder="Escribe un mensaje..."
                   placeholderTextColor="#aaa"
                   autoCapitalize="none"
                   returnKeyType="send"
@@ -1571,7 +1571,7 @@ export default function DriverHomeScreen() {
                   onPress={() => sendDriverMessage(chatMessage)}
                   disabled={!chatMessage.trim()}
                 >
-                  <Text style={styles.chatSendText}>Send</Text>
+                  <Text style={styles.chatSendText}>Enviar</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -1593,17 +1593,17 @@ export default function DriverHomeScreen() {
               <View style={styles.menuAvatarInfo}>
                 <Text style={styles.menuAvatarName}>{user?.name ?? 'Driver'}</Text>
                 <Text style={styles.menuAvatarHint}>
-                  {uploadingPhoto ? 'Uploading...' : 'Tap to change photo'}
+                  {uploadingPhoto ? 'Subiendo...' : 'Toca para cambiar foto'}
                 </Text>
               </View>
             </TouchableOpacity>
             {[
-              { icon: '🗂️', label: 'Service history', route: '/(driver)/service-history' as const },
-              { icon: '💰', label: 'Earnings',         route: '/(driver)/earnings'        as const },
-              { icon: '📊', label: 'My Stats',          route: '/(driver)/stats'           as const },
-              { icon: '🧾', label: 'Tax Report (1099)', route: '/(driver)/tax-report'      as const },
-              { icon: '🎁', label: 'Referrals',        route: '/(driver)/referrals'       as const },
-              { icon: '📚', label: 'Training',          route: '/(driver)/training'        as const },
+              { icon: '🗂️', label: 'Historial de servicio', route: '/(driver)/service-history' as const },
+              { icon: '💰', label: 'Ganancias',             route: '/(driver)/earnings'        as const },
+              { icon: '📊', label: 'Mis estadísticas',      route: '/(driver)/stats'           as const },
+              { icon: '🧾', label: 'Informe fiscal',        route: '/(driver)/tax-report'      as const },
+              { icon: '🎁', label: 'Referidos',             route: '/(driver)/referrals'       as const },
+              { icon: '📚', label: 'Capacitación',          route: '/(driver)/training'        as const },
             ].map(item => (
               <TouchableOpacity
                 key={item.label}
@@ -1616,10 +1616,10 @@ export default function DriverHomeScreen() {
             ))}
             <View style={{ height: 8 }} />
             {[
-              { icon: 'ℹ️', label: 'About Us',       route: '/(info)/about'   as const },
-              { icon: '🔒', label: 'Privacy Policy', route: '/(info)/privacy' as const },
-              { icon: '📋', label: 'Legal Notice',   route: '/(info)/legal'   as const },
-              { icon: '✉️', label: 'Contact Us',     route: '/(info)/contact' as const },
+              { icon: 'ℹ️', label: 'Acerca de',             route: '/(info)/about'   as const },
+              { icon: '🔒', label: 'Política de privacidad', route: '/(info)/privacy' as const },
+              { icon: '📋', label: 'Aviso legal',           route: '/(info)/legal'   as const },
+              { icon: '✉️', label: 'Contáctanos',           route: '/(info)/contact' as const },
             ].map(item => (
               <TouchableOpacity
                 key={item.label}
@@ -1633,10 +1633,10 @@ export default function DriverHomeScreen() {
             <View style={{ height: 8 }} />
             <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); void handleLogout(); }}>
               <Text style={styles.menuItemIcon}>🚪</Text>
-              <Text style={[styles.menuItemText, { color: BRAND_COLORS.ALERT }]}>Log out</Text>
+              <Text style={[styles.menuItemText, { color: BRAND_COLORS.ALERT }]}>Cerrar sesión</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.menuCloseBtn} onPress={() => setMenuVisible(false)}>
-              <Text style={styles.menuCloseBtnText}>Close</Text>
+              <Text style={styles.menuCloseBtnText}>Cerrar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>

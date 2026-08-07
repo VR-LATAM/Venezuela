@@ -6,16 +6,16 @@ import { router } from 'expo-router';
 import { BRAND_COLORS } from '@vride/shared';
 
 const sections = [
-  { title: '1. Company Information', body: 'Verona Ride LLC\nState of incorporation: Texas, United States\nEmail: support@veronaride.app' },
-  { title: '2. Nature of Service', body: 'Verona Ride operates a technology platform that connects passengers with independent transportation providers. Verona Ride is a technology intermediary and is not itself a transportation company. Drivers are independent contractors, not employees of Verona Ride LLC.' },
-  { title: '3. Limitation of Liability', body: 'To the fullest extent permitted by applicable law, Verona Ride LLC shall not be liable for any indirect, incidental, special, or consequential damages arising from your use of the service. Our total liability shall not exceed the amount you paid to Verona Ride in the three (3) months preceding the claim.' },
-  { title: '4. Disclaimer of Warranties', body: 'The service is provided "as is" and "as available" without warranties of any kind, express or implied. We do not warrant that the service will be uninterrupted or error-free.' },
-  { title: '5. User Responsibilities', body: 'By using Verona Ride, you agree to: provide accurate information, use the service only for lawful purposes, not misuse the platform, treat drivers with respect, and comply with all applicable laws.' },
-  { title: '6. Driver Responsibilities', body: 'Drivers are independent contractors responsible for: holding a valid license and registration, maintaining adequate insurance, complying with transportation regulations, and ensuring the safety and quality of their services.' },
-  { title: '7. Intellectual Property', body: 'All content on Verona Ride — including the logo, brand name, app design, and written content — is the exclusive property of Verona Ride LLC and is protected by U.S. intellectual property laws.' },
-  { title: '8. Governing Law', body: 'This Legal Notice is governed by the laws of the State of Texas, United States, without regard to conflict of law provisions.' },
-  { title: '9. Dispute Resolution', body: 'Disputes shall first be addressed through good-faith negotiation. If not resolved within 30 days, they shall be submitted to binding arbitration under the American Arbitration Association rules, in the State of Texas.' },
-  { title: '10. Contact', body: 'For legal inquiries:\nVerona Ride LLC\nTexas, United States\nEmail: support@veronaride.app' },
+  { title: '1. Información de la empresa', body: 'Verona Group Venezuela\nPaís: Venezuela\nCorreo: support@veronaride.app' },
+  { title: '2. Naturaleza del servicio', body: 'V-Ride Venezuela opera una plataforma tecnológica que conecta pasajeros con proveedores de transporte independientes. V-Ride es un intermediario tecnológico y no es en sí mismo una empresa de transporte. Los conductores son contratistas independientes y no empleados de Verona Group Venezuela.' },
+  { title: '3. Limitación de responsabilidad', body: 'En la medida máxima permitida por la ley venezolana aplicable, Verona Group Venezuela no será responsable de daños indirectos, incidentales, especiales o consecuentes derivados del uso del servicio. Nuestra responsabilidad total no excederá el monto que hayas pagado a V-Ride en los tres (3) meses anteriores al reclamo.' },
+  { title: '4. Descargo de garantías', body: 'El servicio se ofrece "tal cual" y "según disponibilidad" sin garantías de ningún tipo, expresas o implícitas. No garantizamos que el servicio sea ininterrumpido o libre de errores.' },
+  { title: '5. Responsabilidades del usuario', body: 'Al usar V-Ride Venezuela, aceptas: proporcionar información precisa, usar el servicio solo para fines lícitos, no hacer un uso indebido de la plataforma, tratar a los conductores con respeto y cumplir con todas las leyes venezolanas aplicables.' },
+  { title: '6. Responsabilidades del conductor', body: 'Los conductores son contratistas independientes responsables de: mantener una licencia y registro válidos, contar con seguro adecuado, cumplir con la regulación de transporte venezolana y garantizar la seguridad y calidad de sus servicios.' },
+  { title: '7. Propiedad intelectual', body: 'Todo el contenido de V-Ride Venezuela — incluidos el logo, nombre de marca, diseño de la app y contenido escrito — es propiedad exclusiva de Verona Group Venezuela y está protegido por las leyes de propiedad intelectual venezolanas.' },
+  { title: '8. Ley aplicable', body: 'Este Aviso Legal se rige por las leyes de la República Bolivariana de Venezuela, sin perjuicio de las normas sobre conflicto de leyes.' },
+  { title: '9. Resolución de disputas', body: 'Las disputas se abordarán primero mediante negociación de buena fe. Si no se resuelven en 30 días, serán sometidas a los mecanismos de resolución de conflictos establecidos por la legislación venezolana aplicable.' },
+  { title: '10. Contacto', body: 'Para consultas legales:\nVerona Group Venezuela\nVenezuela\nCorreo: support@veronaride.app' },
 ];
 
 export default function LegalScreen() {
@@ -23,13 +23,13 @@ export default function LegalScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← Atrás</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Legal Notice</Text>
+        <Text style={styles.headerTitle}>Aviso legal</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.updated}>Last updated: April 24, 2025</Text>
+        <Text style={styles.updated}>Última actualización: 24 de abril de 2025</Text>
         {sections.map(s => (
           <View key={s.title} style={styles.section}>
             <Text style={styles.sectionTitle}>{s.title}</Text>

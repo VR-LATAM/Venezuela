@@ -6,15 +6,15 @@ import { router } from 'expo-router';
 import { BRAND_COLORS } from '@vride/shared';
 
 const sections = [
-  { title: '1. Introduction', body: 'Verona Ride LLC ("Verona Ride", "we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application and related services.' },
-  { title: '2. Information We Collect', body: 'We collect: full name, email address, phone number, date of birth and government-issued ID (drivers), profile photo, payment information (processed by Stripe — we never store card numbers), GPS location data during trips, and optional mobility/disability preferences if you choose to provide them.' },
-  { title: '3. How We Use Your Information', body: 'We use your information to: provide and improve our service, match passengers with drivers, process payments and issue receipts, send trip updates and safety alerts, respond to support requests, comply with legal obligations, and detect and prevent fraud.' },
-  { title: '4. Sharing of Information', body: 'Limited trip details are shared between matched passengers and drivers. We work with trusted service providers (Stripe, Google Maps, Firebase) under strict confidentiality agreements. We may share information with legal authorities when required by law. We do not sell your personal information.' },
-  { title: '5. Data Retention', body: 'We keep your data while your account is active or as needed to provide our service. Trip records are retained for up to 7 years for legal and accounting purposes. You may request account deletion by contacting us.' },
-  { title: '6. Security', body: 'We use industry-standard security measures including encrypted data transmission (HTTPS/TLS), secure cloud infrastructure, and strict access controls.' },
-  { title: '7. Your Rights', body: 'Depending on your state, you may have the right to access, correct, or delete your personal data, and to opt out of certain data uses. To exercise these rights, contact support@veronaride.app.' },
-  { title: '8. Children\'s Privacy', body: 'Our service is not directed to children under 18. We do not knowingly collect personal information from anyone under 18 years of age.' },
-  { title: '9. Contact', body: 'Questions? Contact us at:\nVerona Ride LLC\nTexas, United States\nEmail: support@veronaride.app' },
+  { title: '1. Introducción', body: 'Verona Group Venezuela ("V-Ride Venezuela", "nosotros" o "nuestro") está comprometido con la protección de tu privacidad. Esta Política de Privacidad explica cómo recopilamos, usamos, divulgamos y protegemos tu información cuando usas nuestra aplicación móvil y servicios relacionados.' },
+  { title: '2. Información que recopilamos', body: 'Recopilamos: nombre completo, correo electrónico, número de teléfono, fecha de nacimiento e identificación oficial (conductores), foto de perfil, información de pago (procesada por Stripe — nunca almacenamos números de tarjeta), datos de ubicación GPS durante los viajes, y preferencias opcionales de movilidad/accesibilidad si eliges proporcionarlas.' },
+  { title: '3. Cómo usamos tu información', body: 'Usamos tu información para: brindar y mejorar nuestro servicio, conectar pasajeros con conductores, procesar pagos y emitir recibos, enviar actualizaciones de viaje y alertas de seguridad, responder solicitudes de soporte, cumplir con obligaciones legales venezolanas, y detectar y prevenir fraudes.' },
+  { title: '4. Compartición de información', body: 'Los detalles limitados del viaje se comparten entre pasajeros y conductores asignados. Trabajamos con proveedores de servicio de confianza (Stripe, Google Maps, Firebase) bajo estrictos acuerdos de confidencialidad. Podemos compartir información con autoridades legales cuando lo exija la ley venezolana. No vendemos tu información personal.' },
+  { title: '5. Retención de datos', body: 'Conservamos tus datos mientras tu cuenta esté activa o según sea necesario para prestar el servicio. Los registros de viajes se conservan hasta 7 años por razones legales y contables. Puedes solicitar la eliminación de tu cuenta contactándonos.' },
+  { title: '6. Seguridad', body: 'Usamos medidas de seguridad estándar de la industria, incluyendo transmisión de datos cifrada (HTTPS/TLS), infraestructura de nube segura y controles de acceso estrictos.' },
+  { title: '7. Tus derechos', body: 'De acuerdo con la legislación venezolana aplicable, puedes tener derecho a acceder, corregir o eliminar tus datos personales, y a oponerte a ciertos usos. Para ejercer estos derechos, contáctanos en support@veronaride.app.' },
+  { title: '8. Privacidad de menores', body: 'Nuestro servicio no está dirigido a menores de 18 años. No recopilamos intencionalmente información personal de menores de 18 años.' },
+  { title: '9. Contacto', body: '¿Preguntas? Contáctanos en:\nVerona Group Venezuela\nVenezuela\nCorreo: support@veronaride.app' },
 ];
 
 export default function PrivacyScreen() {
@@ -22,13 +22,13 @@ export default function PrivacyScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← Atrás</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Privacy Policy</Text>
+        <Text style={styles.headerTitle}>Política de privacidad</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Text style={styles.updated}>Last updated: April 24, 2025</Text>
+        <Text style={styles.updated}>Última actualización: 24 de abril de 2025</Text>
         {sections.map(s => (
           <View key={s.title} style={styles.section}>
             <Text style={styles.sectionTitle}>{s.title}</Text>

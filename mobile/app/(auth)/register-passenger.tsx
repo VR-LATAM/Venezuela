@@ -13,7 +13,6 @@ import {
   ActivityIndicator, Alert, ScrollView, Modal, FlatList, Image,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../src/store/authStore';
 import { useGoogleAuth } from '../../src/hooks/useGoogleAuth';
@@ -23,38 +22,34 @@ import * as Haptics from 'expo-haptics';
 import LicenseScanner from '../../src/components/common/LicenseScanner';
 import { AAMVAData } from '../../src/utils/aamvaParser';
 
-// Lista de estados de EE.UU. — TX activo al lanzamiento
-const US_STATES = [
-  { code: 'TX', name: 'Texas (active)' },
-  { code: 'AL', name: 'Alabama' }, { code: 'AK', name: 'Alaska' },
-  { code: 'AZ', name: 'Arizona' }, { code: 'AR', name: 'Arkansas' },
-  { code: 'CA', name: 'California' }, { code: 'CO', name: 'Colorado' },
-  { code: 'CT', name: 'Connecticut' }, { code: 'DE', name: 'Delaware' },
-  { code: 'FL', name: 'Florida' }, { code: 'GA', name: 'Georgia' },
-  { code: 'HI', name: 'Hawaii' }, { code: 'ID', name: 'Idaho' },
-  { code: 'IL', name: 'Illinois' }, { code: 'IN', name: 'Indiana' },
-  { code: 'IA', name: 'Iowa' }, { code: 'KS', name: 'Kansas' },
-  { code: 'KY', name: 'Kentucky' }, { code: 'LA', name: 'Louisiana' },
-  { code: 'ME', name: 'Maine' }, { code: 'MD', name: 'Maryland' },
-  { code: 'MA', name: 'Massachusetts' }, { code: 'MI', name: 'Michigan' },
-  { code: 'MN', name: 'Minnesota' }, { code: 'MS', name: 'Mississippi' },
-  { code: 'MO', name: 'Missouri' }, { code: 'MT', name: 'Montana' },
-  { code: 'NE', name: 'Nebraska' }, { code: 'NV', name: 'Nevada' },
-  { code: 'NH', name: 'New Hampshire' }, { code: 'NJ', name: 'New Jersey' },
-  { code: 'NM', name: 'New Mexico' }, { code: 'NY', name: 'New York' },
-  { code: 'NC', name: 'North Carolina' }, { code: 'ND', name: 'North Dakota' },
-  { code: 'OH', name: 'Ohio' }, { code: 'OK', name: 'Oklahoma' },
-  { code: 'OR', name: 'Oregon' }, { code: 'PA', name: 'Pennsylvania' },
-  { code: 'RI', name: 'Rhode Island' }, { code: 'SC', name: 'South Carolina' },
-  { code: 'SD', name: 'South Dakota' }, { code: 'TN', name: 'Tennessee' },
-  { code: 'UT', name: 'Utah' }, { code: 'VT', name: 'Vermont' },
-  { code: 'VA', name: 'Virginia' }, { code: 'WA', name: 'Washington' },
-  { code: 'WV', name: 'West Virginia' }, { code: 'WI', name: 'Wisconsin' },
-  { code: 'WY', name: 'Wyoming' },
+const VE_STATES = [
+  { code: 'DC', name: 'Distrito Capital' },
+  { code: 'AM', name: 'Amazonas' },
+  { code: 'AN', name: 'Anzoátegui' },
+  { code: 'AP', name: 'Apure' },
+  { code: 'AR', name: 'Aragua' },
+  { code: 'BA', name: 'Barinas' },
+  { code: 'BO', name: 'Bolívar' },
+  { code: 'CA', name: 'Carabobo' },
+  { code: 'CO', name: 'Cojedes' },
+  { code: 'DA', name: 'Delta Amacuro' },
+  { code: 'FA', name: 'Falcón' },
+  { code: 'GU', name: 'Guárico' },
+  { code: 'LA', name: 'Lara' },
+  { code: 'ME', name: 'Mérida' },
+  { code: 'MI', name: 'Miranda' },
+  { code: 'MO', name: 'Monagas' },
+  { code: 'NE', name: 'Nueva Esparta' },
+  { code: 'PO', name: 'Portuguesa' },
+  { code: 'SU', name: 'Sucre' },
+  { code: 'TA', name: 'Táchira' },
+  { code: 'TR', name: 'Trujillo' },
+  { code: 'VA', name: 'Vargas (La Guaira)' },
+  { code: 'YA', name: 'Yaracuy' },
+  { code: 'ZU', name: 'Zulia' },
 ];
 
 export default function RegisterPassengerScreen() {
-  const { t } = useTranslation();
   const { registerPassenger, socialPassengerAuth, isLoading, clearError } = useAuthStore();
   const { signIn: googleSignIn, ready: googleReady } = useGoogleAuth();
   const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
@@ -65,7 +60,7 @@ export default function RegisterPassengerScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
-  const [stateCode, setStateCode] = useState('TX');
+  const [stateCode, setStateCode] = useState('DC');
   const [showStatePicker, setShowStatePicker] = useState(false);
   const [emergencyName, setEmergencyName]   = useState('');
   const [emergencyPhone, setEmergencyPhone] = useState('');
@@ -79,7 +74,7 @@ export default function RegisterPassengerScreen() {
   const [idDocBackUri, setIdDocBackUri] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
 
-  const selectedStateName = US_STATES.find(s => s.code === stateCode)?.name ?? stateCode;
+  const selectedStateName = VE_STATES.find(s => s.code === stateCode)?.name ?? stateCode;
 
   const handleLicenseScanned = (data: AAMVAData) => {
     setShowScanner(false);
@@ -91,7 +86,7 @@ export default function RegisterPassengerScreen() {
       const addr = [data.address, data.city, data.state, data.zip].filter(Boolean).join(', ');
       if (!homeAddress.trim()) setHomeAddress(addr);
     }
-    if (data.state && US_STATES.find(s => s.code === data.state)) {
+    if (data.state && VE_STATES.find(s => s.code === data.state)) {
       setStateCode(data.state);
     }
   };
@@ -108,7 +103,7 @@ export default function RegisterPassengerScreen() {
     if (!perm.granted) {
       const camPerm = await ImagePicker.requestCameraPermissionsAsync();
       if (!camPerm.granted) {
-        Alert.alert('Permission required', 'We need camera or gallery access to take your profile photo.');
+        Alert.alert('Permiso requerido', 'Necesitamos acceso a la cámara o galería para tu foto de perfil.');
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
@@ -121,9 +116,9 @@ export default function RegisterPassengerScreen() {
       if (!result.canceled && result.assets[0]) setPhotoUri(result.assets[0].uri);
       return;
     }
-    Alert.alert('Profile photo', 'Choose an option', [
+    Alert.alert('Foto de perfil', 'Elige una opción', [
       {
-        text: 'Take selfie',
+        text: 'Tomar selfie',
         onPress: async () => {
           const result = await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -136,7 +131,7 @@ export default function RegisterPassengerScreen() {
         },
       },
       {
-        text: 'Choose from gallery',
+        text: 'Elegir de galería',
         onPress: async () => {
           const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -147,31 +142,31 @@ export default function RegisterPassengerScreen() {
           if (!result.canceled && result.assets[0]) setPhotoUri(result.assets[0].uri);
         },
       },
-      { text: 'Cancel', style: 'cancel' },
+      { text: 'Cancelar', style: 'cancel' },
     ]);
   };
 
   const validate = (): string | null => {
-    if (!photoUri) return 'Please add a profile photo';
-    if (!idDocFrontUri) return 'Please upload the front of your government ID';
-    if (!idDocBackUri)  return 'Please upload the back of your government ID';
-    if (!name.trim() || name.trim().length < 2) return 'Name must be at least 2 characters';
-    if (!homeAddress.trim()) return 'Home address is required';
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return 'Please enter a valid email';
-    if (!password || password.length < 6) return 'Password must be at least 6 characters';
-    if (password !== confirmPassword) return 'Passwords do not match';
+    if (!photoUri) return 'Agrega una foto de perfil';
+    if (!idDocFrontUri) return 'Sube el frente de tu documento de identidad';
+    if (!idDocBackUri)  return 'Sube el dorso de tu documento de identidad';
+    if (!name.trim() || name.trim().length < 2) return 'El nombre debe tener al menos 2 caracteres';
+    if (!homeAddress.trim()) return 'La dirección es requerida';
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) return 'Ingresa un correo válido';
+    if (!password || password.length < 6) return 'La contraseña debe tener al menos 6 caracteres';
+    if (password !== confirmPassword) return 'Las contraseñas no coinciden';
     return null;
   };
 
   const handlePickIdDoc = async (side: 'front' | 'back') => {
     const setUri = side === 'front' ? setIdDocFrontUri : setIdDocBackUri;
-    const label  = side === 'front' ? 'Front of ID' : 'Back of ID';
-    Alert.alert(label, 'Take a photo or choose from gallery', [
+    const label  = side === 'front' ? 'Frente del documento' : 'Dorso del documento';
+    Alert.alert(label, 'Tomar foto o elegir de galería', [
       {
-        text: 'Take photo',
+        text: 'Tomar foto',
         onPress: async () => {
           const perm = await ImagePicker.requestCameraPermissionsAsync();
-          if (!perm.granted) { Alert.alert('Permission required', 'We need camera access.'); return; }
+          if (!perm.granted) { Alert.alert('Permiso requerido', 'Necesitamos acceso a la cámara.'); return; }
           const result = await ImagePicker.launchCameraAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true, quality: 0.9,
@@ -181,10 +176,10 @@ export default function RegisterPassengerScreen() {
         },
       },
       {
-        text: 'Choose from gallery',
+        text: 'Elegir de galería',
         onPress: async () => {
           const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-          if (!perm.granted) { Alert.alert('Permission required', 'We need gallery access.'); return; }
+          if (!perm.granted) { Alert.alert('Permiso requerido', 'Necesitamos acceso a la galería.'); return; }
           const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: false, quality: 0.9,
@@ -192,7 +187,7 @@ export default function RegisterPassengerScreen() {
           if (!result.canceled && result.assets[0]) setUri(result.assets[0].uri);
         },
       },
-      { text: 'Cancel', style: 'cancel' },
+      { text: 'Cancelar', style: 'cancel' },
     ]);
   };
 
@@ -204,7 +199,7 @@ export default function RegisterPassengerScreen() {
       await socialPassengerAuth(result.firebaseToken, result.name);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
-      Alert.alert('Google Sign-In', 'Could not sign in with Google. Please try again.');
+      Alert.alert('Google', 'No se pudo iniciar sesión con Google. Intenta de nuevo.');
     } finally {
       setIsSocialLoading(null);
     }
@@ -218,7 +213,7 @@ export default function RegisterPassengerScreen() {
       await socialPassengerAuth(result.firebaseToken, result.name);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
-      Alert.alert('Apple Sign-In', 'Could not sign in with Apple. Please try again.');
+      Alert.alert('Apple', 'No se pudo iniciar sesión con Apple. Intenta de nuevo.');
     } finally {
       setIsSocialLoading(null);
     }
@@ -264,13 +259,13 @@ export default function RegisterPassengerScreen() {
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
-        '📧 Check your email',
-        `We sent a verification email to ${email.trim().toLowerCase()}. Please verify it to keep your account active.`
+        '📧 Verifica tu correo',
+        `Enviamos un correo de verificación a ${email.trim().toLowerCase()}. Verifícalo para activar tu cuenta.`
       );
     } catch (err) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      const msg = err instanceof Error ? err.message : 'Could not create account. Please try again.';
-      Alert.alert('Registration error', msg);
+      const msg = err instanceof Error ? err.message : 'No se pudo crear la cuenta. Intenta de nuevo.';
+      Alert.alert('Error al registrarse', msg);
     } finally {
       setPhotoUploading(false);
     }
@@ -289,11 +284,11 @@ export default function RegisterPassengerScreen() {
         >
           {/* Header */}
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backText}>← {t('common.back')}</Text>
+            <Text style={styles.backText}>← Atrás</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Create passenger account</Text>
-          <Text style={styles.subtitle}>Sign up to request rides on Verona Ride</Text>
+          <Text style={styles.title}>Crear cuenta de pasajero</Text>
+          <Text style={styles.subtitle}>Regístrate para solicitar viajes en Verona Ride</Text>
 
           {/* ── SOCIAL AUTH ── */}
           <TouchableOpacity
@@ -301,12 +296,12 @@ export default function RegisterPassengerScreen() {
             onPress={handleGoogleSignIn}
             disabled={!googleReady || isSocialLoading !== null}
             accessibilityRole="button"
-            accessibilityLabel="Continue with Google"
+            accessibilityLabel="Continuar con Google"
           >
             {isSocialLoading === 'google' ? (
               <ActivityIndicator color={BRAND_COLORS.TEXT} size="small" />
             ) : (
-              <Text style={styles.socialButtonText}>🌐  Continue with Google</Text>
+              <Text style={styles.socialButtonText}>🌐  Continuar con Google</Text>
             )}
           </TouchableOpacity>
 
@@ -325,19 +320,19 @@ export default function RegisterPassengerScreen() {
 
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or register with email</Text>
+            <Text style={styles.dividerText}>o regístrate con correo</Text>
             <View style={styles.dividerLine} />
           </View>
 
           {/* ── FOTO DE PERFIL ── */}
           <View style={styles.photoSection}>
-            <TouchableOpacity style={styles.photoContainer} onPress={handlePickPhoto} accessibilityRole="button" accessibilityLabel="Add profile photo">
+            <TouchableOpacity style={styles.photoContainer} onPress={handlePickPhoto} accessibilityRole="button" accessibilityLabel="Agregar foto de perfil">
               {photoUri ? (
                 <Image source={{ uri: photoUri }} style={styles.photoPreview} />
               ) : (
                 <View style={styles.photoPlaceholder}>
                   <Text style={styles.photoPlaceholderIcon}>📷</Text>
-                  <Text style={styles.photoPlaceholderText}>Add photo *</Text>
+                  <Text style={styles.photoPlaceholderText}>Agregar foto *</Text>
                 </View>
               )}
               <View style={styles.photoEditBadge}>
@@ -345,15 +340,15 @@ export default function RegisterPassengerScreen() {
               </View>
             </TouchableOpacity>
             <Text style={styles.photoHint}>
-              Your photo helps drivers identify you. <Text style={styles.photoRequired}>Required.</Text>
+              Tu foto ayuda a los conductores a identificarte. <Text style={styles.photoRequired}>Requerida.</Text>
             </Text>
           </View>
 
           {/* ── DOCUMENTO DE IDENTIDAD ── */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Government ID <Text style={styles.photoRequired}>*</Text></Text>
+            <Text style={styles.sectionTitle}>Documento de identidad <Text style={styles.photoRequired}>*</Text></Text>
             <Text style={styles.sectionSubtitle}>
-              Driver's license, passport, or state ID — both sides required.
+              Cédula, pasaporte o licencia — se requieren ambos lados.
             </Text>
             <View style={styles.idDocRow}>
               {/* Frente */}
@@ -365,13 +360,13 @@ export default function RegisterPassengerScreen() {
                 {idDocFrontUri ? (
                   <>
                     <Image source={{ uri: idDocFrontUri }} style={styles.idDocSidePreview} />
-                    <Text style={styles.idDocSideDone}>✓ Front</Text>
+                    <Text style={styles.idDocSideDone}>✓ Frente</Text>
                   </>
                 ) : (
                   <>
                     <Text style={styles.idDocSideIcon}>🪪</Text>
-                    <Text style={styles.idDocSideLabel}>Front *</Text>
-                    <Text style={styles.idDocSideHint}>Tap to upload</Text>
+                    <Text style={styles.idDocSideLabel}>Frente *</Text>
+                    <Text style={styles.idDocSideHint}>Toca para subir</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -384,13 +379,13 @@ export default function RegisterPassengerScreen() {
                 {idDocBackUri ? (
                   <>
                     <Image source={{ uri: idDocBackUri }} style={styles.idDocSidePreview} />
-                    <Text style={styles.idDocSideDone}>✓ Back</Text>
+                    <Text style={styles.idDocSideDone}>✓ Dorso</Text>
                   </>
                 ) : (
                   <>
                     <Text style={styles.idDocSideIcon}>🪪</Text>
-                    <Text style={styles.idDocSideLabel}>Back *</Text>
-                    <Text style={styles.idDocSideHint}>Tap to upload</Text>
+                    <Text style={styles.idDocSideLabel}>Dorso *</Text>
+                    <Text style={styles.idDocSideHint}>Toca para subir</Text>
                   </>
                 )}
               </TouchableOpacity>
@@ -400,9 +395,9 @@ export default function RegisterPassengerScreen() {
                 style={styles.scanBtn}
                 onPress={() => setShowScanner(true)}
                 accessibilityRole="button"
-                accessibilityLabel="Scan ID barcode"
+                accessibilityLabel="Escanear código de barras"
               >
-                <Text style={styles.scanBtnText}>Scan barcode to auto-fill your info</Text>
+                <Text style={styles.scanBtnText}>Escanear código para autocompletar tu info</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -416,24 +411,24 @@ export default function RegisterPassengerScreen() {
 
           {/* ── DATOS BÁSICOS ── */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Personal information</Text>
+            <Text style={styles.sectionTitle}>Información personal</Text>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t('auth.name')} *</Text>
+              <Text style={styles.label}>Nombre completo *</Text>
               <TextInput
                 style={styles.input}
                 value={name}
                 onChangeText={setName}
                 autoCapitalize="words"
                 autoComplete="name"
-                placeholder="Your full name"
+                placeholder="Tu nombre completo"
                 placeholderTextColor="#aaa"
-                accessibilityLabel={t('auth.name')}
+                accessibilityLabel="Nombre completo"
               />
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t('auth.email')} *</Text>
+              <Text style={styles.label}>Correo electrónico *</Text>
               <TextInput
                 style={styles.input}
                 value={email}
@@ -448,7 +443,7 @@ export default function RegisterPassengerScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t('auth.password')} *</Text>
+              <Text style={styles.label}>Contraseña *</Text>
               <View style={styles.passwordRow}>
                 <TextInput
                   style={[styles.input, styles.passwordInput]}
@@ -458,13 +453,13 @@ export default function RegisterPassengerScreen() {
                   autoCapitalize="none"
                   autoCorrect={false}
                   autoComplete="new-password"
-                  placeholder="Minimum 6 characters"
+                  placeholder="Mínimo 6 caracteres"
                   placeholderTextColor="#aaa"
                 />
                 <TouchableOpacity
                   style={styles.eyeBtn}
                   onPress={() => setShowPassword(!showPassword)}
-                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                  accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   <Text style={styles.eyeText}>{showPassword ? '🙈' : '👁️'}</Text>
                 </TouchableOpacity>
@@ -472,7 +467,7 @@ export default function RegisterPassengerScreen() {
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Confirm password *</Text>
+              <Text style={styles.label}>Confirmar contraseña *</Text>
               <TextInput
                 style={styles.input}
                 value={confirmPassword}
@@ -480,43 +475,43 @@ export default function RegisterPassengerScreen() {
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 autoCorrect={false}
-                placeholder="Repeat your password"
+                placeholder="Repite tu contraseña"
                 placeholderTextColor="#aaa"
               />
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t('auth.phone')} (optional)</Text>
+              <Text style={styles.label}>Teléfono (opcional)</Text>
               <TextInput
                 style={styles.input}
                 value={phone}
                 onChangeText={setPhone}
                 keyboardType="phone-pad"
                 autoComplete="tel"
-                placeholder="(555) 123-4567"
+                placeholder="(0412) 123-4567"
                 placeholderTextColor="#aaa"
               />
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>Home address *</Text>
+              <Text style={styles.label}>Dirección de residencia *</Text>
               <TextInput
                 style={styles.input}
                 value={homeAddress}
                 onChangeText={setHomeAddress}
                 autoCapitalize="words"
-                placeholder="123 Main St, City, TX"
+                placeholder="Av. Principal, Caracas"
                 placeholderTextColor="#aaa"
               />
             </View>
 
             <View style={styles.field}>
-              <Text style={styles.label}>{t('auth.state')}</Text>
+              <Text style={styles.label}>Estado</Text>
               <TouchableOpacity
                 style={styles.picker}
                 onPress={() => setShowStatePicker(true)}
                 accessibilityRole="button"
-                accessibilityLabel="Select state"
+                accessibilityLabel="Seleccionar estado"
               >
                 <Text style={styles.pickerText}>{selectedStateName}</Text>
                 <Text style={styles.pickerArrow}>▼</Text>
@@ -526,26 +521,26 @@ export default function RegisterPassengerScreen() {
 
           {/* ── TIPO DE PASAJERO (multi-selección) ── */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>My needs</Text>
+            <Text style={styles.sectionTitle}>Mis necesidades</Text>
             <Text style={styles.sectionSubtitle}>
-              Select all that apply — your driver will be notified before every ride.
+              Selecciona las que apliquen — tu conductor será notificado antes de cada viaje.
             </Text>
             {passengerCategories.length > 0 && (
               <TouchableOpacity onPress={() => { setPassengerCategories([]); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }} style={styles.clearBtn}>
-                <Text style={styles.clearBtnText}>✕  Clear selection</Text>
+                <Text style={styles.clearBtnText}>✕  Limpiar selección</Text>
               </TouchableOpacity>
             )}
             <View style={styles.categoryGrid}>
               {[
-                { key: 'elderly',           icon: '👴', label: 'Senior (65+)' },
-                { key: 'pregnant',          icon: '🤰', label: 'Pregnant' },
-                { key: 'post_surgery',      icon: '🏥', label: 'Post-surgery' },
-                { key: 'wheelchair',        icon: '♿', label: 'Wheelchair' },
-                { key: 'visual_impairment', icon: '👁️', label: 'Visual impairment' },
-                { key: 'hearing_impairment',icon: '👂', label: 'Hearing impairment' },
-                { key: 'cognitive',         icon: '🧠', label: 'Cognitive support' },
-                { key: 'with_minor',        icon: '👶', label: 'With child' },
-                { key: 'medical_equipment', icon: '💊', label: 'Medical equipment' },
+                { key: 'elderly',           icon: '👴', label: 'Adulto mayor (65+)' },
+                { key: 'pregnant',          icon: '🤰', label: 'Embarazada' },
+                { key: 'post_surgery',      icon: '🏥', label: 'Post-operatorio' },
+                { key: 'wheelchair',        icon: '♿', label: 'Silla de ruedas' },
+                { key: 'visual_impairment', icon: '👁️', label: 'Discap. visual' },
+                { key: 'hearing_impairment',icon: '👂', label: 'Discap. auditiva' },
+                { key: 'cognitive',         icon: '🧠', label: 'Apoyo cognitivo' },
+                { key: 'with_minor',        icon: '👶', label: 'Con menor' },
+                { key: 'medical_equipment', icon: '💊', label: 'Equipo médico' },
               ].map(opt => {
                 const active = passengerCategories.includes(opt.key);
                 return (
@@ -566,7 +561,7 @@ export default function RegisterPassengerScreen() {
               })}
             </View>
             {passengerCategories.length === 0 && (
-              <Text style={styles.categoryNoneHint}>No special needs? Leave blank.</Text>
+              <Text style={styles.categoryNoneHint}>¿Sin necesidades especiales? Deja en blanco.</Text>
             )}
           </View>
 
@@ -577,46 +572,46 @@ export default function RegisterPassengerScreen() {
             accessibilityRole="button"
           >
             <Text style={styles.expandText}>
-              {showEmergency ? '▼' : '▶'} Emergency contact (recommended)
+              {showEmergency ? '▼' : '▶'} Contacto de emergencia (recomendado)
             </Text>
           </TouchableOpacity>
 
           {showEmergency && (
             <View style={styles.section}>
               <Text style={styles.emergencyNote}>
-                🚨 This person will receive an automatic email alert with your location if you activate the SOS button during a ride.
+                🚨 Esta persona recibirá una alerta por correo con tu ubicación si activas el botón SOS durante un viaje.
               </Text>
               <View style={styles.field}>
-                <Text style={styles.label}>Contact name</Text>
+                <Text style={styles.label}>Nombre del contacto</Text>
                 <TextInput
                   style={styles.input}
                   value={emergencyName}
                   onChangeText={setEmergencyName}
                   autoCapitalize="words"
-                  placeholder="Full name"
+                  placeholder="Nombre completo"
                   placeholderTextColor="#aaa"
                 />
               </View>
               <View style={styles.field}>
-                <Text style={styles.label}>Contact phone</Text>
+                <Text style={styles.label}>Teléfono del contacto</Text>
                 <TextInput
                   style={styles.input}
                   value={emergencyPhone}
                   onChangeText={setEmergencyPhone}
                   keyboardType="phone-pad"
-                  placeholder="(555) 123-4567"
+                  placeholder="(0412) 123-4567"
                   placeholderTextColor="#aaa"
                 />
               </View>
               <View style={styles.field}>
-                <Text style={styles.label}>Contact email (for SOS alerts)</Text>
+                <Text style={styles.label}>Correo del contacto (alertas SOS)</Text>
                 <TextInput
                   style={styles.input}
                   value={emergencyEmail}
                   onChangeText={setEmergencyEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  placeholder="contact@email.com"
+                  placeholder="contacto@email.com"
                   placeholderTextColor="#aaa"
                 />
               </View>
@@ -629,22 +624,22 @@ export default function RegisterPassengerScreen() {
             onPress={handleRegister}
             disabled={!photoUri || !idDocFrontUri || !idDocBackUri || isLoading || photoUploading}
             accessibilityRole="button"
-            accessibilityLabel="Create account"
+            accessibilityLabel="Crear cuenta"
           >
             {isLoading || photoUploading ? (
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                 <ActivityIndicator color="#fff" size="small" />
-                <Text style={styles.buttonText}>{photoUploading ? 'Uploading photo…' : 'Creating account…'}</Text>
+                <Text style={styles.buttonText}>{photoUploading ? 'Subiendo foto…' : 'Creando cuenta…'}</Text>
               </View>
             ) : (
-              <Text style={styles.buttonText}>Create account</Text>
+              <Text style={styles.buttonText}>Crear cuenta</Text>
             )}
           </TouchableOpacity>
 
           <View style={styles.loginRow}>
-            <Text style={styles.loginText}>{t('auth.haveAccount')} </Text>
+            <Text style={styles.loginText}>¿Ya tienes cuenta? </Text>
             <TouchableOpacity onPress={() => router.replace('/(auth)/login')}>
-              <Text style={styles.loginLink}>{t('auth.loginButton')}</Text>
+              <Text style={styles.loginLink}>Iniciar sesión</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -666,7 +661,7 @@ export default function RegisterPassengerScreen() {
               </TouchableOpacity>
             </View>
             <FlatList
-              data={US_STATES}
+              data={VE_STATES}
               keyExtractor={(item) => item.code}
               renderItem={({ item }) => (
                 <TouchableOpacity

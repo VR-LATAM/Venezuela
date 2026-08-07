@@ -75,7 +75,7 @@ export default function SpendingScreen() {
       setOffset(o + fetched.length);
       setHasMore(fetched.length === LIMIT);
     } catch {
-      Alert.alert('Error', 'Could not load spending history.');
+      Alert.alert('Error', 'No se pudo cargar el historial de gastos.');
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -101,10 +101,10 @@ export default function SpendingScreen() {
         </View>
         <View style={styles.txInfo}>
           <Text style={styles.txTo} numberOfLines={1}>
-            {isCancelFee ? 'Cancellation fee' : item.dropoff_address}
+            {isCancelFee ? 'Cargo por cancelación' : item.dropoff_address}
           </Text>
           <Text style={styles.txDate}>
-            {date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            {date.toLocaleDateString('es-VE', { month: 'short', day: 'numeric', year: 'numeric' })}
           </Text>
           {isCancelFee && (
             <Text style={styles.txCancelSub} numberOfLines={1}>{item.pickup_address}</Text>
@@ -122,17 +122,17 @@ export default function SpendingScreen() {
       {/* ── Tarjetas de resumen ── */}
       <View style={styles.summaryGrid}>
         <View style={[styles.summaryCard, styles.summaryCardMain]}>
-          <Text style={styles.summaryMainLabel}>Total spent</Text>
+          <Text style={styles.summaryMainLabel}>Total gastado</Text>
           <Text style={styles.summaryMainAmount}>${summary.total.toFixed(2)}</Text>
-          <Text style={styles.summaryMainSub}>{summary.count} transaction{summary.count !== 1 ? 's' : ''}</Text>
+          <Text style={styles.summaryMainSub}>{summary.count} transacción{summary.count !== 1 ? 'es' : ''}</Text>
         </View>
         <View style={styles.summaryCol}>
           <View style={styles.summaryCardSmall}>
-            <Text style={styles.summarySmallLabel}>This month</Text>
+            <Text style={styles.summarySmallLabel}>Este mes</Text>
             <Text style={styles.summarySmallAmount}>${summary.thisMonth.toFixed(2)}</Text>
           </View>
           <View style={styles.summaryCardSmall}>
-            <Text style={styles.summarySmallLabel}>This week</Text>
+            <Text style={styles.summarySmallLabel}>Esta semana</Text>
             <Text style={styles.summarySmallAmount}>${summary.thisWeek.toFixed(2)}</Text>
           </View>
         </View>
@@ -140,7 +140,7 @@ export default function SpendingScreen() {
 
       {/* ── Título de la lista ── */}
       {paid.length > 0 && (
-        <Text style={styles.sectionTitle}>Transactions</Text>
+        <Text style={styles.sectionTitle}>Transacciones</Text>
       )}
     </>
   );
@@ -152,7 +152,7 @@ export default function SpendingScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>My Spending</Text>
+        <Text style={styles.title}>Mi gasto</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -176,8 +176,8 @@ export default function SpendingScreen() {
           ListEmptyComponent={
             <View style={styles.centered}>
               <Text style={{ fontSize: 48 }}>💳</Text>
-              <Text style={styles.emptyText}>No charges yet</Text>
-              <Text style={styles.emptySubText}>Your ride payments will appear here</Text>
+              <Text style={styles.emptyText}>Aún sin cobros</Text>
+              <Text style={styles.emptySubText}>Tus pagos de viaje aparecerán aquí</Text>
             </View>
           }
         />

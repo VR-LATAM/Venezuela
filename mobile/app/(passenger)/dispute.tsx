@@ -16,14 +16,14 @@ import { disputeService, DisputeReason } from '../../src/services/disputeService
 interface ReasonOption { key: DisputeReason; label: string; icon: string; }
 
 const REASONS: ReasonOption[] = [
-  { key: 'overcharged',        icon: '💸', label: 'Charged too much' },
-  { key: 'wrong_route',        icon: '🗺️', label: 'Driver took wrong route' },
-  { key: 'unsafe_driving',     icon: '🚗', label: 'Unsafe driving' },
-  { key: 'driver_behavior',    icon: '😤', label: 'Inappropriate driver behavior' },
-  { key: 'vehicle_condition',  icon: '🔧', label: 'Poor vehicle condition' },
-  { key: 'no_show',            icon: '🕐', label: 'Driver never arrived' },
-  { key: 'cancellation_fee',   icon: '❌', label: 'Unfair cancellation fee' },
-  { key: 'other',              icon: '📝', label: 'Other issue' },
+  { key: 'overcharged',        icon: '💸', label: 'Me cobraron de más' },
+  { key: 'wrong_route',        icon: '🗺️', label: 'El conductor tomó una ruta incorrecta' },
+  { key: 'unsafe_driving',     icon: '🚗', label: 'Manejo inseguro' },
+  { key: 'driver_behavior',    icon: '😤', label: 'Comportamiento inapropiado del conductor' },
+  { key: 'vehicle_condition',  icon: '🔧', label: 'Mal estado del vehículo' },
+  { key: 'no_show',            icon: '🕐', label: 'El conductor nunca llegó' },
+  { key: 'cancellation_fee',   icon: '❌', label: 'Cargo de cancelación injusto' },
+  { key: 'other',              icon: '📝', label: 'Otro problema' },
 ];
 
 export default function DisputeScreen() {
@@ -33,19 +33,19 @@ export default function DisputeScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async () => {
-    if (!selected) { Alert.alert('Required', 'Please select a reason'); return; }
-    if (!rideId)   { Alert.alert('Error', 'Missing ride ID'); return; }
+    if (!selected) { Alert.alert('Requerido', 'Por favor selecciona un motivo'); return; }
+    if (!rideId)   { Alert.alert('Error', 'ID de viaje no encontrado'); return; }
 
     setSubmitting(true);
     try {
       await disputeService.open({ rideId, reason: selected, description: description.trim() || undefined });
       Alert.alert(
-        'Dispute submitted',
-        'Our team will review your case within 24 hours and contact you by email.',
+        'Disputa enviada',
+        'Nuestro equipo revisará tu caso en 24 horas y te contactará por correo electrónico.',
         [{ text: 'OK', onPress: () => router.back() }]
       );
     } catch {
-      Alert.alert('Error', 'Could not submit dispute. Please try again.');
+      Alert.alert('Error', 'No se pudo enviar la disputa. Inténtalo de nuevo.');
     } finally {
       setSubmitting(false);
     }
@@ -57,11 +57,11 @@ export default function DisputeScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Report an Issue</Text>
+        <Text style={styles.headerTitle}>Reportar un problema</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Text style={styles.sectionLabel}>What happened?</Text>
+        <Text style={styles.sectionLabel}>¿Qué pasó?</Text>
         {REASONS.map(r => (
           <TouchableOpacity
             key={r.key}
@@ -77,14 +77,14 @@ export default function DisputeScreen() {
           </TouchableOpacity>
         ))}
 
-        <Text style={[styles.sectionLabel, { marginTop: 20 }]}>Additional details (optional)</Text>
+        <Text style={[styles.sectionLabel, { marginTop: 20 }]}>Detalles adicionales (opcional)</Text>
         <TextInput
           style={styles.textArea}
           value={description}
           onChangeText={setDescription}
           multiline
           numberOfLines={4}
-          placeholder="Describe what happened…"
+          placeholder="Describe lo que ocurrió…"
           placeholderTextColor="#94A3B8"
           maxLength={1000}
         />
@@ -92,7 +92,7 @@ export default function DisputeScreen() {
 
         <View style={styles.noteBox}>
           <Text style={styles.noteText}>
-            📋 Disputes are reviewed within 24 hours. Keep any relevant screenshots for reference.
+            📋 Las disputas se revisan en 24 horas. Guarda capturas de pantalla relevantes como referencia.
           </Text>
         </View>
       </ScrollView>
@@ -105,7 +105,7 @@ export default function DisputeScreen() {
         >
           {submitting
             ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.submitBtnText}>Submit Dispute</Text>
+            : <Text style={styles.submitBtnText}>Enviar disputa</Text>
           }
         </TouchableOpacity>
       </View>

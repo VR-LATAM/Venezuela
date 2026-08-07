@@ -45,7 +45,7 @@ export default function DriverStatsScreen() {
       setStats(s);
       setDocAlerts(alerts);
     } catch {
-      Alert.alert('Error', 'Could not load stats');
+      Alert.alert('Error', 'No se pudieron cargar las estadísticas');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -57,15 +57,15 @@ export default function DriverStatsScreen() {
   const handleSaveGoal = async () => {
     const goalNum = parseFloat(dailyGoal);
     if (dailyGoal && (isNaN(goalNum) || goalNum <= 0)) {
-      Alert.alert('Invalid', 'Please enter a valid amount');
+      Alert.alert('Valor inválido', 'Por favor ingresa un monto válido');
       return;
     }
     setSavingGoal(true);
     try {
       await driverMobileService.setDailyGoal(dailyGoal ? goalNum : null);
-      Alert.alert('Saved', dailyGoal ? `Daily goal set to $${goalNum.toFixed(2)}` : 'Daily goal cleared');
+      Alert.alert('Guardado', dailyGoal ? `Meta diaria establecida en $${goalNum.toFixed(2)}` : 'Meta diaria eliminada');
     } catch {
-      Alert.alert('Error', 'Could not save goal');
+      Alert.alert('Error', 'No se pudo guardar la meta');
     } finally {
       setSavingGoal(false);
     }
@@ -75,7 +75,7 @@ export default function DriverStatsScreen() {
     rate >= 80 ? '#16A34A' : rate >= 60 ? '#D97706' : '#DC2626';
 
   const docLabel = (type: string) =>
-    type === 'license' ? "Driver's License" : "Insurance";
+    type === 'license' ? 'Licencia de conducir' : 'Seguro vehicular';
 
   if (loading) {
     return (
@@ -91,7 +91,7 @@ export default function DriverStatsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Stats</Text>
+        <Text style={styles.headerTitle}>Mis estadísticas</Text>
       </View>
 
       <ScrollView
@@ -110,10 +110,10 @@ export default function DriverStatsScreen() {
             <Text style={styles.alertIcon}>{alert.is_expired ? '🚫' : alert.urgent ? '⚠️' : '📋'}</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.alertTitle}>
-                {docLabel(alert.document_type)} {alert.is_expired ? 'EXPIRED' : `expires in ${alert.days_left} day${alert.days_left !== 1 ? 's' : ''}`}
+                {docLabel(alert.document_type)} {alert.is_expired ? 'VENCIDA' : `vence en ${alert.days_left} día${alert.days_left !== 1 ? 's' : ''}`}
               </Text>
               <Text style={styles.alertSub}>
-                {new Date(alert.expires_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                {new Date(alert.expires_at).toLocaleDateString('es-VE', { month: 'long', day: 'numeric', year: 'numeric' })}
               </Text>
             </View>
           </View>
@@ -122,13 +122,13 @@ export default function DriverStatsScreen() {
         {/* Acceptance Rate */}
         {stats && (
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Acceptance Rate</Text>
+            <Text style={styles.cardTitle}>Tasa de aceptación</Text>
             <View style={styles.rateRow}>
               <Text style={[styles.rateValue, { color: rateColor(stats.acceptance_rate_pct) }]}>
                 {stats.acceptance_rate_pct}%
               </Text>
               <Text style={styles.rateSub}>
-                {stats.rides_accepted} accepted / {stats.rides_offered} offered
+                {stats.rides_accepted} aceptados / {stats.rides_offered} ofrecidos
               </Text>
             </View>
 
@@ -143,25 +143,25 @@ export default function DriverStatsScreen() {
 
             <Text style={styles.rateHint}>
               {stats.acceptance_rate_pct >= 80
-                ? '✅ Great! Keep it up.'
+                ? '✅ ¡Excelente! Sigue así.'
                 : stats.acceptance_rate_pct >= 60
-                  ? '⚠️ Try to accept more rides to improve your standing.'
-                  : '🚨 Low acceptance rate may affect your tier.'}
+                  ? '⚠️ Intenta aceptar más viajes para mejorar tu nivel.'
+                  : '🚨 Una tasa baja puede afectar tu categoría de conductor.'}
             </Text>
 
             {/* Tier thresholds */}
             <View style={styles.tierRow}>
               <View style={styles.tierBadge}>
                 <Text style={styles.tierBadgeText}>80%+</Text>
-                <Text style={styles.tierBadgeLabel}>Priority dispatch</Text>
+                <Text style={styles.tierBadgeLabel}>Despacho prioritario</Text>
               </View>
               <View style={styles.tierBadge}>
                 <Text style={styles.tierBadgeText}>60%+</Text>
-                <Text style={styles.tierBadgeLabel}>Standard</Text>
+                <Text style={styles.tierBadgeLabel}>Estándar</Text>
               </View>
               <View style={[styles.tierBadge, { backgroundColor: '#FEE2E2' }]}>
                 <Text style={[styles.tierBadgeText, { color: '#DC2626' }]}>{'<60%'}</Text>
-                <Text style={styles.tierBadgeLabel}>Low priority</Text>
+                <Text style={styles.tierBadgeLabel}>Baja prioridad</Text>
               </View>
             </View>
           </View>
@@ -169,8 +169,8 @@ export default function DriverStatsScreen() {
 
         {/* Daily Earnings Goal */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Daily Earnings Goal</Text>
-          <Text style={styles.cardSub}>Set a target to track your progress each day</Text>
+          <Text style={styles.cardTitle}>Meta diaria de ganancias</Text>
+          <Text style={styles.cardSub}>Establece un objetivo para seguir tu progreso cada día</Text>
           <View style={styles.goalRow}>
             <Text style={styles.dollarSign}>$</Text>
             <TextInput
@@ -178,7 +178,7 @@ export default function DriverStatsScreen() {
               value={dailyGoal}
               onChangeText={setDailyGoal}
               keyboardType="decimal-pad"
-              placeholder="e.g. 150"
+              placeholder="ej. 150"
               placeholderTextColor="#94A3B8"
               maxLength={6}
             />
@@ -189,20 +189,20 @@ export default function DriverStatsScreen() {
             >
               {savingGoal
                 ? <ActivityIndicator color="#fff" size="small" />
-                : <Text style={styles.goalBtnText}>Save</Text>
+                : <Text style={styles.goalBtnText}>Guardar</Text>
               }
             </TouchableOpacity>
           </View>
           <TouchableOpacity onPress={() => { setDailyGoal(''); handleSaveGoal(); }}>
-            <Text style={styles.clearGoal}>Clear goal</Text>
+            <Text style={styles.clearGoal}>Eliminar meta</Text>
           </TouchableOpacity>
         </View>
 
         {/* Document Status */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Document Status</Text>
+          <Text style={styles.cardTitle}>Estado de documentos</Text>
           {docAlerts.length === 0 ? (
-            <Text style={styles.allGood}>✅ All documents up to date</Text>
+            <Text style={styles.allGood}>✅ Todos los documentos están al día</Text>
           ) : (
             docAlerts.map(a => (
               <View key={a.document_type} style={styles.docRow}>
@@ -212,7 +212,7 @@ export default function DriverStatsScreen() {
                   a.urgent     ? { color: '#D97706' } :
                   a.warning    ? { color: '#D97706' } : { color: '#16A34A' }
                 ]}>
-                  {a.is_expired ? 'EXPIRED' : `${a.days_left}d left`}
+                  {a.is_expired ? 'VENCIDA' : `${a.days_left}d restantes`}
                 </Text>
               </View>
             ))

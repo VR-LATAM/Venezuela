@@ -36,13 +36,13 @@ interface IncomingRequest {
 }
 
 const SPECIAL_NEEDS_LABELS: Record<string, string> = {
-  pregnant:          '🤰 Pregnant woman',
-  wheelchair:        '♿ Wheelchair user',
-  visual_impairment: '👁️ Visual impairment',
-  hearing_impairment:'🦻 Hearing impairment',
-  elderly:           '👴 Older adult',
-  minor:             '🧒 Minor (child)',
-  medical:           '🏥 Medical patient',
+  pregnant:          '🤰 Embarazada',
+  wheelchair:        '♿ Usuario de silla de ruedas',
+  visual_impairment: '👁️ Discapacidad visual',
+  hearing_impairment:'🦻 Discapacidad auditiva',
+  elderly:           '👴 Adulto mayor',
+  minor:             '🧒 Menor de edad',
+  medical:           '🏥 Paciente médico',
 };
 
 export default function DriverLayout() {
@@ -189,7 +189,7 @@ export default function DriverLayout() {
                       />
                     </View>
                     <Text style={styles.passengerName} numberOfLines={1}>
-                      {incomingRequest.passengerName ?? 'Passenger'}
+                      {incomingRequest.passengerName ?? 'Pasajero'}
                     </Text>
                     {incomingRequest.passengerRating != null && (
                       <Text style={styles.passengerRating}>
@@ -205,9 +205,9 @@ export default function DriverLayout() {
                       { borderColor: countdown > 10 ? BRAND_COLORS.ACCENT : BRAND_COLORS.ALERT },
                     ]}>
                       <Text style={styles.countdownNumber}>{countdown}</Text>
-                      <Text style={styles.countdownSec}>sec</Text>
+                      <Text style={styles.countdownSec}>seg</Text>
                     </View>
-                    <Text style={styles.countdownLabel}>New request</Text>
+                    <Text style={styles.countdownLabel}>Nueva solicitud</Text>
                   </View>
                 </View>
 
@@ -216,7 +216,7 @@ export default function DriverLayout() {
                   <View style={styles.requestDetailRow}>
                     <Text style={styles.requestDetailIcon}>📍</Text>
                     <View style={styles.requestDetailInfo}>
-                      <Text style={styles.requestDetailLabel}>Pickup</Text>
+                      <Text style={styles.requestDetailLabel}>Recogida</Text>
                       <Text style={styles.requestDetailValue} numberOfLines={2}>
                         {incomingRequest.pickupAddress}
                       </Text>
@@ -226,7 +226,7 @@ export default function DriverLayout() {
                   <View style={styles.requestDetailRow}>
                     <Text style={styles.requestDetailIcon}>🏁</Text>
                     <View style={styles.requestDetailInfo}>
-                      <Text style={styles.requestDetailLabel}>Destination</Text>
+                      <Text style={styles.requestDetailLabel}>Destino</Text>
                       <Text style={styles.requestDetailValue} numberOfLines={2}>
                         {incomingRequest.dropoffAddress}
                       </Text>
@@ -237,21 +237,21 @@ export default function DriverLayout() {
                     <View style={styles.requestMetaChip}>
                       <Text style={styles.requestMetaEmoji}>📍</Text>
                       <Text style={styles.requestMetaText}>
-                        {(incomingRequest.distanceFromDriver * 0.621371).toFixed(1)} mi away
+                        {incomingRequest.distanceFromDriver.toFixed(1)} km de distancia
                       </Text>
                     </View>
                     <View style={styles.requestMetaChip}>
                       <Text style={styles.requestMetaEmoji}>🛣️</Text>
                       <Text style={styles.requestMetaText}>
-                        {(incomingRequest.tripDistanceMiles ?? 0).toFixed(1)} mi trip
+                        {(incomingRequest.tripDistanceMiles ?? 0).toFixed(1)} km de viaje
                       </Text>
                     </View>
                     <View style={styles.requestMetaChip}>
                       <Text style={styles.requestMetaEmoji}>🚗</Text>
                       <Text style={styles.requestMetaText}>
-                        {incomingRequest.serviceType === 'standard'   ? 'Standard'   :
-                         incomingRequest.serviceType === 'executive'  ? 'Executive'  :
-                         incomingRequest.serviceType === 'accessible' ? 'Accessible' :
+                        {incomingRequest.serviceType === 'standard'   ? 'Estándar'  :
+                         incomingRequest.serviceType === 'executive'  ? 'Ejecutivo' :
+                         incomingRequest.serviceType === 'accessible' ? 'Accesible' :
                          incomingRequest.serviceType}
                       </Text>
                     </View>
@@ -259,7 +259,7 @@ export default function DriverLayout() {
 
                   {(incomingRequest.specialNeeds ?? []).length > 0 && (
                     <View style={styles.specialNeedsBox}>
-                      <Text style={styles.specialNeedsTitle}>⚠️ Passenger needs</Text>
+                      <Text style={styles.specialNeedsTitle}>⚠️ Necesidades del pasajero</Text>
                       {(incomingRequest.specialNeeds ?? []).map(cat => (
                         <Text key={cat} style={styles.specialNeedsItem}>
                           {SPECIAL_NEEDS_LABELS[cat] ?? cat}
@@ -271,7 +271,7 @@ export default function DriverLayout() {
                   {incomingRequest.estimatedDriverEarnings > 0 && (
                     <View style={styles.fareRow}>
                       <View style={[styles.fareBox, styles.fareBoxAccent, { flex: 1 }]}>
-                        <Text style={styles.fareLabel}>Your earnings</Text>
+                        <Text style={styles.fareLabel}>Tus ganancias</Text>
                         <Text style={styles.fareEarnings}>
                           ${incomingRequest.estimatedDriverEarnings.toFixed(2)}
                         </Text>
@@ -287,14 +287,14 @@ export default function DriverLayout() {
                     onPress={() => handleRideResponse(false)}
                     accessibilityRole="button"
                   >
-                    <Text style={styles.rejectButtonText}>✕ Decline</Text>
+                    <Text style={styles.rejectButtonText}>✕ Rechazar</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.acceptButton}
                     onPress={() => handleRideResponse(true)}
                     accessibilityRole="button"
                   >
-                    <Text style={styles.acceptButtonText}>✓ Accept</Text>
+                    <Text style={styles.acceptButtonText}>✓ Aceptar</Text>
                   </TouchableOpacity>
                 </View>
 

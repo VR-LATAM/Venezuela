@@ -21,15 +21,15 @@ interface Option {
 }
 
 const OPTIONS: Option[] = [
-  { key: 'wheelchair',          icon: '♿', label: 'Wheelchair',         description: 'I use a wheelchair' },
-  { key: 'walker',              icon: '🦯', label: 'Walker / Rollator',  description: 'I use a walking aid' },
-  { key: 'white_cane',          icon: '🦮', label: 'White cane',          description: 'I am visually impaired and use a white cane' },
-  { key: 'service_animal',      icon: '🐕', label: 'Service animal',      description: 'I travel with a certified service animal' },
-  { key: 'oxygen_support',      icon: '🫁', label: 'Oxygen equipment',    description: 'I need to bring oxygen equipment' },
-  { key: 'hearing_impaired',    icon: '👂', label: 'Hearing impaired',     description: 'I have a hearing impairment' },
-  { key: 'visual_impaired',     icon: '👁️', label: 'Visual impaired',      description: 'I have a vision impairment' },
-  { key: 'cognitive_support',   icon: '🧠', label: 'Cognitive support',    description: 'I may need extra communication assistance' },
-  { key: 'extra_time_boarding', icon: '⏳', label: 'Extra boarding time',  description: 'I need additional time to board and exit' },
+  { key: 'wheelchair',          icon: '♿', label: 'Silla de ruedas',       description: 'Uso silla de ruedas' },
+  { key: 'walker',              icon: '🦯', label: 'Andador / Rollator',    description: 'Uso un apoyo para caminar' },
+  { key: 'white_cane',          icon: '🦮', label: 'Bastón blanco',         description: 'Tengo discapacidad visual y uso bastón blanco' },
+  { key: 'service_animal',      icon: '🐕', label: 'Animal de servicio',    description: 'Viajo con un animal de servicio certificado' },
+  { key: 'oxygen_support',      icon: '🫁', label: 'Equipo de oxígeno',     description: 'Necesito llevar equipo de oxígeno' },
+  { key: 'hearing_impaired',    icon: '👂', label: 'Discapacidad auditiva', description: 'Tengo una discapacidad auditiva' },
+  { key: 'visual_impaired',     icon: '👁️', label: 'Discapacidad visual',   description: 'Tengo una discapacidad visual' },
+  { key: 'cognitive_support',   icon: '🧠', label: 'Apoyo cognitivo',       description: 'Puedo necesitar asistencia adicional de comunicación' },
+  { key: 'extra_time_boarding', icon: '⏳', label: 'Tiempo extra de abordaje', description: 'Necesito tiempo adicional para subir y bajar' },
 ];
 
 const BLANK: Omit<AccessibilityProfile, 'notes'> & { notes: string } = {
@@ -68,10 +68,10 @@ export default function AccessibilityProfileScreen() {
     setSaving(true);
     try {
       await accessibilityService.save({ ...profile, notes: profile.notes || null });
-      Alert.alert('Saved', 'Your accessibility profile has been updated. Drivers will see your needs before each ride.');
+      Alert.alert('Guardado', 'Tu perfil de accesibilidad ha sido actualizado. Los conductores verán tus necesidades antes de cada viaje.');
       router.back();
     } catch {
-      Alert.alert('Error', 'Could not save profile. Please try again.');
+      Alert.alert('Error', 'No se pudo guardar el perfil. Inténtalo de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -94,16 +94,16 @@ export default function AccessibilityProfileScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Accessibility Profile</Text>
+        <Text style={styles.headerTitle}>Perfil de accesibilidad</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.infoBox}>
           <Text style={styles.infoIcon}>♿</Text>
           <View style={{ flex: 1 }}>
-            <Text style={styles.infoTitle}>Shared with your driver</Text>
+            <Text style={styles.infoTitle}>Compartido con tu conductor</Text>
             <Text style={styles.infoText}>
-              This profile is shared with your driver before every ride so they can prepare adequately.
+              Este perfil se comparte con tu conductor antes de cada viaje para que pueda prepararse adecuadamente.
             </Text>
           </View>
         </View>
@@ -130,21 +130,21 @@ export default function AccessibilityProfileScreen() {
         ))}
 
         <View style={styles.notesSection}>
-          <Text style={styles.notesLabel}>Additional notes for driver (optional)</Text>
+          <Text style={styles.notesLabel}>Notas adicionales para el conductor (opcional)</Text>
           <TextInput
             style={styles.notesInput}
             value={profile.notes}
             onChangeText={v => setProfile(prev => ({ ...prev, notes: v }))}
             multiline
             numberOfLines={3}
-            placeholder="E.g. Please wait 2 extra minutes for me to board…"
+            placeholder="Ej. Por favor espera 2 minutos adicionales para que pueda subir…"
             placeholderTextColor="#94A3B8"
           />
         </View>
 
         {anySelected && (
           <View style={styles.summaryBox}>
-            <Text style={styles.summaryTitle}>Your active needs:</Text>
+            <Text style={styles.summaryTitle}>Tus necesidades activas:</Text>
             <Text style={styles.summaryText}>
               {OPTIONS.filter(o => profile[o.key]).map(o => o.icon + ' ' + o.label).join('  ·  ')}
             </Text>
@@ -160,7 +160,7 @@ export default function AccessibilityProfileScreen() {
         >
           {saving
             ? <ActivityIndicator color="#fff" />
-            : <Text style={styles.saveBtnText}>Save Profile</Text>
+            : <Text style={styles.saveBtnText}>Guardar perfil</Text>
           }
         </TouchableOpacity>
       </View>

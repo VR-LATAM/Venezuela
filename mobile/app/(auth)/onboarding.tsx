@@ -11,7 +11,6 @@ import {
   FlatList, Dimensions, Animated,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import { BRAND_COLORS } from '@vride/shared';
 import * as Haptics from 'expo-haptics';
 
@@ -20,8 +19,8 @@ const { width } = Dimensions.get('window');
 interface Slide {
   id: string;
   emoji: string;
-  titleKey: string;
-  descKey: string;
+  title: string;
+  desc: string;
   color: string;
 }
 
@@ -29,28 +28,27 @@ const slides: Slide[] = [
   {
     id: '1',
     emoji: '📍',
-    titleKey: 'onboarding.slide1Title',
-    descKey: 'onboarding.slide1Desc',
+    title: 'Tu viaje, cuando lo necesitas',
+    desc: 'Solicita un conductor en segundos. Disponible en toda Venezuela.',
     color: BRAND_COLORS.PRIMARY,
   },
   {
     id: '2',
     emoji: '🤝',
-    titleKey: 'onboarding.slide2Title',
-    descKey: 'onboarding.slide2Desc',
+    title: 'Conductores verificados',
+    desc: 'Conductores capacitados y verificados para tu seguridad y comodidad.',
     color: '#7B2FBE',
   },
   {
     id: '3',
     emoji: '🛡️',
-    titleKey: 'onboarding.slide3Title',
-    descKey: 'onboarding.slide3Desc',
+    title: 'Seguro y transparente',
+    desc: 'Precios claros en USD y Bs., tracking en tiempo real y botón SOS disponible.',
     color: BRAND_COLORS.ACCENT,
   },
 ];
 
 export default function OnboardingScreen() {
-  const { t } = useTranslation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -75,7 +73,7 @@ export default function OnboardingScreen() {
       {/* Botón omitir */}
       {!isLastSlide && (
         <TouchableOpacity style={styles.skipButton} onPress={skip}>
-          <Text style={styles.skipText}>{t('common.skip')}</Text>
+          <Text style={styles.skipText}>Omitir</Text>
         </TouchableOpacity>
       )}
 
@@ -93,8 +91,8 @@ export default function OnboardingScreen() {
             <View style={[styles.emojiContainer, { backgroundColor: item.color + '20' }]}>
               <Text style={styles.emoji}>{item.emoji}</Text>
             </View>
-            <Text style={styles.title}>{t(item.titleKey)}</Text>
-            <Text style={styles.desc}>{t(item.descKey)}</Text>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.desc}>{item.desc}</Text>
           </View>
         )}
       />
@@ -119,7 +117,7 @@ export default function OnboardingScreen() {
         accessibilityRole="button"
       >
         <Text style={styles.buttonText}>
-          {isLastSlide ? t('onboarding.getStarted') : t('common.next')}
+          {isLastSlide ? 'Comenzar' : 'Siguiente'}
         </Text>
       </TouchableOpacity>
     </View>

@@ -19,18 +19,18 @@ import { BRAND_COLORS } from '@vride/shared';
 type Period = 'today' | 'week' | 'month';
 
 const PERIOD_LABELS: Record<Period, string> = {
-  today: 'Today',
-  week:  'This week',
-  month: 'This month',
+  today: 'Hoy',
+  week:  'Esta semana',
+  month: 'Este mes',
 };
 
 const EARNING_TYPE_LABELS: Record<string, string> = {
-  ride:               'Completed ride',
-  cancellation_fee:   'Cancellation fee',
-  referral_bonus:     'Referral bonus',
-  performance_bonus:  'Performance bonus',
-  quality_bonus:      'Quality bonus',
-  correction:         'Manual adjustment',
+  ride:               'Viaje completado',
+  cancellation_fee:   'Cargo por cancelación',
+  referral_bonus:     'Bono de referido',
+  performance_bonus:  'Bono de desempeño',
+  quality_bonus:      'Bono de calidad',
+  correction:         'Ajuste manual',
 };
 
 export default function EarningsScreen() {
@@ -59,7 +59,7 @@ export default function EarningsScreen() {
       setConnectStatus(statusData);
       setWithdrawals(withdrawalData);
     } catch {
-      Alert.alert('Error', 'Could not load earnings.');
+      Alert.alert('Error', 'No se pudieron cargar las ganancias.');
     } finally {
       setIsLoading(false);
     }
@@ -85,7 +85,7 @@ export default function EarningsScreen() {
       // Al regresar a la app, recargar el estado
       await loadData();
     } catch {
-      Alert.alert('Error', 'Could not open the payment setup process.');
+      Alert.alert('Error', 'No se pudo abrir el proceso de configuración de cobros.');
     } finally {
       setIsConnecting(false);
     }
@@ -97,11 +97,11 @@ export default function EarningsScreen() {
   const handleWithdraw = () => {
     if (!connectStatus?.accountVerified) {
       Alert.alert(
-        'Payment account required',
-        'Set up your bank account through Stripe to receive your earnings.',
+        'Cuenta de cobro requerida',
+        'Configura tu cuenta bancaria para recibir tus ganancias.',
         [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Set up', onPress: handleConnectStripe },
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Configurar', onPress: handleConnectStripe },
         ]
       );
       return;
@@ -109,23 +109,23 @@ export default function EarningsScreen() {
 
     const available = connectStatus.availableBalance;
     if (available < 1) {
-      Alert.alert('No balance available', 'You have no earnings pending withdrawal.');
+      Alert.alert('Sin saldo disponible', 'No tienes ganancias pendientes de retiro.');
       return;
     }
 
     Alert.alert(
-      'Request withdrawal',
-      `Transfer $${available.toFixed(2)} to your bank account?\n\nIt will arrive in 1-3 business days.`,
+      'Solicitar retiro',
+      `¿Transferir $${available.toFixed(2)} a tu cuenta bancaria?\n\nLlegará en 1-3 días hábiles.`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Confirm',
+          text: 'Confirmar',
           onPress: async () => {
             setIsWithdrawing(true);
             try {
               const { message } = await paymentService.requestWithdrawal(available);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              Alert.alert('Withdrawal requested', message);
+              Alert.alert('Retiro solicitado', message);
               await loadData();
             } catch (err: unknown) {
               const msg = err instanceof Error ? err.message : 'Unknown error';
@@ -147,10 +147,10 @@ export default function EarningsScreen() {
   };
 
   const withdrawalStatusLabel = (status: Withdrawal['status']) => ({
-    pending:    'Pending',
-    processing: 'Processing',
-    completed:  'Completed',
-    failed:     'Failed',
+    pending:    'Pendiente',
+    processing: 'Procesando',
+    completed:  'Completado',
+    failed:     'Fallido',
   }[status]);
 
   if (isLoading) {
@@ -173,11 +173,11 @@ export default function EarningsScreen() {
             style={styles.backBtn}
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Go back"
+            accessibilityLabel="Volver"
           >
             <Text style={styles.backBtnText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>My earnings</Text>
+          <Text style={styles.title}>Mis ganancias</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -200,10 +200,10 @@ export default function EarningsScreen() {
 
         {/* Card principal — monto del período */}
         <View style={styles.mainCard}>
-          <Text style={styles.mainCardLabel}>Earnings — {PERIOD_LABELS[period].toLowerCase()}</Text>
+          <Text style={styles.mainCardLabel}>Ganancias — {PERIOD_LABELS[period].toLowerCase()}</Text>
           <Text style={styles.mainCardAmount}>${periodAmount().toFixed(2)}</Text>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Total all-time</Text>
+            <Text style={styles.totalLabel}>Total histórico</Text>
             <Text style={styles.totalAmount}>${(summary?.total_earned ?? 0).toFixed(2)}</Text>
           </View>
         </View>
@@ -211,7 +211,7 @@ export default function EarningsScreen() {
         {/* Balance disponible + botón de retiro */}
         <View style={styles.balanceCard}>
           <View>
-            <Text style={styles.balanceLabel}>Available to withdraw</Text>
+            <Text style={styles.balanceLabel}>Disponible para retirar</Text>
             <Text style={styles.balanceAmount}>
               ${Number(connectStatus?.availableBalance ?? 0).toFixed(2)}
             </Text>
@@ -224,7 +224,7 @@ export default function EarningsScreen() {
           >
             {isWithdrawing
               ? <ActivityIndicator color="#fff" size="small" />
-              : <Text style={styles.withdrawBtnText}>Withdraw</Text>
+              : <Text style={styles.withdrawBtnText}>Retirar</Text>
             }
           </TouchableOpacity>
         </View>
@@ -240,11 +240,11 @@ export default function EarningsScreen() {
             <View style={styles.connectBannerContent}>
               <Text style={styles.connectBannerIcon}>🏦</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.connectBannerTitle}>Set up your bank account</Text>
+                <Text style={styles.connectBannerTitle}>Configura tu cuenta bancaria</Text>
                 <Text style={styles.connectBannerSubtitle}>
                   {connectStatus?.hasConnectAccount
-                    ? 'Your account is under review by Stripe.'
-                    : 'Link your bank account to receive your earnings.'}
+                    ? 'Tu cuenta está en revisión.'
+                    : 'Vincula tu cuenta bancaria para recibir tus ganancias.'}
                 </Text>
               </View>
               {isConnecting
@@ -257,7 +257,7 @@ export default function EarningsScreen() {
 
         {/* Gráfica semanal */}
         {entries.length > 0 && (() => {
-          const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
           const today = new Date();
           const weekData = Array.from({ length: 7 }, (_, i) => {
             const d = new Date(today);
@@ -271,7 +271,7 @@ export default function EarningsScreen() {
           const maxAmount = Math.max(...weekData.map(d => d.amount), 1);
           return (
             <View style={styles.chartCard}>
-              <Text style={styles.chartTitle}>Last 7 days</Text>
+              <Text style={styles.chartTitle}>Últimos 7 días</Text>
               <View style={styles.chartBars}>
                 {weekData.map((day, i) => (
                   <View key={i} style={styles.chartBarCol}>
@@ -296,11 +296,11 @@ export default function EarningsScreen() {
         })()}
 
         {/* Historial de ganancias */}
-        <Text style={styles.sectionTitle}>Recent history</Text>
+        <Text style={styles.sectionTitle}>Historial reciente</Text>
 
         {entries.length === 0 ? (
           <View style={styles.emptyHistory}>
-            <Text style={styles.emptyHistoryText}>No earnings recorded yet</Text>
+            <Text style={styles.emptyHistoryText}>Aún no hay ganancias registradas</Text>
           </View>
         ) : (
           entries.map(entry => (
@@ -320,7 +320,7 @@ export default function EarningsScreen() {
               </View>
               <View style={styles.entryRight}>
                 <Text style={styles.entryNet}>+${Number(entry.net_amount).toFixed(2)}</Text>
-                <Text style={styles.entryGross}>Gross: ${Number(entry.gross_amount).toFixed(2)}</Text>
+                <Text style={styles.entryGross}>Bruto: ${Number(entry.gross_amount).toFixed(2)}</Text>
               </View>
             </View>
           ))
@@ -329,7 +329,7 @@ export default function EarningsScreen() {
         {/* Historial de retiros */}
         {withdrawals.length > 0 && (
           <>
-            <Text style={styles.sectionTitle}>Withdrawals</Text>
+            <Text style={styles.sectionTitle}>Retiros</Text>
             {withdrawals.map(w => (
               <View key={w.id} style={styles.withdrawalRow}>
                 <View>

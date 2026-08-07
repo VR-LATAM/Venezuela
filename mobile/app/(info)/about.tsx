@@ -10,45 +10,46 @@ export default function AboutScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Text style={styles.backText}>← Back</Text>
+          <Text style={styles.backText}>← Atrás</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>About Us</Text>
+        <Text style={styles.headerTitle}>Acerca de</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
 
-        <Text style={styles.tagline}>Accessible Transport for All</Text>
+        <Text style={styles.tagline}>Transporte accesible para todos</Text>
 
         <Text style={styles.body}>
-          Verona Ride was founded with a simple but powerful mission: to ensure that seniors and people
-          with disabilities have access to safe, dignified, and reliable transportation — no matter where
-          they are in the United States.
+          V-Ride Venezuela nació con una misión simple pero poderosa: garantizar que los adultos mayores
+          y personas con discapacidad tengan acceso a un transporte seguro, digno y confiable — donde
+          quieran que estén en Venezuela.
         </Text>
 
         <Text style={styles.body}>
-          Our platform connects passengers who need accessible transport with trained, background-verified
-          drivers. Every vehicle in our network is equipped to accommodate mobility devices, and every
-          driver receives specific training in elder and disability care.
+          Nuestra plataforma conecta pasajeros que necesitan transporte accesible con conductores
+          capacitados y con antecedentes verificados. Cada vehículo de nuestra red está equipado para
+          acomodar dispositivos de movilidad, y cada conductor recibe capacitación específica en
+          atención a adultos mayores y personas con discapacidad.
         </Text>
 
         <Text style={styles.body}>
-          We are a family-owned company built on values of trust, respect, and community. The name
-          Verona Ride reflects our commitment to a reliable and premium experience for every rider —
-          because everyone deserves to move freely.
+          Somos una empresa familiar construida sobre valores de confianza, respeto y comunidad. El
+          nombre V-Ride refleja nuestro compromiso con una experiencia confiable y de calidad para
+          cada usuario — porque todos merecen moverse con libertad.
         </Text>
 
         <Text style={styles.body}>
-          Headquartered in Texas, we are expanding nationally to serve communities that have historically
-          been underserved by traditional rideshare platforms.
+          Con sede en Venezuela, nos expandimos para atender a comunidades que históricamente han sido
+          desatendidas por las plataformas de transporte tradicionales.
         </Text>
 
         <View style={styles.card}>
           {[
-            { icon: '♿', text: 'Accessible vehicles for all mobility needs' },
-            { icon: '🛡️', text: 'Background-verified, trained drivers' },
-            { icon: '📍', text: 'Nationwide coverage, starting in Texas' },
-            { icon: '📞', text: '24/7 emergency support and SOS button' },
+            { icon: '♿', text: 'Vehículos accesibles para todas las necesidades de movilidad' },
+            { icon: '🛡️', text: 'Conductores verificados y capacitados' },
+            { icon: '📍', text: 'Cobertura nacional en Venezuela' },
+            { icon: '📞', text: 'Soporte de emergencia 24/7 y botón SOS' },
           ].map(({ icon, text }) => (
             <View key={text} style={styles.cardRow}>
               <Text style={styles.cardIcon}>{icon}</Text>
@@ -57,7 +58,7 @@ export default function AboutScreen() {
           ))}
         </View>
 
-        <Text style={styles.version}>Version 1.0.0 · © 2025 Verona Ride LLC</Text>
+        <Text style={styles.version}>Versión 1.0.0 · © 2025 Verona Group Venezuela</Text>
       </ScrollView>
     </View>
   );

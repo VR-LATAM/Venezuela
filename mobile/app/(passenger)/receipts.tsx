@@ -39,7 +39,7 @@ export default function ReceiptsScreen() {
       );
       setRides(completed);
     } catch {
-      Alert.alert('Error', 'Could not load receipt history');
+      Alert.alert('Error', 'No se pudo cargar el historial de recibos');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -55,12 +55,12 @@ export default function ReceiptsScreen() {
       const url = `${API_URL}/api/v1/ride/${rideId}/receipt`;
       await Linking.openURL(url);
     } catch {
-      Alert.alert('Error', 'Could not open receipt. Try again.');
+      Alert.alert('Error', 'No se pudo abrir el recibo. Inténtalo de nuevo.');
     }
   };
 
   const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    new Date(iso).toLocaleDateString('es-VE', { month: 'short', day: 'numeric', year: 'numeric' });
 
   const formatService = (s: string) =>
     s.charAt(0).toUpperCase() + s.slice(1);
@@ -77,20 +77,20 @@ export default function ReceiptsScreen() {
           <Text style={[styles.cardStatus,
             item.payment_status === 'completed' ? styles.statusOk : styles.statusFail
           ]}>
-            {item.payment_status === 'completed' ? 'Paid' : 'Pending'}
+            {item.payment_status === 'completed' ? 'Pagado' : 'Pendiente'}
           </Text>
         </View>
       </View>
-      <Text style={styles.cardFrom} numberOfLines={1}>From: {item.pickup_address}</Text>
-      <Text style={styles.cardTo} numberOfLines={1}>To: {item.dropoff_address}</Text>
+      <Text style={styles.cardFrom} numberOfLines={1}>Desde: {item.pickup_address}</Text>
+      <Text style={styles.cardTo} numberOfLines={1}>Hasta: {item.dropoff_address}</Text>
       {item.driver_notes ? (
         <View style={styles.notesBox}>
-          <Text style={styles.notesLabel}>Driver note:</Text>
+          <Text style={styles.notesLabel}>Nota del conductor:</Text>
           <Text style={styles.notesText}>{item.driver_notes}</Text>
         </View>
       ) : null}
       <TouchableOpacity style={styles.downloadBtn} onPress={() => downloadReceipt(item.id)}>
-        <Text style={styles.downloadBtnText}>📄 Download PDF Receipt</Text>
+        <Text style={styles.downloadBtnText}>📄 Descargar recibo PDF</Text>
       </TouchableOpacity>
     </View>
   );
@@ -101,7 +101,7 @@ export default function ReceiptsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Receipt History</Text>
+        <Text style={styles.headerTitle}>Historial de recibos</Text>
       </View>
 
       {loading ? (
@@ -116,8 +116,8 @@ export default function ReceiptsScreen() {
           ListEmptyComponent={
             <View style={styles.empty}>
               <Text style={styles.emptyIcon}>📄</Text>
-              <Text style={styles.emptyText}>No receipts yet</Text>
-              <Text style={styles.emptyMeta}>Completed rides will appear here</Text>
+              <Text style={styles.emptyText}>Aún no hay recibos</Text>
+              <Text style={styles.emptyMeta}>Los viajes completados aparecerán aquí</Text>
             </View>
           }
         />

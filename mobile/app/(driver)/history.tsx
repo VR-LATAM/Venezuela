@@ -59,7 +59,7 @@ export default function DriverHistoryScreen() {
       setOffset(o + fetched.length);
       setHasMore(fetched.length === LIMIT);
     } catch {
-      Alert.alert('Error', 'Could not load trip history.');
+      Alert.alert('Error', 'No se pudo cargar el historial de viajes.');
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -79,11 +79,11 @@ export default function DriverHistoryScreen() {
       const fileUri = `${FileSystem.cacheDirectory}recibo-vride-${rideId.slice(0, 8)}.pdf`;
       await FileSystem.writeAsStringAsync(fileUri, base64, { encoding: FileSystem.EncodingType.Base64 });
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri, { mimeType: 'application/pdf', dialogTitle: 'Verona Ride Receipt' });
+        await Sharing.shareAsync(fileUri, { mimeType: 'application/pdf', dialogTitle: 'Recibo Verona Ride' });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch {
-      Alert.alert('Error', 'Could not download receipt.');
+      Alert.alert('Error', 'No se pudo descargar el recibo.');
     } finally {
       setIsDownloading(false);
     }
@@ -125,14 +125,14 @@ export default function DriverHistoryScreen() {
       <Modal visible animationType="slide" presentationStyle="pageSheet">
         <SafeAreaView style={{ flex: 1, backgroundColor: '#fff' }}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Trip details</Text>
+            <Text style={styles.modalTitle}>Detalle del viaje</Text>
             <TouchableOpacity onPress={() => setSelected(null)} style={styles.closeBtn}>
               <Text style={{ fontSize: 14, color: '#555', fontWeight: '700' }}>✕</Text>
             </TouchableOpacity>
           </View>
           <ScrollView contentContainerStyle={styles.modalBody}>
             <View style={styles.routeSection}>
-              <Text style={styles.sectionTitle}>ROUTE</Text>
+              <Text style={styles.sectionTitle}>RUTA</Text>
               <Text style={styles.routeAddr}>🟢 {selected.pickup_address}</Text>
               <Text style={styles.routeAddr}>🔴 {selected.dropoff_address}</Text>
             </View>
@@ -140,9 +140,9 @@ export default function DriverHistoryScreen() {
               <>
                 <View style={styles.metricsRow}>
                   {[
-                    [`${(selected.distance_km ?? 0).toFixed(1)} mi`, 'Distance'],
-                    [`${selected.duration_minutes ?? 0} min`, 'Duration'],
-                    [selected.service_type.toUpperCase(), 'Service'],
+                    [`${(selected.distance_km ?? 0).toFixed(1)} km`, 'Distancia'],
+                    [`${selected.duration_minutes ?? 0} min`, 'Duración'],
+                    [selected.service_type.toUpperCase(), 'Servicio'],
                   ].map(([val, lbl]) => (
                     <View key={lbl} style={styles.metricBox}>
                       <Text style={styles.metricVal}>{val}</Text>
@@ -151,10 +151,10 @@ export default function DriverHistoryScreen() {
                   ))}
                 </View>
                 <View style={styles.earningsSection}>
-                  <Text style={styles.sectionTitle}>EARNINGS</Text>
+                  <Text style={styles.sectionTitle}>GANANCIAS</Text>
                   {[
-                    ['Gross fare',          selected.total_charged],
-                    ['Verona Ride fee (13%)',    selected.platform_commission],
+                    ['Tarifa bruta',              selected.total_charged],
+                    ['Comisión Verona Ride (13%)', selected.platform_commission],
                   ].map(([lbl, val]) => (
                     <View key={String(lbl)} style={styles.fareRow}>
                       <Text style={styles.fareLbl}>{String(lbl)}</Text>
@@ -162,7 +162,7 @@ export default function DriverHistoryScreen() {
                     </View>
                   ))}
                   <View style={[styles.fareRow, { borderBottomWidth: 0, marginTop: 4 }]}>
-                    <Text style={[styles.fareLbl, { fontWeight: '700', color: '#22C55E', fontSize: 16 }]}>Your earnings</Text>
+                    <Text style={[styles.fareLbl, { fontWeight: '700', color: '#22C55E', fontSize: 16 }]}>Tus ganancias</Text>
                     <Text style={[styles.fareVal, { color: '#22C55E', fontSize: 18, fontWeight: '700' }]}>
                       +${(selected.driver_earnings ?? 0).toFixed(2)}
                     </Text>
@@ -175,7 +175,7 @@ export default function DriverHistoryScreen() {
                 >
                   {isDownloading
                     ? <ActivityIndicator color="#fff" />
-                    : <Text style={styles.receiptBtnText}>📄  Download PDF receipt</Text>
+                    : <Text style={styles.receiptBtnText}>📄  Descargar recibo PDF</Text>
                   }
                 </TouchableOpacity>
               </>
@@ -192,7 +192,7 @@ export default function DriverHistoryScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Trip history</Text>
+        <Text style={styles.title}>Historial de viajes</Text>
         <View style={{ width: 40 }} />
       </View>
       {isLoading ? (
@@ -211,7 +211,7 @@ export default function DriverHistoryScreen() {
           ListEmptyComponent={
             <View style={{ flex: 1, alignItems: 'center', padding: 40, gap: 12 }}>
               <Text style={{ fontSize: 48 }}>🚗</Text>
-              <Text style={{ fontSize: 16, color: '#888' }}>No rides yet</Text>
+              <Text style={{ fontSize: 16, color: '#888' }}>Aún no hay viajes</Text>
             </View>
           }
         />

@@ -19,16 +19,16 @@ import { BRAND_COLORS } from '@vride/shared';
 const MAX_SELECTED = 5;
 
 const THANK_YOU_MESSAGES = [
-  "Thank you for being ready on time. Great passenger! 🙏",
-  "Very respectful and polite. A true pleasure to serve you!",
-  "You made the ride enjoyable with your great attitude. Thank you!",
-  "Punctual, respectful, and easy to communicate with. Come back anytime!",
-  "It was a pleasure driving you today. Thank you for your kindness!",
-  "You were very considerate and kept the car clean. Appreciated!",
-  "Thank you for your patience during the traffic. You were wonderful!",
-  "Great communication and easy pickup. Hope to see you again!",
-  "Your friendly demeanor made this ride a great experience. Thank you!",
-  "You were the perfect passenger. Thank you for choosing Verona Ride!",
+  "¡Gracias por estar listo a tiempo! Excelente pasajero. 🙏",
+  "Muy respetuoso y amable. ¡Un verdadero placer atenderte!",
+  "¡Tu buena actitud hizo el viaje muy agradable. Gracias!",
+  "Puntual, respetuoso y fácil de comunicar. ¡Hasta la próxima!",
+  "Fue un placer llevarte hoy. ¡Gracias por tu amabilidad!",
+  "Muy considerado y mantuvo el auto limpio. ¡Muchas gracias!",
+  "¡Gracias por tu paciencia en el tráfico! Eres genial.",
+  "Excelente comunicación y recogida sencilla. ¡Vuelve cuando quieras!",
+  "Tu trato amigable hizo del viaje una gran experiencia. ¡Gracias!",
+  "Eres el pasajero perfecto. ¡Gracias por elegir Verona Ride!",
 ];
 
 export default function DriverRatingScreen() {
@@ -66,7 +66,7 @@ export default function DriverRatingScreen() {
         router.replace('/(driver)/home');
       }, 1500);
     } catch {
-      Alert.alert('', 'Could not submit the rating. Please try again.');
+      Alert.alert('', 'No se pudo enviar la calificación. Intenta de nuevo.');
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +82,7 @@ export default function DriverRatingScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.successContainer}>
           <Text style={styles.successEmoji}>✅</Text>
-          <Text style={styles.successTitle}>Thank you for your rating!</Text>
+          <Text style={styles.successTitle}>¡Gracias por tu calificación!</Text>
         </View>
       </SafeAreaView>
     );
@@ -99,10 +99,10 @@ export default function DriverRatingScreen() {
         {/* Resumen de ganancias */}
         <View style={styles.summary}>
           <Text style={styles.summaryEmoji}>💰</Text>
-          <Text style={styles.summaryTitle}>Ride completed!</Text>
+          <Text style={styles.summaryTitle}>¡Viaje completado!</Text>
           {driverEarnings !== null && driverEarnings > 0 && (
             <View style={styles.earningsRow}>
-              <Text style={styles.earningsLabel}>Your earnings</Text>
+              <Text style={styles.earningsLabel}>Tus ganancias</Text>
               <Text style={styles.earningsAmount}>${driverEarnings.toFixed(2)}</Text>
             </View>
           )}
@@ -110,9 +110,9 @@ export default function DriverRatingScreen() {
 
         {/* Calificar pasajero */}
         <View style={styles.ratingSection}>
-          <Text style={styles.ratingTitle}>Rate your passenger</Text>
+          <Text style={styles.ratingTitle}>Califica a tu pasajero</Text>
           <Text style={styles.ratingSubtitle}>
-            How was your experience with this passenger?
+            ¿Cómo fue tu experiencia con este pasajero?
           </Text>
 
           {/* Estrellas */}
@@ -126,7 +126,7 @@ export default function DriverRatingScreen() {
                 }}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: score === star }}
-                accessibilityLabel={`${star} star${star > 1 ? 's' : ''}`}
+                accessibilityLabel={`${star} estrella${star > 1 ? 's' : ''}`}
               >
                 <Text style={[styles.star, star <= score && styles.starActive]}>★</Text>
               </TouchableOpacity>
@@ -134,20 +134,20 @@ export default function DriverRatingScreen() {
           </View>
 
           <Text style={styles.scoreLabel}>
-            {score === 5 ? 'Excellent' :
-             score === 4 ? 'Very good' :
-             score === 3 ? 'Average'   :
-             score === 2 ? 'Poor'      : 'Very poor'}
+            {score === 5 ? 'Excelente' :
+             score === 4 ? 'Muy bueno' :
+             score === 3 ? 'Regular'   :
+             score === 2 ? 'Malo'      : 'Muy malo'}
           </Text>
         </View>
 
         {/* Mensajes de agradecimiento */}
         <View style={styles.messagesSection}>
           <Text style={styles.messagesTitle}>
-            Send a thank you message
+            Envía un mensaje de agradecimiento
           </Text>
           <Text style={styles.messagesSubtitle}>
-            Select up to {MAX_SELECTED} · {selectedMessages.length}/{MAX_SELECTED} chosen
+            Selecciona hasta {MAX_SELECTED} · {selectedMessages.length}/{MAX_SELECTED} elegidos
           </Text>
 
           <View style={styles.chipsWrap}>
@@ -186,12 +186,12 @@ export default function DriverRatingScreen() {
         >
           {isSubmitting
             ? <ActivityIndicator color="#fff" size="small" />
-            : <Text style={styles.submitButtonText}>Submit rating</Text>
+            : <Text style={styles.submitButtonText}>Enviar calificación</Text>
           }
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipText}>Skip</Text>
+          <Text style={styles.skipText}>Omitir</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>

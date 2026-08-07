@@ -21,18 +21,18 @@ import { BRAND_COLORS } from '@vride/shared';
 type Tab = 'book' | 'list';
 
 const SERVICE_OPTIONS = [
-  { key: 'standard',   label: 'Standard',    emoji: '🚗' },
-  { key: 'executive',  label: 'Executive',   emoji: '🚙' },
-  { key: 'accessible', label: 'Accessible',  emoji: '♿' },
-  { key: 'military',   label: 'Military',    emoji: '🎖️' },
+  { key: 'standard',   label: 'Estándar',   emoji: '🚗' },
+  { key: 'executive',  label: 'Ejecutivo',  emoji: '🚙' },
+  { key: 'accessible', label: 'Accesible',  emoji: '♿' },
+  { key: 'military',   label: 'Militar',    emoji: '🎖️' },
 ];
 
 const STATUS_LABELS: Record<ScheduledRide['status'], string> = {
-  pending:     'Pending',
-  dispatching: 'Finding driver',
-  assigned:    'Driver assigned',
-  cancelled:   'Cancelled',
-  completed:   'Completed',
+  pending:     'Pendiente',
+  dispatching: 'Buscando conductor',
+  assigned:    'Conductor asignado',
+  cancelled:   'Cancelado',
+  completed:   'Completado',
 };
 const STATUS_COLORS: Record<ScheduledRide['status'], string> = {
   pending:     BRAND_COLORS.PRIMARY,
@@ -50,7 +50,7 @@ function minDateTime(): string {
 }
 
 function formatScheduledAt(iso: string): string {
-  return new Date(iso).toLocaleString('en-US', {
+  return new Date(iso).toLocaleString('es-VE', {
     weekday: 'short', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -81,7 +81,7 @@ export default function ScheduleScreen() {
       const list = await scheduledRideService.list();
       setRides(list);
     } catch {
-      Alert.alert('Error', 'Could not load scheduled rides.');
+      Alert.alert('Error', 'No se pudieron cargar los viajes programados.');
     } finally {
       setIsLoadingList(false);
     }
@@ -93,28 +93,28 @@ export default function ScheduleScreen() {
 
   const handleBook = async () => {
     if (!pickupAddress.trim() || !dropoffAddress.trim()) {
-      Alert.alert('Required fields', 'Please enter pickup and destination addresses.');
+      Alert.alert('Campos requeridos', 'Por favor ingresa las direcciones de recogida y destino.');
       return;
     }
     if (!scheduledDate || !scheduledTime) {
-      Alert.alert('Date & time required', 'Please enter the ride date and time.');
+      Alert.alert('Fecha y hora requeridas', 'Por favor ingresa la fecha y hora del viaje.');
       return;
     }
 
-    // Convertir MM/DD/YYYY + HH:MM a Date (hora local del usuario)
+    // Convertir DD/MM/YYYY + HH:MM a Date (hora local del usuario)
     const dateParts = scheduledDate.split('/');
     if (dateParts.length !== 3) {
-      Alert.alert('Invalid date', 'Use MM/DD/YYYY format (e.g. 04/23/2026).');
+      Alert.alert('Fecha inválida', 'Usa el formato DD/MM/AAAA (ej. 23/04/2026).');
       return;
     }
-    const [month, day, year] = dateParts;
+    const [day, month, year] = dateParts;
     const scheduled = new Date(`${year}-${month.padStart(2,'0')}-${day.padStart(2,'0')}T${scheduledTime}:00`);
     if (isNaN(scheduled.getTime())) {
-      Alert.alert('Invalid date', 'Please check the date and time format.');
+      Alert.alert('Fecha inválida', 'Por favor verifica el formato de fecha y hora.');
       return;
     }
     if (scheduled.getTime() - Date.now() < 30 * 60 * 1000) {
-      Alert.alert('Too soon', 'Rides must be scheduled at least 30 minutes in advance.');
+      Alert.alert('Muy pronto', 'Los viajes deben programarse con al menos 30 minutos de anticipación.');
       return;
     }
 
@@ -130,9 +130,9 @@ export default function ScheduleScreen() {
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
-        'Ride scheduled!',
-        `Your ride for ${formatScheduledAt(scheduled.toISOString())} has been booked. We'll send you a reminder 30 minutes before.`,
-        [{ text: 'View my rides', onPress: () => { setTab('list'); loadList(); } }]
+        '¡Viaje programado!',
+        `Tu viaje para el ${formatScheduledAt(scheduled.toISOString())} ha sido reservado. Te enviaremos un recordatorio 30 minutos antes.`,
+        [{ text: 'Ver mis viajes', onPress: () => { setTab('list'); loadList(); } }]
       );
       // Limpiar formulario
       setPickupAddress(''); setDropoffAddress('');
@@ -140,9 +140,9 @@ export default function ScheduleScreen() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : '';
       if (msg.includes('TOO_SOON')) {
-        Alert.alert('Too soon', 'Minimum 30 minutes in advance.');
+        Alert.alert('Muy pronto', 'Mínimo 30 minutos de anticipación.');
       } else {
-        Alert.alert('Error', 'Could not schedule the ride. Please try again.');
+        Alert.alert('Error', 'No se pudo programar el viaje. Inténtalo de nuevo.');
       }
     } finally {
       setIsBooking(false);
@@ -151,12 +151,12 @@ export default function ScheduleScreen() {
 
   const handleCancel = (ride: ScheduledRide) => {
     Alert.alert(
-      'Cancel ride',
-      `Cancel the ride for ${formatScheduledAt(ride.scheduled_at)}?`,
+      'Cancelar viaje',
+      `¿Cancelar el viaje del ${formatScheduledAt(ride.scheduled_at)}?`,
       [
         { text: 'No', style: 'cancel' },
         {
-          text: 'Yes, cancel',
+          text: 'Sí, cancelar',
           style: 'destructive',
           onPress: async () => {
             setCancellingId(ride.id);
@@ -165,7 +165,7 @@ export default function ScheduleScreen() {
               setRides(prev => prev.map(r => r.id === ride.id ? { ...r, status: 'cancelled' } : r));
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             } catch {
-              Alert.alert('Error', 'Could not cancel the ride.');
+              Alert.alert('Error', 'No se pudo cancelar el viaje.');
             } finally {
               setCancellingId(null);
             }
@@ -183,7 +183,7 @@ export default function ScheduleScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Scheduled Rides</Text>
+        <Text style={styles.title}>Viajes programados</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -197,7 +197,7 @@ export default function ScheduleScreen() {
             accessibilityRole="tab"
           >
             <Text style={[styles.tabText, tab === t && styles.tabTextActive]}>
-              {t === 'book' ? '📅  Schedule' : '📋  My rides'}
+              {t === 'book' ? '📅  Programar' : '📋  Mis viajes'}
             </Text>
           </TouchableOpacity>
         ))}
@@ -212,7 +212,7 @@ export default function ScheduleScreen() {
         <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
 
           {/* Service type */}
-          <Text style={styles.label}>Service type</Text>
+          <Text style={styles.label}>Tipo de servicio</Text>
           <View style={styles.serviceRow}>
             {SERVICE_OPTIONS.map(s => (
               <TouchableOpacity
@@ -229,45 +229,45 @@ export default function ScheduleScreen() {
           </View>
 
           {/* Origen */}
-          <Text style={styles.label}>Pickup address</Text>
+          <Text style={styles.label}>Dirección de recogida</Text>
           <TextInput
             style={styles.input}
             value={pickupAddress}
             onChangeText={setPickupAddress}
-            placeholder="Enter pickup address"
+            placeholder="Ingresa la dirección de recogida"
             placeholderTextColor="#AAA"
             returnKeyType="next"
           />
 
           {/* Destino */}
-          <Text style={styles.label}>Destination</Text>
+          <Text style={styles.label}>Destino</Text>
           <TextInput
             style={styles.input}
             value={dropoffAddress}
             onChangeText={setDropoffAddress}
-            placeholder="Enter destination address"
+            placeholder="Ingresa la dirección de destino"
             placeholderTextColor="#AAA"
             returnKeyType="next"
           />
 
           {/* Date & time */}
-          <Text style={styles.label}>Ride date</Text>
+          <Text style={styles.label}>Fecha del viaje</Text>
           <TextInput
             style={styles.input}
             value={scheduledDate}
             onChangeText={setScheduledDate}
-            placeholder="MM/DD/YYYY  (e.g. 04/23/2026)"
+            placeholder="DD/MM/AAAA  (ej. 23/04/2026)"
             placeholderTextColor="#AAA"
             keyboardType="numbers-and-punctuation"
             maxLength={10}
           />
 
-          <Text style={styles.label}>Ride time</Text>
+          <Text style={styles.label}>Hora del viaje</Text>
           <TextInput
             style={styles.input}
             value={scheduledTime}
             onChangeText={setScheduledTime}
-            placeholder="HH:MM  (e.g. 09:30)"
+            placeholder="HH:MM  (ej. 09:30)"
             placeholderTextColor="#AAA"
             keyboardType="numbers-and-punctuation"
             maxLength={5}
@@ -275,7 +275,7 @@ export default function ScheduleScreen() {
 
           <View style={styles.infoBox}>
             <Text style={styles.infoText}>
-              ⏰ Scheduled rides are dispatched 15 minutes before the indicated time. You will receive a reminder 30 minutes before.
+              ⏰ Los viajes programados se despachan 15 minutos antes de la hora indicada. Recibirás un recordatorio 30 minutos antes.
             </Text>
           </View>
 
@@ -287,7 +287,7 @@ export default function ScheduleScreen() {
           >
             {isBooking
               ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.bookBtnText}>Schedule ride</Text>
+              : <Text style={styles.bookBtnText}>Programar viaje</Text>
             }
           </TouchableOpacity>
 
@@ -308,7 +308,7 @@ export default function ScheduleScreen() {
             ListEmptyComponent={
               <View style={styles.centered}>
                 <Text style={styles.emptyEmoji}>📅</Text>
-                <Text style={styles.emptyText}>No scheduled rides yet</Text>
+                <Text style={styles.emptyText}>Aún no hay viajes programados</Text>
               </View>
             }
             renderItem={({ item }) => (
@@ -326,7 +326,7 @@ export default function ScheduleScreen() {
                     >
                       {cancellingId === item.id
                         ? <ActivityIndicator size="small" color={BRAND_COLORS.ALERT} />
-                        : <Text style={styles.cancelSmallText}>Cancel</Text>
+                        : <Text style={styles.cancelSmallText}>Cancelar</Text>
                       }
                     </TouchableOpacity>
                   )}

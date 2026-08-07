@@ -12,7 +12,6 @@ import {
   ActivityIndicator, Alert, ScrollView, Image,
 } from 'react-native';
 import { router } from 'expo-router';
-import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { useAuthStore } from '../../src/store/authStore';
 import { authService } from '../../src/services/authService';
@@ -22,7 +21,6 @@ import { BRAND_COLORS } from '@vride/shared';
 import * as Haptics from 'expo-haptics';
 
 export default function LoginScreen() {
-  const { t } = useTranslation();
   const { loginWithEmail, socialLogin, isLoading, clearError } = useAuthStore();
   const [isResetting, setIsResetting] = useState(false);
   const { signIn: googleSignIn, ready: googleReady } = useGoogleAuth();
@@ -44,10 +42,10 @@ export default function LoginScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       const isNotFound = axios.isAxiosError(err) && err.response?.data?.code === 'USER_NOT_FOUND';
       Alert.alert(
-        'Google Sign-In',
+        'Google',
         isNotFound
-          ? 'No account found with this Google account. Please register first.'
-          : 'Could not sign in with Google. Please try again.'
+          ? 'No encontramos una cuenta con este Google. Por favor regístrate primero.'
+          : 'No se pudo iniciar sesión con Google. Intenta de nuevo.'
       );
     } finally {
       setIsSocialLoading(null);
@@ -66,10 +64,10 @@ export default function LoginScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       const isNotFound = axios.isAxiosError(err) && err.response?.data?.code === 'USER_NOT_FOUND';
       Alert.alert(
-        'Apple Sign-In',
+        'Apple',
         isNotFound
-          ? 'No account found with this Apple ID. Please register first.'
-          : 'Could not sign in with Apple. Please try again.'
+          ? 'No encontramos una cuenta con este Apple ID. Por favor regístrate primero.'
+          : 'No se pudo iniciar sesión con Apple. Intenta de nuevo.'
       );
     } finally {
       setIsSocialLoading(null);
@@ -78,19 +76,19 @@ export default function LoginScreen() {
 
   const handleForgotPassword = async () => {
     if (!email.trim()) {
-      Alert.alert('', 'Enter your email address first, then tap Forgot Password.');
+      Alert.alert('', 'Ingresa tu correo primero y luego toca ¿Olvidaste tu contraseña?');
       return;
     }
     setIsResetting(true);
     try {
       await authService.sendPasswordReset(email.trim().toLowerCase());
       Alert.alert(
-        'Email sent',
-        `We sent a password reset link to ${email.trim()}. Check your inbox and spam folder.`,
+        'Correo enviado',
+        `Enviamos un enlace de recuperación a ${email.trim()}. Revisa tu bandeja y carpeta de spam.`,
         [{ text: 'OK' }]
       );
     } catch {
-      Alert.alert('Error', 'Could not send the reset email. Please check the address and try again.');
+      Alert.alert('Error', 'No se pudo enviar el correo. Verifica la dirección e intenta de nuevo.');
     } finally {
       setIsResetting(false);
     }
@@ -98,7 +96,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     if (!email.trim() || !password) {
-      Alert.alert('', 'Please enter your email and password.');
+      Alert.alert('', 'Ingresa tu correo y contraseña.');
       return;
     }
 
@@ -109,8 +107,8 @@ export default function LoginScreen() {
       // La redirección ocurre automáticamente en _layout.tsx al cambiar isAuthenticated
     } catch (err) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      const msg = err instanceof Error ? err.message : 'Please check your email and password and try again.';
-      Alert.alert('Sign in error', msg);
+      const msg = err instanceof Error ? err.message : 'Verifica tu correo y contraseña e intenta de nuevo.';
+      Alert.alert('Error al iniciar sesión', msg);
     }
   };
 
@@ -126,7 +124,7 @@ export default function LoginScreen() {
         >
           {/* Header */}
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backText}>← {t('common.back')}</Text>
+            <Text style={styles.backText}>← Atrás</Text>
           </TouchableOpacity>
 
           <View style={styles.logoRow}>
@@ -138,12 +136,12 @@ export default function LoginScreen() {
             />
           </View>
 
-          <Text style={styles.title}>{t('auth.loginTitle')}</Text>
+          <Text style={styles.title}>Iniciar sesión</Text>
 
           {/* Campos */}
           <View style={styles.form}>
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('auth.email')}</Text>
+              <Text style={styles.label}>Correo electrónico</Text>
               <TextInput
                 style={styles.input}
                 value={email}
@@ -154,12 +152,12 @@ export default function LoginScreen() {
                 autoCorrect={false}
                 placeholder="tu@email.com"
                 placeholderTextColor="#aaa"
-                accessibilityLabel={t('auth.email')}
+                accessibilityLabel="Correo electrónico"
               />
             </View>
 
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>{t('auth.password')}</Text>
+              <Text style={styles.label}>Contraseña</Text>
               <View style={styles.passwordContainer}>
                 <TextInput
                   style={[styles.input, styles.passwordInput]}
@@ -170,12 +168,12 @@ export default function LoginScreen() {
                   autoCapitalize="none"
                   placeholder="••••••••"
                   placeholderTextColor="#aaa"
-                  accessibilityLabel={t('auth.password')}
+                  accessibilityLabel="Contraseña"
                 />
                 <TouchableOpacity
                   style={styles.eyeButton}
                   onPress={() => setShowPassword(!showPassword)}
-                  accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                  accessibilityLabel={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                 >
                   <Text style={styles.eyeText}>{showPassword ? '🙈' : '👁️'}</Text>
                 </TouchableOpacity>
@@ -188,7 +186,7 @@ export default function LoginScreen() {
               disabled={isResetting}
             >
               <Text style={styles.forgotText}>
-                {isResetting ? 'Sending...' : t('auth.forgotPassword')}
+                {isResetting ? 'Enviando...' : '¿Olvidaste tu contraseña?'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -199,19 +197,19 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={isLoading}
             accessibilityRole="button"
-            accessibilityLabel={t('auth.loginButton')}
+            accessibilityLabel="Iniciar sesión"
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
-              <Text style={styles.loginButtonText}>{t('auth.loginButton')}</Text>
+              <Text style={styles.loginButtonText}>Iniciar sesión</Text>
             )}
           </TouchableOpacity>
 
           {/* Separador */}
           <View style={styles.separator}>
             <View style={styles.separatorLine} />
-            <Text style={styles.separatorText}>{t('common.or')}</Text>
+            <Text style={styles.separatorText}>o</Text>
             <View style={styles.separatorLine} />
           </View>
 
@@ -221,12 +219,12 @@ export default function LoginScreen() {
             onPress={handleGoogleLogin}
             disabled={!googleReady || isSocialLoading !== null}
             accessibilityRole="button"
-            accessibilityLabel="Sign in with Google"
+            accessibilityLabel="Continuar con Google"
           >
             {isSocialLoading === 'google' ? (
               <ActivityIndicator color={BRAND_COLORS.TEXT} size="small" />
             ) : (
-              <Text style={styles.googleText}>🌐 {t('auth.googleSignIn')}</Text>
+              <Text style={styles.googleText}>🌐 Continuar con Google</Text>
             )}
           </TouchableOpacity>
 
@@ -246,9 +244,9 @@ export default function LoginScreen() {
 
           {/* Link a registro */}
           <View style={styles.registerRow}>
-            <Text style={styles.registerText}>{t('auth.noAccount')} </Text>
+            <Text style={styles.registerText}>¿No tienes cuenta? </Text>
             <TouchableOpacity onPress={() => router.push('/(auth)/')}>
-              <Text style={styles.registerLink}>{t('auth.registerButton')}</Text>
+              <Text style={styles.registerLink}>Crear cuenta</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

@@ -33,10 +33,10 @@ interface ReferralData {
 }
 
 const STATUS_LABEL: Record<string, { text: string; color: string }> = {
-  pending:     { text: 'Pending',     color: '#888' },
-  in_progress: { text: 'In progress', color: BRAND_COLORS.ACCENT },
-  completed:   { text: 'Completed',   color: '#22C55E' },
-  paid:        { text: 'Paid',        color: BRAND_COLORS.PRIMARY },
+  pending:     { text: 'Pendiente',    color: '#888' },
+  in_progress: { text: 'En progreso',  color: BRAND_COLORS.ACCENT },
+  completed:   { text: 'Completado',   color: '#22C55E' },
+  paid:        { text: 'Pagado',       color: BRAND_COLORS.PRIMARY },
 };
 
 export default function ReferralsScreen() {
@@ -49,7 +49,7 @@ export default function ReferralsScreen() {
       const { data: res } = await apiClient.get<{ success: boolean; data: ReferralData }>('/referral/me');
       setData(res.data);
     } catch {
-      Alert.alert('Error', 'Could not load referral dashboard.');
+      Alert.alert('Error', 'No se pudo cargar el panel de referidos.');
     } finally {
       setIsLoading(false);
     }
@@ -69,8 +69,8 @@ export default function ReferralsScreen() {
     if (!data?.referralCode) return;
     try {
       await Share.share({
-        message: `Join Verona Ride and earn $50 on your first ride!\n\nUse my referral code: ${data.referralCode}\n\nDownload the app at: https://veronaride.app/download`,
-        title:   'Join Verona Ride',
+        message: `¡Únete a Verona Ride Venezuela y gana con tu primer viaje!\n\nUsa mi código de referido: ${data.referralCode}\n\nDescarga la app en: https://veronaride.app/download`,
+        title:   'Únete a Verona Ride',
       });
     } catch { /* usuario canceló */ }
   };
@@ -89,7 +89,7 @@ export default function ReferralsScreen() {
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()} accessibilityRole="button">
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Referral Program</Text>
+        <Text style={styles.title}>Programa de referidos</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -98,26 +98,26 @@ export default function ReferralsScreen() {
         {/* Banner explicativo */}
         <View style={styles.heroBanner}>
           <Text style={styles.heroEmoji}>🤝</Text>
-          <Text style={styles.heroTitle}>Earn up to $600 per referral!</Text>
+          <Text style={styles.heroTitle}>¡Gana bonos por cada conductor referido!</Text>
           <Text style={styles.heroSub}>
-            Invite a driver:
-            {'\n'}• Your referral earns <Text style={styles.bold}>$50</Text> on their first ride
-            {'\n'}• You earn <Text style={styles.bold}>$50/month</Text> for each month they complete 100+ rides
-            {'\n'}• <Text style={styles.bold}>$600 total</Text> after 12 qualifying months
+            Invita a un conductor:
+            {'\n'}• Tu referido gana un <Text style={styles.bold}>bono de bienvenida</Text> en su primer viaje
+            {'\n'}• Tú ganas un <Text style={styles.bold}>bono mensual</Text> por cada mes que complete 100+ viajes
+            {'\n'}• ¡Cuantos más referidos activos, <Text style={styles.bold}>más ganas</Text>!
           </Text>
         </View>
 
         {/* Mi código */}
         {data?.referralCode && (
           <View style={styles.codeCard}>
-            <Text style={styles.codeLabel}>MY CODE</Text>
+            <Text style={styles.codeLabel}>MI CÓDIGO</Text>
             <Text style={styles.codeValue}>{data.referralCode}</Text>
             <View style={styles.codeActions}>
               <TouchableOpacity style={styles.codeBtn} onPress={handleCopyCode}>
-                <Text style={styles.codeBtnText}>{copied ? '✓ Copied' : '📋  Copy'}</Text>
+                <Text style={styles.codeBtnText}>{copied ? '✓ Copiado' : '📋  Copiar'}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.codeBtn, styles.codeBtnShare]} onPress={handleShare}>
-                <Text style={[styles.codeBtnText, { color: '#fff' }]}>📤  Share</Text>
+                <Text style={[styles.codeBtnText, { color: '#fff' }]}>📤  Compartir</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -127,28 +127,28 @@ export default function ReferralsScreen() {
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
             <Text style={styles.statVal}>{data?.totalReferrals ?? 0}</Text>
-            <Text style={styles.statLbl}>Total referrals</Text>
+            <Text style={styles.statLbl}>Total referidos</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statVal}>{data?.activeReferrals ?? 0}</Text>
-            <Text style={styles.statLbl}>In progress</Text>
+            <Text style={styles.statLbl}>En progreso</Text>
           </View>
           <View style={styles.statBox}>
             <Text style={[styles.statVal, { color: '#22C55E' }]}>
               ${(data?.totalBonusEarned ?? 0).toFixed(0)}
             </Text>
-            <Text style={styles.statLbl}>Bonus earned</Text>
+            <Text style={styles.statLbl}>Bonos ganados</Text>
           </View>
         </View>
 
         {/* Lista de referidos */}
-        <Text style={styles.sectionTitle}>My referrals</Text>
+        <Text style={styles.sectionTitle}>Mis referidos</Text>
 
         {data?.referrals.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>You haven't referred any drivers yet</Text>
+            <Text style={styles.emptyText}>Aún no has referido a ningún conductor</Text>
             <TouchableOpacity style={styles.sharePrompt} onPress={handleShare}>
-              <Text style={styles.sharePromptText}>Share my code now →</Text>
+              <Text style={styles.sharePromptText}>Compartir mi código →</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -168,7 +168,7 @@ export default function ReferralsScreen() {
                   </View>
                   <View style={styles.referralRight}>
                     <Text style={styles.ridesCount}>{ref.rides_completed}/{ref.rides_required}</Text>
-                    <Text style={styles.ridesLabel}>months</Text>
+                    <Text style={styles.ridesLabel}>meses</Text>
                   </View>
                 </View>
 
@@ -177,9 +177,9 @@ export default function ReferralsScreen() {
                   <View style={[styles.progressFill, { width: `${ref.progressPercent}%` as any }]} />
                 </View>
                 <View style={styles.progressLabels}>
-                  <Text style={styles.progressLabel}>{ref.progressPercent}% · {ref.rides_completed}/12 months</Text>
+                  <Text style={styles.progressLabel}>{ref.progressPercent}% · {ref.rides_completed}/12 meses</Text>
                   {ref.first_ride_bonus_paid && (
-                    <Text style={styles.bonusPaid}>✓ Welcome bonus paid</Text>
+                    <Text style={styles.bonusPaid}>✓ Bono de bienvenida pagado</Text>
                   )}
                 </View>
               </View>

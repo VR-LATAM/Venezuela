@@ -41,7 +41,7 @@ export default function PaymentsScreen() {
       const list = await paymentService.listCards();
       setCards(list);
     } catch {
-      Alert.alert('Error', 'Could not load payment methods.');
+      Alert.alert('Error', 'No se pudieron cargar los métodos de pago.');
     } finally {
       setIsLoading(false);
     }
@@ -97,9 +97,9 @@ export default function PaymentsScreen() {
           : [...withoutDefault, savedCard];
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert('Done', 'Card added successfully.');
+      Alert.alert('Listo', 'Tarjeta agregada correctamente.');
     } catch {
-      Alert.alert('Error', 'Could not add the card. Please try again.');
+      Alert.alert('Error', 'No se pudo agregar la tarjeta. Inténtalo de nuevo.');
     } finally {
       setIsAdding(false);
     }
@@ -110,12 +110,12 @@ export default function PaymentsScreen() {
   // ─────────────────────────────────────
   const handleDelete = (card: SavedCard) => {
     Alert.alert(
-      'Remove card',
-      `Remove ${CARD_BRAND_LABEL[card.brand] ?? card.brand} ···${card.last4}?`,
+      'Eliminar tarjeta',
+      `¿Eliminar ${CARD_BRAND_LABEL[card.brand] ?? card.brand} ···${card.last4}?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancelar', style: 'cancel' },
         {
-          text: 'Remove',
+          text: 'Eliminar',
           style: 'destructive',
           onPress: async () => {
             setDeletingId(card.id);
@@ -124,7 +124,7 @@ export default function PaymentsScreen() {
               setCards(prev => prev.filter(c => c.id !== card.id));
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             } catch {
-              Alert.alert('Error', 'Could not remove the card.');
+              Alert.alert('Error', 'No se pudo eliminar la tarjeta.');
             } finally {
               setDeletingId(null);
             }
@@ -145,7 +145,7 @@ export default function PaymentsScreen() {
       setCards(prev => prev.map(c => ({ ...c, is_default: c.id === card.id })));
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch {
-      Alert.alert('Error', 'Could not update the default card.');
+      Alert.alert('Error', 'No se pudo actualizar la tarjeta predeterminada.');
     } finally {
       setSettingDefaultId(null);
     }
@@ -167,7 +167,7 @@ export default function PaymentsScreen() {
         <View>
           <Text style={styles.cardNumber}>···· ···· ···· {item.last4}</Text>
           <Text style={styles.cardExpiry}>
-            Expires {String(item.exp_month).padStart(2, '0')}/{item.exp_year}
+            Vence {String(item.exp_month).padStart(2, '0')}/{item.exp_year}
           </Text>
         </View>
       </View>
@@ -176,14 +176,14 @@ export default function PaymentsScreen() {
       <View style={styles.cardRight}>
         {item.is_default && (
           <View style={styles.defaultBadge}>
-            <Text style={styles.defaultBadgeText}>Default</Text>
+            <Text style={styles.defaultBadgeText}>Predeterminada</Text>
           </View>
         )}
         {settingDefaultId === item.id ? (
           <ActivityIndicator size="small" color={BRAND_COLORS.PRIMARY} />
         ) : null}
         {!item.is_default && settingDefaultId !== item.id && (
-          <Text style={styles.setDefaultHint}>Tap to set as default</Text>
+          <Text style={styles.setDefaultHint}>Toca para usar como predeterminada</Text>
         )}
         <TouchableOpacity
           style={styles.deleteBtn}
@@ -213,7 +213,7 @@ export default function PaymentsScreen() {
         >
           <Text style={styles.backBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Payment methods</Text>
+        <Text style={styles.title}>Métodos de pago</Text>
         <View style={{ width: 40 }} />
       </View>
 
@@ -230,9 +230,9 @@ export default function PaymentsScreen() {
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyEmoji}>💳</Text>
-              <Text style={styles.emptyTitle}>No saved cards</Text>
+              <Text style={styles.emptyTitle}>Sin tarjetas guardadas</Text>
               <Text style={styles.emptySubtitle}>
-                Add a card to pay for your rides automatically
+                Agrega una tarjeta para pagar tus viajes automáticamente
               </Text>
             </View>
           }
@@ -250,13 +250,13 @@ export default function PaymentsScreen() {
                   : (
                     <View style={styles.addBtnContent}>
                       <Text style={styles.addBtnIcon}>+</Text>
-                      <Text style={styles.addBtnText}>Add card</Text>
+                      <Text style={styles.addBtnText}>Agregar tarjeta</Text>
                     </View>
                   )
                 }
               </TouchableOpacity>
               <Text style={styles.secureNote}>
-                🔒 Your payment data is securely processed by Stripe. Verona Ride never stores your card details.
+                🔒 Tus datos de pago son procesados de forma segura por Stripe. V-Ride nunca almacena los detalles de tu tarjeta.
               </Text>
             </View>
           }

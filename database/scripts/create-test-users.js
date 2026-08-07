@@ -97,6 +97,7 @@ async function run() {
       if (code === 'ALREADY_REGISTERED') {
         console.log(`   ⚠️  Ya existe en backend`);
       } else {
+        console.error('   Respuesta completa:', JSON.stringify(err.response?.data));
         throw new Error(`Backend error: ${err.response?.data?.error ?? err.message}`);
       }
     }
@@ -115,6 +116,7 @@ async function run() {
       if (code === 'ALREADY_REGISTERED') {
         console.log(`   ⚠️  Ya existe en backend`);
       } else {
+        console.error('   Respuesta completa:', JSON.stringify(err.response?.data));
         throw new Error(`Backend error: ${err.response?.data?.error ?? err.message}`);
       }
     }
