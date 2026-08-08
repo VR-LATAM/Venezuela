@@ -12,6 +12,8 @@ import { Driver } from '@vride/shared';
 const API_URL = process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000';
 
 export type DocumentType =
+  | 'cedula_front'
+  | 'cedula_back'
   | 'license_front'
   | 'license_back'
   | 'vehicle_front'

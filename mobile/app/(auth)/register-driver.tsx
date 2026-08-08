@@ -113,6 +113,7 @@ const CERTIFICATION_OPTIONS = [
 
 // Documentos requeridos (todos excepto accessible_cert y certificaciones)
 const REQUIRED_DOCS: DocumentType[] = [
+  'cedula_front', 'cedula_back',
   'license_front', 'license_back',
   'vehicle_front', 'vehicle_back', 'vehicle_left', 'vehicle_right', 'vehicle_interior',
   'insurance', 'selfie',
@@ -145,7 +146,7 @@ export default function RegisterDriverScreen() {
   const [showPassword, setShowPassword]       = useState(false);
   const [phone, setPhone]                     = useState('');
   const [dateOfBirth, setDateOfBirth]         = useState('');
-  const [ssnLast4, setSsnLast4]               = useState('');
+  const [cedulaNumber, setCedulaNumber]        = useState('');
   const [homeAddress, setHomeAddress]         = useState('');
   const [stateCode, setStateCode]             = useState('DC');
   const [referralCode, setReferralCode]       = useState('');
@@ -182,6 +183,8 @@ export default function RegisterDriverScreen() {
 
   // ── Documentos ──
   const [docs, setDocs] = useState<Record<DocumentType, DocState>>({
+    cedula_front:            emptyDoc(),
+    cedula_back:             emptyDoc(),
     license_front:           emptyDoc(),
     license_back:            emptyDoc(),
     vehicle_front:           emptyDoc(),
@@ -350,6 +353,9 @@ export default function RegisterDriverScreen() {
     if (!dateOfBirth.trim()) {
       Alert.alert('', 'La fecha de nacimiento es requerida'); return;
     }
+    if (!cedulaNumber.trim()) {
+      Alert.alert('', 'La cédula de identidad es requerida'); return;
+    }
     if (!homeAddress.trim()) {
       Alert.alert('', 'La dirección de residencia es requerida'); return;
     }
@@ -378,7 +384,7 @@ export default function RegisterDriverScreen() {
       // Guardar datos personales adicionales
       await driverMobileService.updateProfile({
         dateOfBirth: dateOfBirth.trim() || undefined,
-        ssnLast4: ssnLast4.trim() || undefined,
+        ssnLast4: cedulaNumber.trim() || undefined,
         homeAddress: homeAddress.trim() || undefined,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -406,6 +412,9 @@ export default function RegisterDriverScreen() {
     }
     if (!licenseExpiry.trim()) {
       Alert.alert('', 'La fecha de vencimiento de la licencia es requerida'); return;
+    }
+    if (!docs.cedula_front.uploaded || !docs.cedula_back.uploaded) {
+      Alert.alert('', 'Sube la foto del frente y dorso de tu cédula de identidad'); return;
     }
     if (!docs.license_front.uploaded || !docs.license_back.uploaded) {
       Alert.alert('', 'Sube la foto del frente y dorso de tu licencia'); return;
@@ -762,10 +771,10 @@ export default function RegisterDriverScreen() {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Cédula de identidad (opcional)</Text>
-                <TextInput style={styles.input} value={ssnLast4} onChangeText={setSsnLast4}
-                  keyboardType="number-pad" placeholder="V-12345678" placeholderTextColor="#aaa" maxLength={10}
-                  secureTextEntry />
+                <Text style={styles.label}>Cédula de identidad *</Text>
+                <TextInput style={styles.input} value={cedulaNumber} onChangeText={setCedulaNumber}
+                  keyboardType="default" autoCapitalize="characters" autoCorrect={false}
+                  placeholder="V-12345678 o E-12345678" placeholderTextColor="#aaa" maxLength={12} />
               </View>
 
               <View style={styles.field}>
@@ -808,7 +817,7 @@ export default function RegisterDriverScreen() {
           {step === 2 && (
             <View>
               <Text style={styles.stepHint}>
-                Necesitamos tu licencia de conducir vigente. También sirve como documento de identidad.
+                Necesitamos tu cédula de identidad y tu licencia de conducir vigente. Sube el frente y dorso de cada documento.
               </Text>
 
               <View style={styles.field}>
@@ -838,7 +847,17 @@ export default function RegisterDriverScreen() {
                 </TouchableOpacity>
               )}
 
-              <Text style={styles.subSectionTitle}>Fotos de licencia — ambos lados requeridos *</Text>
+              <Text style={styles.subSectionTitle}>Cédula de identidad — ambos lados requeridos *</Text>
+              <View style={styles.docSideRow}>
+                <View style={styles.docSideCol}>
+                  <DocUploadButton docType="cedula_front" label="Frente" bothOptions />
+                </View>
+                <View style={styles.docSideCol}>
+                  <DocUploadButton docType="cedula_back" label="Dorso" bothOptions />
+                </View>
+              </View>
+
+              <Text style={styles.subSectionTitle}>Licencia de conducir — ambos lados requeridos *</Text>
               <View style={styles.docSideRow}>
                 <View style={styles.docSideCol}>
                   <DocUploadButton docType="license_front" label="Frente" bothOptions />
@@ -1250,6 +1269,7 @@ export default function RegisterDriverScreen() {
                   <ReviewRow label="Nombre"        value={name} />
                   <ReviewRow label="Correo"        value={email} />
                   <ReviewRow label="Teléfono"      value={phone} />
+                  <ReviewRow label="Cédula"        value={cedulaNumber} />
                   <ReviewRow label="Fecha de nac." value={dateOfBirth} />
                   <ReviewRow label="Dirección"     value={homeAddress} />
                   <ReviewRow label="Estado"        value={stateCode} />
@@ -1429,7 +1449,7 @@ function ReviewRow({
 // Estilos
 // ─────────────────────────────────────
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   flex: { flex: 1 },
   scroll: { padding: 24, paddingBottom: 48 },
 
