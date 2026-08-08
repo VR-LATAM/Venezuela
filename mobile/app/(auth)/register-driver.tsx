@@ -113,7 +113,7 @@ const CERTIFICATION_OPTIONS = [
 
 // Documentos requeridos (todos excepto accessible_cert y certificaciones)
 const REQUIRED_DOCS: DocumentType[] = [
-  'cedula_front', 'cedula_back',
+  'cedula_front',
   'license_front', 'license_back',
   'vehicle_front', 'vehicle_back', 'vehicle_left', 'vehicle_right', 'vehicle_interior',
   'insurance', 'selfie',
@@ -184,7 +184,6 @@ export default function RegisterDriverScreen() {
   // ── Documentos ──
   const [docs, setDocs] = useState<Record<DocumentType, DocState>>({
     cedula_front:            emptyDoc(),
-    cedula_back:             emptyDoc(),
     license_front:           emptyDoc(),
     license_back:            emptyDoc(),
     vehicle_front:           emptyDoc(),
@@ -413,8 +412,8 @@ export default function RegisterDriverScreen() {
     if (!licenseExpiry.trim()) {
       Alert.alert('', 'La fecha de vencimiento de la licencia es requerida'); return;
     }
-    if (!docs.cedula_front.uploaded || !docs.cedula_back.uploaded) {
-      Alert.alert('', 'Sube la foto del frente y dorso de tu cédula de identidad'); return;
+    if (!docs.cedula_front.uploaded) {
+      Alert.alert('', 'Sube la foto de tu cédula de identidad'); return;
     }
     if (!docs.license_front.uploaded || !docs.license_back.uploaded) {
       Alert.alert('', 'Sube la foto del frente y dorso de tu licencia'); return;
@@ -817,7 +816,7 @@ export default function RegisterDriverScreen() {
           {step === 2 && (
             <View>
               <Text style={styles.stepHint}>
-                Necesitamos tu cédula de identidad y tu licencia de conducir vigente. Sube el frente y dorso de cada documento.
+                Necesitamos tu cédula de identidad y tu licencia de conducir vigente.
               </Text>
 
               <View style={styles.field}>
@@ -847,15 +846,8 @@ export default function RegisterDriverScreen() {
                 </TouchableOpacity>
               )}
 
-              <Text style={styles.subSectionTitle}>Cédula de identidad — ambos lados requeridos *</Text>
-              <View style={styles.docSideRow}>
-                <View style={styles.docSideCol}>
-                  <DocUploadButton docType="cedula_front" label="Frente" bothOptions />
-                </View>
-                <View style={styles.docSideCol}>
-                  <DocUploadButton docType="cedula_back" label="Dorso" bothOptions />
-                </View>
-              </View>
+              <Text style={styles.subSectionTitle}>Cédula de identidad *</Text>
+              <DocUploadButton docType="cedula_front" label="Foto de la cédula" bothOptions />
 
               <Text style={styles.subSectionTitle}>Licencia de conducir — ambos lados requeridos *</Text>
               <View style={styles.docSideRow}>
