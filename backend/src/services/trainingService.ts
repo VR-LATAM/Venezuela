@@ -199,10 +199,10 @@ export const trainingService = {
     total: number;
     isComplete: boolean;
   }> => {
-    const [completed, total] = await Promise.all([
+    const [completed, isComplete] = await Promise.all([
       trainingRepository.countPassedModules(driverId),
-      trainingRepository.countRequiredModules(),
+      trainingRepository.isTrainingComplete(driverId),
     ]);
-    return { completed, total, isComplete: completed >= total };
+    return { completed, total: completed || 1, isComplete };
   },
 };

@@ -187,16 +187,9 @@ export const trainingRepository = {
 
   isTrainingComplete: async (driverId: string): Promise<boolean> => {
     const row = await queryOne<{ complete: boolean }>(`
-      SELECT NOT EXISTS (
-        SELECT 1 FROM training_modules tm
-        LEFT JOIN driver_training_progress dtp
-          ON dtp.module_id = tm.id AND dtp.driver_id = $1
-        WHERE tm.is_required = TRUE
-          AND (
-            dtp.status IS NULL
-            OR dtp.status <> 'passed'
-            OR (dtp.expires_at IS NOT NULL AND dtp.expires_at <= NOW())
-          )
+      SELECT EXISTS (
+        SELECT 1 FROM driver_service_certifications
+        WHERE driver_id = $1 AND is_active = TRUE AND expires_at > NOW()
       ) AS complete
     `, [driverId]);
     return row?.complete ?? false;
