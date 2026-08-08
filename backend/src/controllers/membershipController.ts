@@ -5,10 +5,12 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { Request, Response } from 'express';
+import { db } from '../config/database';
 import { membershipRepository, currentPeriodStart, currentPeriodEnd } from '../repositories/membershipRepository';
 import { sendSuccess, sendError, ApiErrors } from '../utils/response';
 
 const PAYMENT_METHODS = ['zelle', 'wire', 'pago_movil', 'efectivo'] as const;
+const VEHICLE_TYPES   = ['moto', 'sedan', 'suv'] as const;
 
 export const membershipController = {
 
@@ -30,39 +32,37 @@ export const membershipController = {
     nextFriday.setDate(periodStart.getDate() + 7);
 
     sendSuccess(res, {
-      status:          cached.membership_status,
-      expires:         cached.membership_expires,
+      status:            cached.membership_status,
+      expires:           cached.membership_expires,
       currentPeriod: {
         start: periodStart.toISOString().split('T')[0],
         end:   periodEnd.toISOString().split('T')[0],
       },
-      nextPaymentDate:  nextFriday.toISOString().split('T')[0],
+      nextPaymentDate:   nextFriday.toISOString().split('T')[0],
       currentMembership: current,
       history,
-      plans: plans.rows,
+      plans:             plans.rows,
     });
   },
 
-  /* POST /membership/initiate — conductor inicia el trámite del período actual */
+  /* POST /membership/initiate — conductor inicia trámite indicando su tipo de vehículo */
   async initiate(req: Request, res: Response) {
-    const driverId = req.user!.userId;
+    const driverId    = req.user!.userId;
+    const { vehicle_type } = req.body as { vehicle_type?: string };
 
-    /* Obtener tipo de vehículo del conductor */
-    const { rows: driverRows } = await import('../config/database').then(m =>
-      m.db.query<{ service_type: string }>(
-        'SELECT service_type FROM drivers WHERE id = $1',
-        [driverId]
-      )
+    if (!vehicle_type || !VEHICLE_TYPES.includes(vehicle_type as any)) {
+      return sendError(res, 422, 'vehicle_type debe ser moto, sedan o suv', 'VALIDATION_ERROR');
+    }
+
+    const { rows: planRows } = await db.query<{ price_usd: number }>(
+      'SELECT price_usd FROM membership_plans WHERE vehicle_type = $1',
+      [vehicle_type]
     );
-    if (!driverRows[0]) return ApiErrors.NOT_FOUND(res, 'Conductor no encontrado');
-
-    const vehicleType = driverRows[0].service_type; // 'moto' | 'sedan' | 'suv'
-    const { rows: planRows } = await membershipRepository.getPlan(vehicleType);
     if (!planRows[0]) return sendError(res, 400, 'Tipo de vehículo sin plan de membresía', 'NO_PLAN');
 
     const membership = await membershipRepository.createForCurrentPeriod(
       driverId,
-      vehicleType,
+      vehicle_type,
       planRows[0].price_usd,
     );
 

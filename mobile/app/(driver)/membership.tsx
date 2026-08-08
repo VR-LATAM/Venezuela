@@ -69,6 +69,7 @@ export default function MembershipScreen() {
   const [isLoading, setIsLoading]     = useState(true);
   const [membership, setMembership]   = useState<Membership | null>(null);
 
+  const [vehicleType, setVehicleType] = useState<string>('');
   const [method, setMethod]           = useState<string>('');
   const [reference, setReference]     = useState('');
   const [submitting, setSubmitting]   = useState(false);
@@ -88,8 +89,12 @@ export default function MembershipScreen() {
   useEffect(() => { load(); }, [load]);
 
   const handleInitiate = async () => {
+    if (!vehicleType) {
+      Alert.alert('Selecciona tu tipo de vehículo', 'Elige Moto, Sedán o SUV para continuar.');
+      return;
+    }
     try {
-      const { data: res } = await apiClient.post<{ success: boolean; data: { membership: Membership } }>('/membership/initiate');
+      const { data: res } = await apiClient.post<{ success: boolean; data: { membership: Membership } }>('/membership/initiate', { vehicle_type: vehicleType });
       setMembership(res.data.membership);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch {
@@ -229,9 +234,36 @@ export default function MembershipScreen() {
 
         {/* Formulario de comprobante */}
         {needsPayment && !membership && (
-          <TouchableOpacity style={styles.initiateBtn} onPress={handleInitiate}>
-            <Text style={styles.initiateBtnText}>Iniciar trámite de membresía</Text>
-          </TouchableOpacity>
+          <View style={styles.formCard}>
+            <Text style={styles.formTitle}>Selecciona tu tipo de vehículo</Text>
+            <View style={styles.methodsGrid}>
+              {[
+                { key: 'moto',  label: '🏍️  Moto',  price: '$15' },
+                { key: 'sedan', label: '🚗  Sedán', price: '$25' },
+                { key: 'suv',   label: '🚙  SUV',   price: '$35' },
+              ].map(v => (
+                <TouchableOpacity
+                  key={v.key}
+                  style={[styles.methodBtn, vehicleType === v.key && styles.methodBtnActive]}
+                  onPress={() => setVehicleType(v.key)}
+                >
+                  <Text style={[styles.methodBtnText, vehicleType === v.key && styles.methodBtnTextActive]}>
+                    {v.label}
+                  </Text>
+                  <Text style={[styles.methodBtnText, vehicleType === v.key && styles.methodBtnTextActive, { fontSize: 11 }]}>
+                    {v.price}/sem
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TouchableOpacity
+              style={[styles.initiateBtn, !vehicleType && styles.submitBtnDisabled]}
+              onPress={handleInitiate}
+              disabled={!vehicleType}
+            >
+              <Text style={styles.initiateBtnText}>Continuar con el pago</Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {canSubmit && (
