@@ -41,11 +41,11 @@ export function TipModal({ visible, rideId, driverName, rideTotal, onClose, onSu
   const handleSend = async () => {
     const amount = getAmount();
     if (!amount || amount <= 0) {
-      Alert.alert('Select amount', 'Please choose a tip amount');
+      Alert.alert('Seleccionar monto', 'Por favor elige un monto de propina');
       return;
     }
     if (amount > 100) {
-      Alert.alert('Too much', 'Maximum tip is $100');
+      Alert.alert('Monto excesivo', 'La propina máxima es $100');
       return;
     }
 
@@ -54,7 +54,7 @@ export function TipModal({ visible, rideId, driverName, rideTotal, onClose, onSu
       await apiClient.post(`/ride/${rideId}/tip`, { amount });
       onSuccess(amount);
     } catch {
-      Alert.alert('Error', 'Could not process tip. Please try again.');
+      Alert.alert('Error', 'No se pudo procesar la propina. Intenta de nuevo.');
     } finally {
       setSubmitting(false);
     }
@@ -66,8 +66,8 @@ export function TipModal({ visible, rideId, driverName, rideTotal, onClose, onSu
     <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={styles.sheet}>
-          <Text style={styles.title}>Leave a tip for {driverName}?</Text>
-          <Text style={styles.sub}>Tips go 100% to your driver.</Text>
+          <Text style={styles.title}>¿Dejar propina para {driverName}?</Text>
+          <Text style={styles.sub}>Las propinas van 100% a tu conductor.</Text>
 
           {/* Preset buttons */}
           <View style={styles.presets}>
@@ -95,7 +95,7 @@ export function TipModal({ visible, rideId, driverName, rideTotal, onClose, onSu
               value={customAmount}
               onChangeText={v => { setCustomAmount(v); setSelectedFactor(null); }}
               keyboardType="decimal-pad"
-              placeholder="Custom amount"
+              placeholder="Monto personalizado"
               placeholderTextColor="#94A3B8"
               maxLength={6}
             />
@@ -104,7 +104,7 @@ export function TipModal({ visible, rideId, driverName, rideTotal, onClose, onSu
           {/* Total */}
           {tipAmount > 0 && (
             <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Tip amount</Text>
+              <Text style={styles.totalLabel}>Monto de propina</Text>
               <Text style={styles.totalValue}>${tipAmount.toFixed(2)}</Text>
             </View>
           )}
@@ -117,12 +117,12 @@ export function TipModal({ visible, rideId, driverName, rideTotal, onClose, onSu
           >
             {submitting
               ? <ActivityIndicator color="#fff" />
-              : <Text style={styles.sendBtnText}>Send Tip ${tipAmount > 0 ? tipAmount.toFixed(2) : ''}</Text>
+              : <Text style={styles.sendBtnText}>Enviar propina ${tipAmount > 0 ? tipAmount.toFixed(2) : ''}</Text>
             }
           </TouchableOpacity>
 
           <TouchableOpacity onPress={onClose} style={styles.skipBtn}>
-            <Text style={styles.skipBtnText}>No thanks</Text>
+            <Text style={styles.skipBtnText}>No, gracias</Text>
           </TouchableOpacity>
         </View>
       </View>

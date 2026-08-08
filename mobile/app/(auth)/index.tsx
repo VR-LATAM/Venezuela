@@ -43,7 +43,7 @@ export default function WelcomeScreen() {
           source={require('../../assets/logo.png')}
           style={[styles.logoImage, { opacity: fadeAnim, transform: [{ scale: scaleAnim }] }]}
           resizeMode="contain"
-          accessibilityLabel="Verona Ride"
+          accessibilityLabel="VERONA Ride"
         />
       </View>
 
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'space-between',
     paddingHorizontal: 24,
-    paddingVertical: 40,
+    paddingTop: 64, paddingBottom: 40,
   },
   header: {
     alignItems: 'center',

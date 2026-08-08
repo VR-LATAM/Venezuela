@@ -79,7 +79,7 @@ export default function DriverHistoryScreen() {
       const fileUri = `${FileSystem.cacheDirectory}recibo-vride-${rideId.slice(0, 8)}.pdf`;
       await FileSystem.writeAsStringAsync(fileUri, base64, { encoding: FileSystem.EncodingType.Base64 });
       if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri, { mimeType: 'application/pdf', dialogTitle: 'Recibo Verona Ride' });
+        await Sharing.shareAsync(fileUri, { mimeType: 'application/pdf', dialogTitle: 'Recibo VERONA Ride' });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       }
     } catch {
@@ -154,7 +154,7 @@ export default function DriverHistoryScreen() {
                   <Text style={styles.sectionTitle}>GANANCIAS</Text>
                   {[
                     ['Tarifa bruta',              selected.total_charged],
-                    ['Comisión Verona Ride (13%)', selected.platform_commission],
+                    ['Comisión VERONA Ride (13%)', selected.platform_commission],
                   ].map(([lbl, val]) => (
                     <View key={String(lbl)} style={styles.fareRow}>
                       <Text style={styles.fareLbl}>{String(lbl)}</Text>
@@ -222,7 +222,7 @@ export default function DriverHistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingVertical: 12,

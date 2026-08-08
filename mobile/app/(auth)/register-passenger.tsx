@@ -15,8 +15,6 @@ import {
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '../../src/store/authStore';
-import { useGoogleAuth } from '../../src/hooks/useGoogleAuth';
-import { signInWithApple, isAppleSignInAvailable, getAppleButtonComponent, AppleButtonType, AppleButtonStyle } from '../../src/services/appleAuth';
 import { BRAND_COLORS } from '@vride/shared';
 import * as Haptics from 'expo-haptics';
 import LicenseScanner from '../../src/components/common/LicenseScanner';
@@ -50,9 +48,7 @@ const VE_STATES = [
 ];
 
 export default function RegisterPassengerScreen() {
-  const { registerPassenger, socialPassengerAuth, isLoading, clearError } = useAuthStore();
-  const { signIn: googleSignIn, ready: googleReady } = useGoogleAuth();
-  const [isSocialLoading, setIsSocialLoading] = useState<'google' | 'apple' | null>(null);
+  const { registerPassenger, isLoading, clearError } = useAuthStore();
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -191,34 +187,6 @@ export default function RegisterPassengerScreen() {
     ]);
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsSocialLoading('google');
-    try {
-      const result = await googleSignIn();
-      if (!result) return;
-      await socialPassengerAuth(result.firebaseToken, result.name);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
-      Alert.alert('Google', 'No se pudo iniciar sesión con Google. Intenta de nuevo.');
-    } finally {
-      setIsSocialLoading(null);
-    }
-  };
-
-  const handleAppleSignIn = async () => {
-    setIsSocialLoading('apple');
-    try {
-      const result = await signInWithApple();
-      if (!result) return;
-      await socialPassengerAuth(result.firebaseToken, result.name);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } catch {
-      Alert.alert('Apple', 'No se pudo iniciar sesión con Apple. Intenta de nuevo.');
-    } finally {
-      setIsSocialLoading(null);
-    }
-  };
-
   const handleRegister = async () => {
     const validationError = validate();
     if (validationError) {
@@ -288,41 +256,7 @@ export default function RegisterPassengerScreen() {
           </TouchableOpacity>
 
           <Text style={styles.title}>Crear cuenta de pasajero</Text>
-          <Text style={styles.subtitle}>Regístrate para solicitar viajes en Verona Ride</Text>
-
-          {/* ── SOCIAL AUTH ── */}
-          <TouchableOpacity
-            style={[styles.socialButton, (!googleReady || isSocialLoading !== null) && styles.buttonDisabled]}
-            onPress={handleGoogleSignIn}
-            disabled={!googleReady || isSocialLoading !== null}
-            accessibilityRole="button"
-            accessibilityLabel="Continuar con Google"
-          >
-            {isSocialLoading === 'google' ? (
-              <ActivityIndicator color={BRAND_COLORS.TEXT} size="small" />
-            ) : (
-              <Text style={styles.socialButtonText}>🌐  Continuar con Google</Text>
-            )}
-          </TouchableOpacity>
-
-          {isAppleSignInAvailable && (() => {
-            const AppleBtn = getAppleButtonComponent();
-            return AppleBtn ? (
-              <AppleBtn
-                buttonType={AppleButtonType.SIGN_UP}
-                buttonStyle={AppleButtonStyle.BLACK}
-                cornerRadius={12}
-                style={styles.appleButton}
-                onPress={handleAppleSignIn}
-              />
-            ) : null;
-          })()}
-
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>o regístrate con correo</Text>
-            <View style={styles.dividerLine} />
-          </View>
+          <Text style={styles.subtitle}>Regístrate para solicitar viajes en VERONA Ride</Text>
 
           {/* ── FOTO DE PERFIL ── */}
           <View style={styles.photoSection}>
@@ -695,7 +629,7 @@ export default function RegisterPassengerScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   flex: { flex: 1 },
   scroll: { padding: 24, paddingBottom: 48 },
 
@@ -866,37 +800,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },
-
-  socialButton: {
-    height: 56,
-    borderWidth: 1.5,
-    borderColor: '#E0E0E0',
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    marginBottom: 12,
-  },
-  socialButtonText: {
-    fontSize: 17,
-    fontWeight: '500',
-    color: BRAND_COLORS.TEXT,
-    fontFamily: 'Inter_500Medium',
-  },
-  appleButton: {
-    height: 56,
-    width: '100%',
-    marginBottom: 12,
-  },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 20,
-    marginTop: 4,
-  },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#E0E0E0' },
-  dividerText: { fontSize: 14, color: '#999', fontFamily: 'Inter_400Regular' },
 
   // Modal
   modalOverlay: {

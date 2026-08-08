@@ -6,16 +6,16 @@ import { router } from 'expo-router';
 import { BRAND_COLORS } from '@vride/shared';
 
 const sections = [
-  { title: '1. Información de la empresa', body: 'Verona Group Venezuela\nPaís: Venezuela\nCorreo: support@veronaride.app' },
-  { title: '2. Naturaleza del servicio', body: 'V-Ride Venezuela opera una plataforma tecnológica que conecta pasajeros con proveedores de transporte independientes. V-Ride es un intermediario tecnológico y no es en sí mismo una empresa de transporte. Los conductores son contratistas independientes y no empleados de Verona Group Venezuela.' },
-  { title: '3. Limitación de responsabilidad', body: 'En la medida máxima permitida por la ley venezolana aplicable, Verona Group Venezuela no será responsable de daños indirectos, incidentales, especiales o consecuentes derivados del uso del servicio. Nuestra responsabilidad total no excederá el monto que hayas pagado a V-Ride en los tres (3) meses anteriores al reclamo.' },
+  { title: '1. Información de la empresa', body: 'VERONA Group Venezuela\nPaís: Venezuela\nCorreo: support@veronaride.app' },
+  { title: '2. Naturaleza del servicio', body: 'V-Ride Venezuela opera una plataforma tecnológica que conecta pasajeros con proveedores de transporte independientes. V-Ride es un intermediario tecnológico y no es en sí mismo una empresa de transporte. Los conductores son contratistas independientes y no empleados de VERONA Group Venezuela.' },
+  { title: '3. Limitación de responsabilidad', body: 'En la medida máxima permitida por la ley venezolana aplicable, VERONA Group Venezuela no será responsable de daños indirectos, incidentales, especiales o consecuentes derivados del uso del servicio. Nuestra responsabilidad total no excederá el monto que hayas pagado a V-Ride en los tres (3) meses anteriores al reclamo.' },
   { title: '4. Descargo de garantías', body: 'El servicio se ofrece "tal cual" y "según disponibilidad" sin garantías de ningún tipo, expresas o implícitas. No garantizamos que el servicio sea ininterrumpido o libre de errores.' },
   { title: '5. Responsabilidades del usuario', body: 'Al usar V-Ride Venezuela, aceptas: proporcionar información precisa, usar el servicio solo para fines lícitos, no hacer un uso indebido de la plataforma, tratar a los conductores con respeto y cumplir con todas las leyes venezolanas aplicables.' },
   { title: '6. Responsabilidades del conductor', body: 'Los conductores son contratistas independientes responsables de: mantener una licencia y registro válidos, contar con seguro adecuado, cumplir con la regulación de transporte venezolana y garantizar la seguridad y calidad de sus servicios.' },
-  { title: '7. Propiedad intelectual', body: 'Todo el contenido de V-Ride Venezuela — incluidos el logo, nombre de marca, diseño de la app y contenido escrito — es propiedad exclusiva de Verona Group Venezuela y está protegido por las leyes de propiedad intelectual venezolanas.' },
+  { title: '7. Propiedad intelectual', body: 'Todo el contenido de V-Ride Venezuela — incluidos el logo, nombre de marca, diseño de la app y contenido escrito — es propiedad exclusiva de VERONA Group Venezuela y está protegido por las leyes de propiedad intelectual venezolanas.' },
   { title: '8. Ley aplicable', body: 'Este Aviso Legal se rige por las leyes de la República Bolivariana de Venezuela, sin perjuicio de las normas sobre conflicto de leyes.' },
   { title: '9. Resolución de disputas', body: 'Las disputas se abordarán primero mediante negociación de buena fe. Si no se resuelven en 30 días, serán sometidas a los mecanismos de resolución de conflictos establecidos por la legislación venezolana aplicable.' },
-  { title: '10. Contacto', body: 'Para consultas legales:\nVerona Group Venezuela\nVenezuela\nCorreo: support@veronaride.app' },
+  { title: '10. Contacto', body: 'Para consultas legales:\nVERONA Group Venezuela\nVenezuela\nCorreo: support@veronaride.app' },
 ];
 
 export default function LegalScreen() {
@@ -42,7 +42,7 @@ export default function LegalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingTop: 56, paddingHorizontal: 20,
     paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#f3f4f6',

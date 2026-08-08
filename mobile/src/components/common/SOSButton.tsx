@@ -43,9 +43,9 @@ export function SOSButton({ rideId, lat, lng, address }: Props) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       try {
         await rideMobileService.activateSOS({ rideId, lat, lng, addressAtTrigger: address });
-        Alert.alert('🚨 SOS Activated', 'The Verona Ride team has been notified and will contact you immediately.');
+        Alert.alert('🚨 SOS Activado', 'El equipo de VERONA Ride fue notificado y te contactará de inmediato.');
       } catch {
-        Alert.alert('Error', 'Could not send SOS. Call 911 immediately.');
+        Alert.alert('Error', 'No se pudo enviar el SOS. Llama al 171 de inmediato.');
         setActivated(false);
       }
     }, 2000);
@@ -76,7 +76,7 @@ export function SOSButton({ rideId, lat, lng, address }: Props) {
         )}
         <Text style={styles.icon}>{activated ? '🚨' : 'SOS'}</Text>
         <Text style={styles.label}>
-          {activated ? 'Help is coming' : activating ? 'Hold…' : 'Hold for SOS'}
+          {activated ? 'Ayuda en camino' : activating ? 'Mantén…' : 'Mantén para SOS'}
         </Text>
       </TouchableOpacity>
     </Animated.View>

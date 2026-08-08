@@ -69,8 +69,8 @@ export default function ReferralsScreen() {
     if (!data?.referralCode) return;
     try {
       await Share.share({
-        message: `¡Únete a Verona Ride Venezuela y gana con tu primer viaje!\n\nUsa mi código de referido: ${data.referralCode}\n\nDescarga la app en: https://veronaride.app/download`,
-        title:   'Únete a Verona Ride',
+        message: `¡Únete a VERONA Ride Venezuela y gana con tu primer viaje!\n\nUsa mi código de referido: ${data.referralCode}\n\nDescarga la app en: https://veronaride.app/download`,
+        title:   'Únete a VERONA Ride',
       });
     } catch { /* usuario canceló */ }
   };
@@ -194,7 +194,7 @@ export default function ReferralsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

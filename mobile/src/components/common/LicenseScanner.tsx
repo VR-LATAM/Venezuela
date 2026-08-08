@@ -30,7 +30,7 @@ export default function LicenseScanner({ visible, onScanned, onClose }: Props) {
 
     const parsed = parseAAMVA(data);
     if (!parsed || !parsed.licenseNumber) {
-      setError('Could not read the barcode. Make sure you are scanning the back of a U.S. driver\'s license.');
+      setError('No se pudo leer el código de barras. Asegúrate de escanear el dorso de la licencia de conducir.');
       setTimeout(() => { setScanned(false); setError(null); }, 3000);
       return;
     }
@@ -48,7 +48,7 @@ export default function LicenseScanner({ visible, onScanned, onClose }: Props) {
 
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Scan Driver's License</Text>
+          <Text style={styles.title}>Escanear Licencia</Text>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <Text style={styles.closeText}>✕</Text>
           </TouchableOpacity>
@@ -57,17 +57,17 @@ export default function LicenseScanner({ visible, onScanned, onClose }: Props) {
         {/* Instrucciones */}
         <View style={styles.instructions}>
           <Text style={styles.instructionsText}>
-            📋  Point the camera at the <Text style={styles.bold}>back</Text> of your driver's license.{'\n'}
-            Center the PDF417 barcode (the wide barcode) in the frame.
+            📋  Apunta la cámara al <Text style={styles.bold}>dorso</Text> de tu licencia de conducir.{'\n'}
+            Centra el código de barras PDF417 (el código ancho) en el marco.
           </Text>
         </View>
 
         {/* Cámara */}
         {!permission.granted ? (
           <View style={styles.permissionBox}>
-            <Text style={styles.permissionText}>Camera access is required to scan the barcode.</Text>
+            <Text style={styles.permissionText}>Se necesita acceso a la cámara para escanear el código de barras.</Text>
             <TouchableOpacity style={styles.permissionBtn} onPress={requestPermission}>
-              <Text style={styles.permissionBtnText}>Grant Access</Text>
+              <Text style={styles.permissionBtnText}>Permitir acceso</Text>
             </TouchableOpacity>
           </View>
         ) : (
@@ -91,7 +91,7 @@ export default function LicenseScanner({ visible, onScanned, onClose }: Props) {
             {scanned && !error && (
               <View style={styles.scanningOverlay}>
                 <ActivityIndicator size="large" color="#fff" />
-                <Text style={styles.scanningText}>Reading data…</Text>
+                <Text style={styles.scanningText}>Leyendo datos…</Text>
               </View>
             )}
 
@@ -104,7 +104,7 @@ export default function LicenseScanner({ visible, onScanned, onClose }: Props) {
         )}
 
         <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
-          <Text style={styles.cancelText}>Cancel — enter data manually</Text>
+          <Text style={styles.cancelText}>Cancelar — ingresar datos manualmente</Text>
         </TouchableOpacity>
       </View>
     </Modal>

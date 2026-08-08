@@ -29,6 +29,7 @@ import incidentRoutes       from './incident.routes';
 import waitlistRoutes       from './waitlist.routes';
 import corporateRoutes      from './corporate.routes';
 import exchangeRateRoutes   from './exchangeRate.routes';
+import membershipRoutes     from './membership.routes';
 
 const router = Router();
 
@@ -56,6 +57,7 @@ router.use('/incident',       incidentRoutes);
 router.use('/waitlist',       waitlistRoutes);
 router.use('/corporate',      corporateRoutes);
 router.use('/exchange-rate',  exchangeRateRoutes);
+router.use('/membership',    membershipRoutes);
 
 // Healthcheck — para Railway y load balancers
 router.get('/health', (_req, res) => {

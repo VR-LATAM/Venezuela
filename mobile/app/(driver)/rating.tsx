@@ -28,7 +28,7 @@ const THANK_YOU_MESSAGES = [
   "¡Gracias por tu paciencia en el tráfico! Eres genial.",
   "Excelente comunicación y recogida sencilla. ¡Vuelve cuando quieras!",
   "Tu trato amigable hizo del viaje una gran experiencia. ¡Gracias!",
-  "Eres el pasajero perfecto. ¡Gracias por elegir Verona Ride!",
+  "Eres el pasajero perfecto. ¡Gracias por elegir VERONA Ride!",
 ];
 
 export default function DriverRatingScreen() {
@@ -199,7 +199,7 @@ export default function DriverRatingScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe:      { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   scroll:    { flex: 1 },
   container: { padding: 24, paddingBottom: 40 },
 

@@ -29,6 +29,7 @@ import { usePhotoUpload } from '../../src/hooks/usePhotoUpload';
 import { apiClient } from '../../src/services/apiClient';
 import { TipModal } from '../../src/components/payments/TipModal';
 import { SOSButton } from '../../src/components/common/SOSButton';
+import { InfoModal, InfoPage } from '../../src/components/common/InfoModal';
 import { nokiaToneService } from '../../src/services/nokiaToneService';
 import { useRouteDeviation } from '../../src/hooks/useRouteDeviation';
 import { useMapZoom } from '../../src/hooks/useMapZoom';
@@ -88,6 +89,8 @@ export default function PassengerHomeScreen() {
   const { mapZoomRef, handleZoomIn, handleZoomOut, handleZoomReset } = useMapZoom(mapRef);
 
   const [menuVisible, setMenuVisible]       = useState(false);
+  const [infoExpanded, setInfoExpanded]     = useState(false);
+  const [menuSubPage, setMenuSubPage]       = useState<InfoPage | null>(null);
   const [mapType, setMapType]               = useState<'hybrid' | 'standard'>('hybrid');
   const { pickAndUpload, uploading: uploadingPhoto } = usePhotoUpload();
   const [userLocation, setUserLocation]     = useState<Coords | null>(null);
@@ -799,7 +802,7 @@ export default function PassengerHomeScreen() {
           <View style={styles.headerLogo}>
             <Image source={require('../../assets/logo.png')} style={{ width: 32, height: 32 }} resizeMode="contain" />
           </View>
-          <Text style={styles.headerName}>{user?.name?.split(' ')[0] ?? 'Verona Ride'}</Text>
+          <Text style={styles.headerName}>{user?.name?.split(' ')[0] ?? 'VERONA Ride'}</Text>
           <TouchableOpacity onPress={handleProfileMenu} style={styles.profileBtn}>
             <View style={styles.hamburgerLine} />
             <View style={styles.hamburgerLine} />
@@ -1337,7 +1340,7 @@ export default function PassengerHomeScreen() {
               onPress={async () => { await pickAndUpload(); }}
               disabled={uploadingPhoto}
             >
-              <UserAvatar name={user?.name} photoUrl={user?.photo_url} size={64} />
+              <UserAvatar name={user?.name} photoUrl={user?.photo_url} size={48} />
               <View style={styles.menuAvatarInfo}>
                 <Text style={styles.menuAvatarName}>{user?.name ?? 'Mi cuenta'}</Text>
                 <Text style={styles.menuAvatarHint}>
@@ -1368,16 +1371,24 @@ export default function PassengerHomeScreen() {
 
             <View style={styles.menuDivider} />
 
-            {[
-              { icon: 'ℹ️', label: 'Acerca de',          route: '/(info)/about'   as const },
-              { icon: '🔒', label: 'Política de privacidad', route: '/(info)/privacy' as const },
-              { icon: '📋', label: 'Aviso legal',         route: '/(info)/legal'   as const },
-              { icon: '✉️', label: 'Contáctanos',         route: '/(info)/contact' as const },
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => setInfoExpanded(e => !e)}
+            >
+              <Text style={styles.menuItemIcon}>ℹ️</Text>
+              <Text style={[styles.menuItemText, { flex: 1 }]}>Acerca de VERONA Ride</Text>
+              <Text style={{ fontSize: 12, color: '#aaa' }}>{infoExpanded ? '▲' : '▼'}</Text>
+            </TouchableOpacity>
+            {infoExpanded && [
+              { icon: '👥', label: 'Nosotros',              page: 'about'   as InfoPage },
+              { icon: '🔒', label: 'Política de privacidad', page: 'privacy' as InfoPage },
+              { icon: '📋', label: 'Aviso legal',           page: 'legal'   as InfoPage },
+              { icon: '✉️', label: 'Contáctanos',           page: 'contact' as InfoPage },
             ].map(item => (
               <TouchableOpacity
                 key={item.label}
-                style={styles.menuItem}
-                onPress={() => { setMenuVisible(false); router.push(item.route); }}
+                style={[styles.menuItem, { paddingLeft: 32, backgroundColor: '#FAFAFA' }]}
+                onPress={() => setMenuSubPage(item.page)}
               >
                 <Text style={styles.menuItemIcon}>{item.icon}</Text>
                 <Text style={styles.menuItemText}>{item.label}</Text>
@@ -1397,6 +1408,8 @@ export default function PassengerHomeScreen() {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      <InfoModal page={menuSubPage} onClose={() => setMenuSubPage(null)} />
     </View>
   );
 }
@@ -1436,7 +1449,7 @@ const styles = StyleSheet.create({
   zoomBtnActive: { backgroundColor: '#1E293B' },
   headerSafe: {
     position: 'absolute', top: 0, left: 0, right: 0,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight ?? 24 : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 24 : 24,
   },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -1725,7 +1738,7 @@ const styles = StyleSheet.create({
   menuSheet: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    paddingTop: 20, paddingBottom: Platform.OS === 'ios' ? 36 : 20,
+    paddingTop: 12, paddingBottom: Platform.OS === 'ios' ? 24 : 12,
     paddingHorizontal: 20,
   },
   menuTitle: {
@@ -1733,23 +1746,23 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold', marginBottom: 16, textAlign: 'center',
   },
   menuAvatarRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    paddingBottom: 16, marginBottom: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingBottom: 10, marginBottom: 4,
     borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
   },
   menuAvatarInfo: { flex: 1 },
-  menuAvatarName: { fontSize: 17, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
-  menuAvatarHint: { fontSize: 13, color: '#888', marginTop: 2, fontFamily: 'Inter_400Regular' },
+  menuAvatarName: { fontSize: 15, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
+  menuAvatarHint: { fontSize: 11, color: '#888', marginTop: 2, fontFamily: 'Inter_400Regular' },
   menuItem: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
   },
-  menuItemIcon: { fontSize: 22, width: 28, textAlign: 'center' },
-  menuItemText: { fontSize: 17, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
-  menuDivider:  { height: 8 },
+  menuItemIcon: { fontSize: 18, width: 24, textAlign: 'center' },
+  menuItemText: { fontSize: 14, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
+  menuDivider:  { height: 4 },
   menuCloseBtn: {
-    marginTop: 12, height: 52, borderRadius: 14,
+    marginTop: 8, height: 42, borderRadius: 12,
     backgroundColor: '#F5F5F5', justifyContent: 'center', alignItems: 'center',
   },
-  menuCloseBtnText: { fontSize: 16, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
+  menuCloseBtnText: { fontSize: 14, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
 });

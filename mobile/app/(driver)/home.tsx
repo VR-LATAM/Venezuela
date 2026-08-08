@@ -36,6 +36,7 @@ import type { Driver, DriverStatus, Ride } from '@vride/shared';
 import { UserAvatar } from '../../src/components/common/UserAvatar';
 import { usePhotoUpload } from '../../src/hooks/usePhotoUpload';
 import { SOSButton } from '../../src/components/common/SOSButton';
+import { InfoModal, InfoPage } from '../../src/components/common/InfoModal';
 import { NavigationButton } from '../../src/components/common/NavigationButton';
 import { useSpeedMonitor } from '../../src/hooks/useSpeedMonitor';
 import { useMapZoom } from '../../src/hooks/useMapZoom';
@@ -159,6 +160,8 @@ export default function DriverHomeScreen() {
   const [isTogglingOnline, setIsTogglingOnline] = useState(false);
   const [isActionLoading, setIsActionLoading]   = useState(false);
   const [menuVisible, setMenuVisible]           = useState(false);
+  const [infoExpanded, setInfoExpanded]         = useState(false);
+  const [menuSubPage, setMenuSubPage]           = useState<InfoPage | null>(null);
   const [panelExpanded, setPanelExpanded]       = useState(true);
   const [arrivalBanner, setArrivalBanner]       = useState(false);
   const hasNotifiedArrival                      = useRef(false);
@@ -458,8 +461,8 @@ export default function DriverHomeScreen() {
           void startGPS();
         }
       }
-    } catch {
-      // Sin red — mostrar perfil básico del authStore
+    } catch (err: any) {
+      console.error('[loadProfile] ERROR:', err?.response?.data ?? err?.message ?? err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -540,8 +543,8 @@ export default function DriverHomeScreen() {
           distanceInterval: 5,
           showsBackgroundLocationIndicator: true,
           foregroundService: {
-            notificationTitle: 'Verona Ride',
-            notificationBody:  'Sending your location to passengers.',
+            notificationTitle: 'VERONA Ride',
+            notificationBody:  'Compartiendo tu ubicación con pasajeros.',
             notificationColor: '#1A73E8',
           },
         });
@@ -645,6 +648,31 @@ export default function DriverHomeScreen() {
     console.log('[TOGGLE] Going online=', newOnline,
       '| certs:', certifications === null ? 'loading...' : `${certifications?.certified_services?.length ?? 0} services`,
       '| driver.status:', driver?.status);
+
+    // Verificar membresía activa antes de ir online
+    if (newOnline) {
+      try {
+        const { data: memRes } = await import('../../src/services/apiClient').then(m =>
+          m.apiClient.get<{ success: boolean; data: { status: string } }>('/membership/status')
+        );
+        const memStatus = memRes.data.status;
+        if (memStatus !== 'active') {
+          Alert.alert(
+            'Membresía requerida',
+            memStatus === 'pending_approval'
+              ? 'Tu comprobante de pago está siendo revisado. Espera la aprobación del administrador.'
+              : 'Debes renovar tu membresía semanal para poder recibir viajes.',
+            [
+              { text: 'Ver membresía', onPress: () => router.push('/(driver)/membership') },
+              { text: 'Cerrar', style: 'cancel' },
+            ]
+          );
+          return;
+        }
+      } catch {
+        /* Si falla la consulta, dejar pasar y que el backend valide */
+      }
+    }
 
     // Verificar que tenga al menos un servicio certificado antes de ir online.
     // Si certifications === null, aún están cargando — dejar pasar y dejar que el backend valide.
@@ -921,7 +949,7 @@ export default function DriverHomeScreen() {
       <SafeAreaView style={styles.safe}>
         <View style={styles.inactiveHeader}>
           <View style={styles.logo}><Image source={require('../../assets/logo.png')} style={{ width: 28, height: 28 }} resizeMode="contain" /></View>
-          <Text style={styles.inactiveHeaderTitle}>Verona Ride Conductor</Text>
+          <Text style={styles.inactiveHeaderTitle}>VERONA Ride Conductor</Text>
           <TouchableOpacity onPress={handleLogout}><Text style={styles.logoutText}>Cerrar sesión</Text></TouchableOpacity>
         </View>
 
@@ -993,7 +1021,7 @@ export default function DriverHomeScreen() {
         style={styles.map}
         mapType={mapType}
         showsUserLocation={false}
-        mapPadding={{ top: 80, right: 20, bottom: activeRide ? (panelExpanded ? 370 : 150) : 280, left: 20 }}
+        mapPadding={{ top: 80, right: 20, bottom: activeRide ? (panelExpanded ? 370 : 150) : 200, left: 20 }}
         initialRegion={{
           latitude:      driverPos?.latitude  ?? 29.7604,
           longitude:     driverPos?.longitude ?? -95.3698,
@@ -1198,55 +1226,16 @@ export default function DriverHomeScreen() {
               </TouchableOpacity>
             )}
 
-            {/* Insignia del conductor + nivel de comisión */}
+            {/* Insignia del conductor */}
             {driver && (() => {
               const { getDriverBadge } = require('../../src/utils/driverBadge');
-              const badge      = getDriverBadge(driver.total_rides ?? 0, Number(driver.rating_avg) || 5);
-              const commission = (driver as any).commission;
-              const tierColors: Record<string, string> = {
-                standard: '#94A3B8',
-                silver:   '#0EA5E9',
-                elite:    '#22C55E',
-              };
-              const tierLabels: Record<string, string> = {
-                standard: '15% de comisión',
-                silver:   '14% de comisión',
-                elite:    '13% de comisión',
-              };
+              const badge = getDriverBadge(driver.total_rides ?? 0, Number(driver.rating_avg) || 5);
               return (
-                <>
-                  <View style={[styles.badgeRow, { backgroundColor: badge.color + '18' }]}>
-                    <Text style={{ fontSize: 20 }}>{badge.emoji}</Text>
-                    <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
-                    <Text style={styles.badgeHint}> · {driver.total_rides ?? 0} viajes</Text>
-                  </View>
-                  {commission && (
-                    <View style={[styles.commissionCard, { borderLeftColor: tierColors[commission.tier] ?? '#94A3B8' }]}>
-                      <View style={styles.commissionRow}>
-                        <Text style={styles.commissionLabel}>Tu tasa de comisión</Text>
-                        <Text style={[styles.commissionRate, { color: tierColors[commission.tier] }]}>
-                          {tierLabels[commission.tier]}
-                        </Text>
-                      </View>
-                      {commission.nextTierRides !== null && commission.ratingAvg >= 4.75 ? (
-                        <Text style={styles.commissionHint}>
-                          {commission.nextTierRides} viajes más este año → {Math.round(commission.nextTierRate * 100)}%
-                        </Text>
-                      ) : commission.ratingAvg < 4.75 ? (
-                        <Text style={[styles.commissionHint, { color: '#EF4444' }]}>
-                          ⚠️ Calificación por debajo de 4.75 — mantén tu calificación para desbloquear tarifas menores
-                        </Text>
-                      ) : (
-                        <Text style={styles.commissionHint}>
-                          🏆 Tarifa élite — ¡mejor comisión! Se reinicia el 1 de enero.
-                        </Text>
-                      )}
-                      <Text style={styles.commissionProgress}>
-                        {commission.ridesThisYear} viajes este año
-                      </Text>
-                    </View>
-                  )}
-                </>
+                <View style={[styles.badgeRow, { backgroundColor: badge.color + '18' }]}>
+                  <Text style={{ fontSize: 20 }}>{badge.emoji}</Text>
+                  <Text style={[styles.badgeText, { color: badge.color }]}>{badge.label}</Text>
+                  <Text style={styles.badgeHint}> · {driver.total_rides ?? 0} viajes</Text>
+                </View>
               );
             })()}
 
@@ -1589,7 +1578,7 @@ export default function DriverHomeScreen() {
               onPress={async () => { await pickAndUpload(); }}
               disabled={uploadingPhoto}
             >
-              <UserAvatar name={user?.name} photoUrl={user?.photo_url} size={64} />
+              <UserAvatar name={user?.name} photoUrl={user?.photo_url} size={48} />
               <View style={styles.menuAvatarInfo}>
                 <Text style={styles.menuAvatarName}>{user?.name ?? 'Driver'}</Text>
                 <Text style={styles.menuAvatarHint}>
@@ -1598,6 +1587,7 @@ export default function DriverHomeScreen() {
               </View>
             </TouchableOpacity>
             {[
+              { icon: '💳', label: 'Mi membresía',           route: '/(driver)/membership'      as const },
               { icon: '🗂️', label: 'Historial de servicio', route: '/(driver)/service-history' as const },
               { icon: '💰', label: 'Ganancias',             route: '/(driver)/earnings'        as const },
               { icon: '📊', label: 'Mis estadísticas',      route: '/(driver)/stats'           as const },
@@ -1615,16 +1605,24 @@ export default function DriverHomeScreen() {
               </TouchableOpacity>
             ))}
             <View style={{ height: 8 }} />
-            {[
-              { icon: 'ℹ️', label: 'Acerca de',             route: '/(info)/about'   as const },
-              { icon: '🔒', label: 'Política de privacidad', route: '/(info)/privacy' as const },
-              { icon: '📋', label: 'Aviso legal',           route: '/(info)/legal'   as const },
-              { icon: '✉️', label: 'Contáctanos',           route: '/(info)/contact' as const },
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => setInfoExpanded(e => !e)}
+            >
+              <Text style={styles.menuItemIcon}>ℹ️</Text>
+              <Text style={[styles.menuItemText, { flex: 1 }]}>Acerca de VERONA Ride</Text>
+              <Text style={{ fontSize: 12, color: '#aaa' }}>{infoExpanded ? '▲' : '▼'}</Text>
+            </TouchableOpacity>
+            {infoExpanded && [
+              { icon: '👥', label: 'Nosotros',              page: 'about'   as InfoPage },
+              { icon: '🔒', label: 'Política de privacidad', page: 'privacy' as InfoPage },
+              { icon: '📋', label: 'Aviso legal',           page: 'legal'   as InfoPage },
+              { icon: '✉️', label: 'Contáctanos',           page: 'contact' as InfoPage },
             ].map(item => (
               <TouchableOpacity
                 key={item.label}
-                style={styles.menuItem}
-                onPress={() => { setMenuVisible(false); router.push(item.route); }}
+                style={[styles.menuItem, { paddingLeft: 32, backgroundColor: '#FAFAFA' }]}
+                onPress={() => setMenuSubPage(item.page)}
               >
                 <Text style={styles.menuItemIcon}>{item.icon}</Text>
                 <Text style={styles.menuItemText}>{item.label}</Text>
@@ -1642,6 +1640,7 @@ export default function DriverHomeScreen() {
         </TouchableOpacity>
       </Modal>
 
+      <InfoModal page={menuSubPage} onClose={() => setMenuSubPage(null)} />
     </View>
   );
 }
@@ -1671,7 +1670,7 @@ function ProfileRow({ label, value }: { label: string; value: string }) {
 // Estilos
 // ─────────────────────────────────────
 const styles = StyleSheet.create({
-  safe:      { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   container: { flex: 1 },
   map:       { ...StyleSheet.absoluteFillObject },
 
@@ -1679,7 +1678,7 @@ const styles = StyleSheet.create({
   zoomControls: {
     position: 'absolute',
     right: 12,
-    top: 140,
+    top: 200,
     gap: 4,
   },
   zoomBtn: {
@@ -1713,7 +1712,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight ?? 24 : 0,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 24 : 24,
   },
   header: {
     flexDirection: 'row',
@@ -1774,70 +1773,62 @@ const styles = StyleSheet.create({
   },
 
   // ── Idle panel (sin viaje) ──
-  idlePanel: { padding: 20 },
-  statsRow:  { flexDirection: 'row', gap: 10, marginBottom: 20 },
+  idlePanel: { paddingHorizontal: 14, paddingTop: 8, paddingBottom: 10 },
+  statsRow:  { flexDirection: 'row', gap: 6, marginBottom: 8 },
   badgeRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 14, paddingVertical: 10,
-    borderRadius: 12, marginBottom: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderRadius: 8, marginBottom: 4,
   },
-  badgeText: { fontSize: 15, fontWeight: '700', fontFamily: 'Inter_700Bold' },
-  badgeHint: { fontSize: 13, color: '#888', fontFamily: 'Inter_400Regular' },
-  commissionCard: {
-    backgroundColor: '#F8FAFC', borderRadius: 12, padding: 14,
-    marginBottom: 14, borderLeftWidth: 4,
-  },
-  commissionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 },
-  commissionLabel: { fontSize: 13, color: '#888', fontFamily: 'Inter_400Regular' },
-  commissionRate: { fontSize: 15, fontWeight: '700', fontFamily: 'Inter_700Bold' },
-  commissionHint: { fontSize: 13, color: '#666', fontFamily: 'Inter_400Regular', marginBottom: 2 },
-  commissionProgress: { fontSize: 12, color: '#aaa', fontFamily: 'Inter_400Regular' },
+  badgeText: { fontSize: 12, fontWeight: '700', fontFamily: 'Inter_700Bold' },
+  badgeHint: { fontSize: 11, color: '#888', fontFamily: 'Inter_400Regular' },
   statCard: {
     flex: 1,
     backgroundColor: '#F8F9FA',
-    borderRadius: 12,
-    padding: 14,
+    borderRadius: 8,
+    paddingVertical: 7,
+    paddingHorizontal: 4,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E8E8E8',
   },
-  statValue: { fontSize: 18, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
-  statLabel: { fontSize: 12, color: '#888', marginTop: 3, fontFamily: 'Inter_400Regular' },
+  statValue: { fontSize: 13, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
+  statLabel: { fontSize: 10, color: '#888', marginTop: 1, fontFamily: 'Inter_400Regular' },
 
   onlineToggle: {
-    height: 64,
-    borderRadius: 16,
+    height: 44,
+    borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
-    marginBottom: 10,
+    gap: 8,
+    marginBottom: 6,
   },
   onlineToggleActive:   { backgroundColor: BRAND_COLORS.ACCENT },
   onlineToggleInactive: { backgroundColor: '#555' },
-  onlineToggleEmoji: { fontSize: 22 },
+  onlineToggleEmoji: { fontSize: 16 },
   onlineToggleText: {
     color: '#fff',
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
     fontFamily: 'Inter_600SemiBold',
   },
   onlineHint: {
-    fontSize: 13,
+    fontSize: 11,
     color: '#888',
     textAlign: 'center',
     fontFamily: 'Inter_400Regular',
   },
 
   trainingBanner: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: '#FFF9E6', borderRadius: 12, padding: 14, marginBottom: 12,
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: '#FFF9E6', borderRadius: 8, padding: 8, marginBottom: 6,
     borderWidth: 1, borderColor: '#F59E0B40',
   },
-  trainingBannerEmoji: { fontSize: 22 },
-  trainingBannerTitle: { fontSize: 13, fontWeight: '700', color: '#92400E', marginBottom: 1 },
-  trainingBannerSub: { fontSize: 12, color: '#B45309' },
-  trainingBannerArrow: { fontSize: 20, color: '#F59E0B', fontWeight: '700' },
+  trainingBannerEmoji: { fontSize: 16 },
+  trainingBannerTitle: { fontSize: 11, fontWeight: '700', color: '#92400E', marginBottom: 1 },
+  trainingBannerSub: { fontSize: 10, color: '#B45309' },
+  trainingBannerArrow: { fontSize: 14, color: '#F59E0B', fontWeight: '700' },
 
   // ── Active ride panel ──
   activeRidePanel: { padding: 20 },
@@ -2000,29 +1991,30 @@ const styles = StyleSheet.create({
   menuSheet: {
     backgroundColor: '#fff',
     borderTopLeftRadius: 20, borderTopRightRadius: 20,
-    paddingTop: 20, paddingBottom: Platform.OS === 'ios' ? 36 : 20,
+    paddingTop: 12, paddingBottom: Platform.OS === 'ios' ? 24 : 12,
     paddingHorizontal: 20,
   },
-  menuTitle: { fontSize: 16, fontWeight: '700', color: '#888', fontFamily: 'Inter_700Bold', marginBottom: 16, textAlign: 'center' },
+  menuTitle: { fontSize: 16, fontWeight: '700', color: '#888', fontFamily: 'Inter_700Bold', marginBottom: 8, textAlign: 'center' },
   menuAvatarRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 14,
-    paddingBottom: 16, marginBottom: 8,
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingBottom: 10, marginBottom: 4,
     borderBottomWidth: 1, borderBottomColor: '#F0F0F0',
   },
   menuAvatarInfo: { flex: 1 },
-  menuAvatarName: { fontSize: 17, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
-  menuAvatarHint: { fontSize: 13, color: '#888', marginTop: 2, fontFamily: 'Inter_400Regular' },
-  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
-  menuItemIcon: { fontSize: 22, width: 28, textAlign: 'center' },
-  menuItemText: { fontSize: 17, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
-  menuCloseBtn: { marginTop: 12, height: 52, borderRadius: 14, backgroundColor: '#F5F5F5', justifyContent: 'center', alignItems: 'center' },
-  menuCloseBtnText: { fontSize: 16, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
+  menuAvatarName: { fontSize: 15, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
+  menuAvatarHint: { fontSize: 11, color: '#888', marginTop: 2, fontFamily: 'Inter_400Regular' },
+  menuItem: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
+  menuItemIcon: { fontSize: 18, width: 24, textAlign: 'center' },
+  menuItemText: { fontSize: 14, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
+  menuCloseBtn: { marginTop: 8, height: 42, borderRadius: 12, backgroundColor: '#F5F5F5', justifyContent: 'center', alignItems: 'center' },
+  menuCloseBtnText: { fontSize: 14, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
 
   // ── Vista inactiva (pending, under_review, etc.) ──
   inactiveHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+    paddingTop: 44,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
     gap: 10,

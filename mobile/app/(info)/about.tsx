@@ -12,44 +12,38 @@ export default function AboutScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>← Atrás</Text>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Acerca de</Text>
+        <Text style={styles.headerTitle}>Nosotros</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Image source={require('../../assets/logo.png')} style={styles.logo} resizeMode="contain" />
 
-        <Text style={styles.tagline}>Transporte accesible para todos</Text>
+        <Text style={styles.tagline}>Una nueva forma de moverse en Venezuela</Text>
 
         <Text style={styles.body}>
-          V-Ride Venezuela nació con una misión simple pero poderosa: garantizar que los adultos mayores
-          y personas con discapacidad tengan acceso a un transporte seguro, digno y confiable — donde
-          quieran que estén en Venezuela.
+          VERONA Ride Venezuela es una nueva plataforma de transporte que nació con una visión
+          diferente: no venimos a competir con nadie. Creemos que el mercado tiene espacio para
+          todos, y nuestra única ambición es ofrecer una experiencia de transporte más justa,
+          cómoda y confiable.
         </Text>
 
         <Text style={styles.body}>
-          Nuestra plataforma conecta pasajeros que necesitan transporte accesible con conductores
-          capacitados y con antecedentes verificados. Cada vehículo de nuestra red está equipado para
-          acomodar dispositivos de movilidad, y cada conductor recibe capacitación específica en
-          atención a adultos mayores y personas con discapacidad.
+          Nos enfocamos en dos cosas: que los pasajeros lleguen a su destino de forma segura y
+          tranquila, y que los conductores tengan una herramienta que realmente trabaje para
+          ellos — sin comisiones abusivas, con transparencia y con respeto.
         </Text>
 
         <Text style={styles.body}>
-          Somos una empresa familiar construida sobre valores de confianza, respeto y comunidad. El
-          nombre V-Ride refleja nuestro compromiso con una experiencia confiable y de calidad para
-          cada usuario — porque todos merecen moverse con libertad.
-        </Text>
-
-        <Text style={styles.body}>
-          Con sede en Venezuela, nos expandimos para atender a comunidades que históricamente han sido
-          desatendidas por las plataformas de transporte tradicionales.
+          Somos una plataforma joven, con ganas de crecer junto a nuestros usuarios y de
+          demostrar que se puede hacer transporte de otra manera.
         </Text>
 
         <View style={styles.card}>
           {[
-            { icon: '♿', text: 'Vehículos accesibles para todas las necesidades de movilidad' },
+            { icon: '🤝', text: 'Sin competencia — solo queremos ser la mejor opción' },
+            { icon: '💰', text: 'Conductores que conservan el 100% de sus ganancias' },
             { icon: '🛡️', text: 'Conductores verificados y capacitados' },
-            { icon: '📍', text: 'Cobertura nacional en Venezuela' },
-            { icon: '📞', text: 'Soporte de emergencia 24/7 y botón SOS' },
+            { icon: '📞', text: 'Soporte disponible y botón SOS en cada viaje' },
           ].map(({ icon, text }) => (
             <View key={text} style={styles.cardRow}>
               <Text style={styles.cardIcon}>{icon}</Text>
@@ -58,14 +52,14 @@ export default function AboutScreen() {
           ))}
         </View>
 
-        <Text style={styles.version}>Versión 1.0.0 · © 2025 Verona Group Venezuela</Text>
+        <Text style={styles.version}>Versión 1.0.0 · © 2025 VERONA Ride Venezuela</Text>
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   header: {
     flexDirection: 'row', alignItems: 'center', paddingTop: 56, paddingHorizontal: 20,
     paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: '#f3f4f6',

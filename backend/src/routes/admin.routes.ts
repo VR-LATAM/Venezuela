@@ -9,7 +9,9 @@ import { adminController } from '../controllers/adminController';
 import { promoController } from '../controllers/promoController';
 import { disputeController } from '../controllers/disputeController';
 import { clinicController } from '../controllers/clinicController';
-import { incidentController } from '../controllers/incidentController';
+import { incidentController }   from '../controllers/incidentController';
+import { membershipController } from '../controllers/membershipController';
+import { asyncHandler }         from '../utils/asyncHandler';
 import { requireAuth, requireRole } from '../middleware/auth';
 
 const router = Router();
@@ -47,6 +49,11 @@ router.put('/disputes/:id/resolve',                 disputeController.resolve);
 // Incidentes
 router.get('/incidents',                            incidentController.listOpen);
 router.put('/incidents/:id/resolve',                incidentController.resolve);
+
+// Membresías semanales
+router.get ('/memberships/pending',        asyncHandler(membershipController.listPending));
+router.post('/memberships/:id/approve',    asyncHandler(membershipController.approve));
+router.post('/memberships/:id/reject',     asyncHandler(membershipController.reject));
 
 // Clínicas
 router.get  ('/clinics',                            clinicController.listAll);
