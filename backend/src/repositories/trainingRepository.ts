@@ -249,13 +249,16 @@ export const trainingRepository = {
 
   getPrerequisiteStatus: async (driverId: string): Promise<boolean> => {
     const row = await queryOne<{ passed: boolean }>(`
-      SELECT EXISTS (
-        SELECT 1 FROM driver_training_progress dtp
-        JOIN training_modules tm ON tm.id = dtp.module_id
-        WHERE dtp.driver_id = $1
-          AND tm.is_prerequisite = TRUE
-          AND dtp.status = 'passed'
-          AND (dtp.expires_at IS NULL OR dtp.expires_at > NOW())
+      SELECT (
+        NOT EXISTS (SELECT 1 FROM training_modules WHERE is_prerequisite = TRUE)
+        OR EXISTS (
+          SELECT 1 FROM driver_training_progress dtp
+          JOIN training_modules tm ON tm.id = dtp.module_id
+          WHERE dtp.driver_id = $1
+            AND tm.is_prerequisite = TRUE
+            AND dtp.status = 'passed'
+            AND (dtp.expires_at IS NULL OR dtp.expires_at > NOW())
+        )
       ) AS passed
     `, [driverId]);
     return row?.passed ?? false;

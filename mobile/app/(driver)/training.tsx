@@ -14,12 +14,12 @@ import { BRAND_COLORS } from '@vride/shared';
 import { useTrainingStore } from '../../src/store/trainingStore';
 import type { TrainingModule, ServiceType } from '../../src/services/trainingService';
 
-const SERVICE_LABELS: Record<ServiceType | 'prerequisite', { label: string; icon: string; desc: string }> = {
+const SERVICE_LABELS: Record<GroupKey, { label: string; icon: string; desc: string }> = {
   prerequisite: { label: 'Fundamentos',          icon: '📋', desc: 'Requerido para todos los tipos de servicio' },
-  standard:     { label: 'Servicio estándar',    icon: '🚗', desc: 'Transporte de puerta a puerta' },
-  executive:    { label: 'Servicio ejecutivo',   icon: '⭐', desc: 'Experiencia premium' },
-  accessible:   { label: 'Servicio accesible',   icon: '♿', desc: 'Transporte para silla de ruedas' },
-  scheduled:    { label: 'Servicio programado',  icon: '📅', desc: 'Viajes reservados con anticipación' },
+  motorcycle:   { label: 'Moto Taxi',            icon: '🏍️', desc: 'Servicio de transporte en motocicleta' },
+  sedan:        { label: 'Sedán',                icon: '🚗', desc: 'Transporte en automóvil sedán' },
+  suv:          { label: 'SUV',                  icon: '🚙', desc: 'Transporte en SUV o camioneta' },
+  scheduled:    { label: 'Programado',           icon: '📅', desc: 'Viajes reservados con anticipación' },
 };
 
 function moduleBadge(module: TrainingModule): { label: string; color: string; bg: string } {
@@ -39,24 +39,24 @@ function certBadge(certified: boolean): { label: string; color: string; bg: stri
 type GroupKey = ServiceType | 'prerequisite';
 
 function groupModules(modules: TrainingModule[]): { key: GroupKey; modules: TrainingModule[] }[] {
-  const groups: Record<GroupKey, TrainingModule[]> = {
+  const groups: Partial<Record<GroupKey, TrainingModule[]>> = {
     prerequisite: [],
-    standard: [],
-    executive: [],
-    accessible: [],
-    scheduled: [],
+    motorcycle:   [],
+    sedan:        [],
+    suv:          [],
+    scheduled:    [],
   };
   for (const m of modules) {
     if (m.is_prerequisite) {
-      groups.prerequisite.push(m);
-    } else if (m.service_type) {
-      groups[m.service_type].push(m);
+      groups.prerequisite!.push(m);
+    } else if (m.service_type && m.service_type in groups) {
+      groups[m.service_type]!.push(m);
     }
   }
-  const order: GroupKey[] = ['prerequisite', 'standard', 'executive', 'accessible', 'scheduled'];
+  const order: GroupKey[] = ['prerequisite', 'motorcycle', 'sedan', 'suv', 'scheduled'];
   return order
-    .filter(k => groups[k].length > 0)
-    .map(k => ({ key: k, modules: groups[k] }));
+    .filter(k => (groups[k]?.length ?? 0) > 0)
+    .map(k => ({ key: k, modules: groups[k]! }));
 }
 
 function ModuleCard({ module, onPress }: { module: TrainingModule; onPress: () => void }) {
@@ -72,7 +72,7 @@ function ModuleCard({ module, onPress }: { module: TrainingModule; onPress: () =
         <View style={styles.moduleInfo}>
           <Text style={styles.moduleCode}>{module.code}</Text>
           <Text style={styles.moduleTitle} numberOfLines={2}>
-            {module.title.replace(/^(Module \d+: |VRN-TRN-\d+[\w-]*: )/, '')}
+            {module.title.replace(/^(Module \d+: |VRN-TRN-[\w-]+: |VE-[\w-]+: )/, '')}
           </Text>
           <Text style={styles.moduleMeta}>
             {module.total_questions} preguntas · Aprobar {module.passing_score}/{module.total_questions}
@@ -94,12 +94,14 @@ function ServiceGroup({
   modules,
   certified,
   prerequisitesPassed,
+  hasPrerequisites,
   onModulePress,
 }: {
   groupKey: GroupKey;
   modules: TrainingModule[];
   certified: boolean;
   prerequisitesPassed: boolean;
+  hasPrerequisites: boolean;
   onModulePress: (m: TrainingModule) => void;
 }) {
   const info = SERVICE_LABELS[groupKey];
@@ -107,7 +109,7 @@ function ServiceGroup({
     ? (prerequisitesPassed ? { label: '✓ Completado', color: BRAND_COLORS.ACCENT, bg: '#F0FFF4' } : { label: 'Requerido', color: '#F59E0B', bg: '#FFF9E6' })
     : certBadge(certified);
 
-  const locked = groupKey !== 'prerequisite' && !prerequisitesPassed;
+  const locked = groupKey !== 'prerequisite' && hasPrerequisites && !prerequisitesPassed;
 
   return (
     <View style={styles.group}>
@@ -169,6 +171,8 @@ export default function TrainingScreen() {
   const groups = groupModules(modules);
   const prerequisitesPassed = certifications?.prerequisites_passed ?? false;
   const certifiedServices = certifications?.certified_services ?? [];
+  const hasPrerequisites = groups.some(g => g.key === 'prerequisite');
+  const totalServiceGroups = groups.filter(g => g.key !== 'prerequisite').length;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -191,7 +195,7 @@ export default function TrainingScreen() {
               {status.isComplete ? '¡Todas las certificaciones completadas!' : 'Completa tus certificaciones para conectarte'}
             </Text>
             <Text style={styles.progressSub}>
-              {certifiedServices.length} de 4 servicios certificados
+              {certifiedServices.length} de {totalServiceGroups} servicio{totalServiceGroups !== 1 ? 's' : ''} certificado{totalServiceGroups !== 1 ? 's' : ''}
             </Text>
           </View>
         </View>
@@ -204,7 +208,7 @@ export default function TrainingScreen() {
         }
       >
         <Text style={styles.intro}>
-          Lee cada módulo y aprueba el examen para desbloquear ese tipo de servicio. Comienza con el módulo de Fundamentos.
+          Lee cada módulo y aprueba el examen para certificarte en ese tipo de servicio. Necesitas 10/10 para aprobar.
         </Text>
         {groups.map(g => (
           <ServiceGroup
@@ -213,6 +217,7 @@ export default function TrainingScreen() {
             modules={g.modules}
             certified={g.key !== 'prerequisite' && certifiedServices.includes(g.key as ServiceType)}
             prerequisitesPassed={prerequisitesPassed}
+            hasPrerequisites={hasPrerequisites}
             onModulePress={handleModulePress}
           />
         ))}
@@ -223,7 +228,7 @@ export default function TrainingScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  container: { flex: 1, backgroundColor: '#F8F9FA', paddingTop: 24 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   loadingText: { color: '#888', fontSize: 15 },
 
