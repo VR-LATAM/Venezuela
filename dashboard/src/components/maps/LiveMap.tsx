@@ -34,7 +34,7 @@ export function LiveMap({ drivers, heatPoints = [], height = 400 }: LiveMapProps
       const { Map: GMap } = await google.maps.importLibrary('maps') as google.maps.MapsLibrary;
       mapInstance.current = new GMap(mapRef.current, {
         center:             { lat: 8.0, lng: -66.5 },
-        zoom:               6,
+        zoom:               5,
         mapId:              'VERONARIDE_ADMIN_MAP',
         mapTypeControl:     false,
         streetViewControl:  false,
