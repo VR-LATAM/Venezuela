@@ -162,6 +162,8 @@ export default function DriverHomeScreen() {
   const [menuVisible, setMenuVisible]           = useState(false);
   const [infoExpanded, setInfoExpanded]         = useState(false);
   const [menuSubPage, setMenuSubPage]           = useState<InfoPage | null>(null);
+  const [vehicleModalVisible, setVehicleModalVisible] = useState(false);
+  const [savingVehicleType, setSavingVehicleType]     = useState(false);
   const [panelExpanded, setPanelExpanded]       = useState(true);
   const [arrivalBanner, setArrivalBanner]       = useState(false);
   const hasNotifiedArrival                      = useRef(false);
@@ -475,11 +477,14 @@ export default function DriverHomeScreen() {
     await socketService.connect();
 
     // El pasajero canceló antes de que el conductor llegara
-    socketService.on('driver:ride_cancelled', () => {
+    socketService.on('driver:ride_cancelled', (data: any) => {
+      const { incomingRequest: req, activeRide: ar } = useRideStore.getState();
+      const isRelevant = !data?.rideId || req?.rideId === data.rideId || ar?.id === data.rideId;
+      setIncomingRequest(null);
       setActiveRide(null);
       setActivePhase(null);
       setAssignedPassenger(null);
-      Alert.alert('Viaje cancelado', 'El pasajero canceló el viaje.');
+      if (isRelevant) Alert.alert('Viaje cancelado', 'El pasajero canceló el viaje.');
     });
 
     // El viaje fue tomado por otro conductor
@@ -1545,6 +1550,18 @@ export default function DriverHomeScreen() {
                 </Text>
               </View>
             </TouchableOpacity>
+            {/* Tipo de vehículo */}
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={() => { setMenuVisible(false); setVehicleModalVisible(true); }}
+            >
+              <Text style={styles.menuItemIcon}>🚗</Text>
+              <Text style={[styles.menuItemText, { flex: 1 }]}>Tipo de vehículo</Text>
+              <Text style={{ fontSize: 13, color: '#888' }}>
+                {driver?.services?.[0] === 'motorcycle' ? 'Moto' :
+                 driver?.services?.[0] === 'suv'        ? 'SUV'  : 'Sedán'} ›
+              </Text>
+            </TouchableOpacity>
             {[
               { icon: '💳', label: 'Mi membresía',           route: '/(driver)/membership'      as const },
               { icon: '🗂️', label: 'Historial de servicio', route: '/(driver)/service-history' as const },
@@ -1597,6 +1614,59 @@ export default function DriverHomeScreen() {
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
+      </Modal>
+
+      {/* ══ MODAL TIPO DE VEHÍCULO ══ */}
+      <Modal visible={vehicleModalVisible} transparent animationType="slide" onRequestClose={() => setVehicleModalVisible(false)}>
+        <View style={styles.menuOverlay}>
+          <View style={[styles.menuSheet, { padding: 20 }]}>
+            <Text style={{ fontSize: 18, fontWeight: '700', color: BRAND_COLORS.TEXT, marginBottom: 6, fontFamily: 'Inter_700Bold' }}>
+              Tipo de vehículo
+            </Text>
+            <Text style={{ fontSize: 14, color: '#888', marginBottom: 20, fontFamily: 'Inter_400Regular' }}>
+              Solo recibirás solicitudes del tipo que elijas.
+            </Text>
+            {([
+              { key: 'motorcycle', label: 'Moto',  emoji: '🏍️', desc: 'Motocicleta' },
+              { key: 'sedan',      label: 'Sedán', emoji: '🚗', desc: 'Sedan / Compacto / Familiar' },
+              { key: 'suv',        label: 'SUV',   emoji: '🚙', desc: 'SUV / Camioneta / Minivan' },
+            ] as const).map(opt => {
+              const current = (driver?.services ?? [])[0];
+              const selected = current === opt.key || (!current && opt.key === 'sedan');
+              return (
+                <TouchableOpacity
+                  key={opt.key}
+                  style={[styles.vehicleTypeCard, selected && styles.vehicleTypeCardSelected, { flexDirection: 'row', marginBottom: 10, paddingVertical: 14, paddingHorizontal: 16 }]}
+                  disabled={savingVehicleType}
+                  onPress={async () => {
+                    if (selected) { setVehicleModalVisible(false); return; }
+                    setSavingVehicleType(true);
+                    try {
+                      await driverMobileService.updateProfile({ services: [opt.key] });
+                      setDriver(prev => prev ? { ...prev, services: [opt.key] } : prev);
+                      setVehicleModalVisible(false);
+                    } catch (err: any) {
+                      Alert.alert('Error', err?.message ?? 'No se pudo actualizar');
+                    } finally {
+                      setSavingVehicleType(false);
+                    }
+                  }}
+                >
+                  <Text style={{ fontSize: 28, marginRight: 14 }}>{opt.emoji}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.vehicleTypeLabel, selected && styles.vehicleTypeLabelSelected]}>{opt.label}</Text>
+                    <Text style={styles.vehicleTypeDesc}>{opt.desc}</Text>
+                  </View>
+                  {selected && <Text style={{ fontSize: 20, color: BRAND_COLORS.PRIMARY }}>✓</Text>}
+                  {savingVehicleType && selected && <ActivityIndicator size="small" color={BRAND_COLORS.PRIMARY} />}
+                </TouchableOpacity>
+              );
+            })}
+            <TouchableOpacity style={styles.menuCloseBtn} onPress={() => setVehicleModalVisible(false)}>
+              <Text style={styles.menuCloseBtnText}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
 
       <InfoModal page={menuSubPage} onClose={() => setMenuSubPage(null)} />
@@ -1967,6 +2037,12 @@ const styles = StyleSheet.create({
   menuItemText: { fontSize: 14, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
   menuCloseBtn: { marginTop: 8, height: 42, borderRadius: 12, backgroundColor: '#F5F5F5', justifyContent: 'center', alignItems: 'center' },
   menuCloseBtnText: { fontSize: 14, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
+
+  vehicleTypeCard: { borderRadius: 12, borderWidth: 2, borderColor: '#E0E0E0', backgroundColor: '#FAFAFA', alignItems: 'center' },
+  vehicleTypeCardSelected: { borderColor: BRAND_COLORS.PRIMARY, backgroundColor: BRAND_COLORS.PRIMARY + '12' },
+  vehicleTypeLabel: { fontSize: 16, fontWeight: '700', color: '#555', fontFamily: 'Inter_700Bold' },
+  vehicleTypeLabelSelected: { color: BRAND_COLORS.PRIMARY },
+  vehicleTypeDesc: { fontSize: 12, color: '#aaa', marginTop: 2, fontFamily: 'Inter_400Regular' },
 
   // ── Vista inactiva (pending, under_review, etc.) ──
   inactiveHeader: {
