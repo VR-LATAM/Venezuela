@@ -13,7 +13,10 @@ export type Language = 'es' | 'en';
 // ─────────────────────────────────────
 // TIPOS DE SERVICIO
 // ─────────────────────────────────────
-export type ServiceType = 'motorcycle' | 'sedan' | 'suv' | 'scheduled' | 'hourly' | 'wait_and_return';
+export type ServiceType =
+  | 'motorcycle' | 'sedan' | 'suv'
+  | 'scheduled' | 'hourly' | 'wait_and_return'
+  | 'encomienda' | 'pickup' | 'plataforma';
 
 // ─────────────────────────────────────
 // ESTADOS DEL VIAJE
@@ -282,6 +285,11 @@ export interface Ride {
   wait_fare?: number;
   // Hourly
   hourly_package_hours?: number;
+  // Encomienda / Delivery
+  package_description?: string;
+  package_size?: 'small' | 'medium' | 'large';
+  recipient_name?: string;
+  recipient_phone?: string;
   // Relaciones populadas (para UI)
   passenger?: Passenger;
   driver?: Driver;

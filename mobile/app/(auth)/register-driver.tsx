@@ -55,12 +55,14 @@ const VE_STATES = [
 ];
 
 const VEHICLE_TYPE_OPTIONS = [
-  { key: 'motorcycle', label: 'Moto',  emoji: '🏍️', desc: 'Motocicleta' },
-  { key: 'sedan',      label: 'Sedán', emoji: '🚗', desc: 'Sedan / Compacto / Familiar' },
-  { key: 'suv',        label: 'SUV',   emoji: '🚙', desc: 'SUV / Camioneta / Minivan' },
+  { key: 'motorcycle', label: 'Moto',       emoji: '🏍️', desc: 'Motocicleta' },
+  { key: 'sedan',      label: 'Sedán',      emoji: '🚗', desc: 'Sedan / Compacto / Familiar' },
+  { key: 'suv',        label: 'SUV',        emoji: '🚙', desc: 'SUV / Camioneta / Minivan' },
+  { key: 'pickup',     label: 'Pick-Up',    emoji: '🛻', desc: 'Camioneta Pick-Up / Carga mediana' },
+  { key: 'plataforma', label: 'Plataforma', emoji: '🚛', desc: 'Camión plataforma / Materiales de construcción' },
 ] as const;
 
-type VehicleType = 'motorcycle' | 'sedan' | 'suv';
+type VehicleType = 'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma';
 
 const LANGUAGE_OPTIONS = [
   { key: 'spanish',      label: 'Español',    emoji: '🇻🇪' },

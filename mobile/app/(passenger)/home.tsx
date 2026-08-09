@@ -48,11 +48,20 @@ interface Prediction {
   };
 }
 
-const SERVICE_OPTIONS: { key: ServiceType; label: string }[] = [
-  { key: 'motorcycle', label: 'Moto'       },
-  { key: 'sedan',      label: 'Sedán'      },
-  { key: 'suv',        label: 'SUV'        },
-  { key: 'scheduled',  label: 'Programado' },
+const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string; category: 'transport' | 'delivery' | 'schedule' }[] = [
+  { key: 'motorcycle', label: 'Moto',        emoji: '🏍️', category: 'transport' },
+  { key: 'sedan',      label: 'Sedán',       emoji: '🚗', category: 'transport' },
+  { key: 'suv',        label: 'SUV',         emoji: '🚙', category: 'transport' },
+  { key: 'encomienda', label: 'Encomienda',  emoji: '📦', category: 'delivery'  },
+  { key: 'pickup',     label: 'Pick-Up',     emoji: '🛻', category: 'delivery'  },
+  { key: 'plataforma', label: 'Plataforma',  emoji: '🚛', category: 'delivery'  },
+  { key: 'scheduled',  label: 'Programado',  emoji: '🗓️', category: 'schedule'  },
+];
+
+const PACKAGE_SIZES: { key: 'small' | 'medium' | 'large'; label: string; desc: string }[] = [
+  { key: 'small',  label: 'Pequeño',  desc: 'Documentos, farmacia, paquetes < 5 kg'    },
+  { key: 'medium', label: 'Mediano',  desc: 'Cajas, ropa, mercado hasta 20 kg'         },
+  { key: 'large',  label: 'Grande',   desc: 'Electrodomésticos, mudanza, objetos voluminosos' },
 ];
 
 export default function PassengerHomeScreen() {
@@ -113,6 +122,12 @@ export default function PassengerHomeScreen() {
   const [promoDiscount, setPromoDiscount]   = useState(0);
   const [promoValidating, setPromoValidating] = useState(false);
   const [promoApplied, setPromoApplied]     = useState(false);
+
+  // Encomienda / Delivery
+  const [pkgDescription, setPkgDescription] = useState('');
+  const [pkgSize, setPkgSize]               = useState<'small' | 'medium' | 'large'>('small');
+  const [pkgRecipient, setPkgRecipient]     = useState('');
+  const [pkgPhone, setPkgPhone]             = useState('');
 
   // Tip modal (post-ride)
   const [tipModalVisible, setTipModalVisible] = useState(false);
@@ -607,6 +622,7 @@ export default function PassengerHomeScreen() {
     setSearchStatus('requesting');
     console.log('[REQUEST] Pickup coords:', userLocation.latitude, userLocation.longitude, '| service:', selectedService);
     try {
+      const isDelivery = selectedService === 'encomienda';
       const ride = await rideMobileService.requestRide({
         pickupAddress,
         pickupLat:            userLocation.latitude,
@@ -617,6 +633,10 @@ export default function PassengerHomeScreen() {
         serviceType:          selectedService,
         stateCode:            user?.state_code ?? 'DC',
         promoCode:            promoApplied ? promoCode : undefined,
+        packageDescription:   isDelivery ? pkgDescription.trim() || undefined : undefined,
+        packageSize:          isDelivery ? pkgSize : undefined,
+        recipientName:        isDelivery ? pkgRecipient.trim() || undefined : undefined,
+        recipientPhone:       isDelivery ? pkgPhone.trim() || undefined : undefined,
       });
       setCurrentRide(ride);
       setSearchStatus('searching');
@@ -684,11 +704,16 @@ export default function PassengerHomeScreen() {
 
   const requestLabel = () => {
     if (selectedService === 'scheduled') return 'Programar un viaje →';
+    const svcOpt = SERVICE_OPTIONS.find(s => s.key === selectedService);
     const est = allEstimates[selectedService];
-    if (est) {
-      const name = SERVICE_OPTIONS.find(s => s.key === selectedService)?.label ?? '';
-      return `Solicitar ${name}  ·  $${(est.total ?? 0).toFixed(2)}`;
+    const name = svcOpt ? `${svcOpt.emoji} ${svcOpt.label}` : '';
+    if (selectedService === 'encomienda') {
+      return est ? `Enviar Encomienda  ·  $${(est.total ?? 0).toFixed(2)}` : `Enviar Encomienda`;
     }
+    if (selectedService === 'pickup' || selectedService === 'plataforma') {
+      return est ? `Solicitar ${svcOpt?.label}  ·  $${(est.total ?? 0).toFixed(2)}` : `Solicitar ${svcOpt?.label}`;
+    }
+    if (est) return `Solicitar ${name}  ·  $${(est.total ?? 0).toFixed(2)}`;
     return 'Solicitar viaje';
   };
 
@@ -991,6 +1016,7 @@ export default function PassengerHomeScreen() {
                             }}
                             activeOpacity={0.75}
                           >
+                            <Text style={styles.serviceCardEmoji}>{svc.emoji}</Text>
                             <Text style={[styles.serviceCardLabel, isActive && styles.textWhite]}>
                               {svc.label}
                             </Text>
@@ -1038,10 +1064,61 @@ export default function PassengerHomeScreen() {
                         }}
                       >
                         <Text style={[styles.chipLabel, selectedService === svc.key && { color: '#fff' }]}>
-                          {svc.label}
+                          {svc.emoji} {svc.label}
                         </Text>
                       </TouchableOpacity>
                     ))}
+                  </View>
+                )}
+
+                {/* Formulario de encomienda */}
+                {selectedService === 'encomienda' && dropoffCoords && (
+                  <View style={styles.encomiendaForm}>
+                    <Text style={styles.encomiendaTitle}>📦 Datos del paquete</Text>
+
+                    <Text style={styles.encomiendaSectionLabel}>Tamaño del paquete</Text>
+                    <View style={styles.encomiendaSizeRow}>
+                      {PACKAGE_SIZES.map(sz => (
+                        <TouchableOpacity
+                          key={sz.key}
+                          style={[styles.encomiendaSizeBtn, pkgSize === sz.key && styles.encomiendaSizeBtnActive]}
+                          onPress={() => { setPkgSize(sz.key); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                        >
+                          <Text style={[styles.encomiendaSizeBtnLabel, pkgSize === sz.key && styles.encomiendaSizeBtnLabelActive]}>
+                            {sz.label}
+                          </Text>
+                          <Text style={[styles.encomiendaSizeBtnDesc, pkgSize === sz.key && styles.encomiendaSizeBtnDescActive]}>
+                            {sz.desc}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={pkgDescription}
+                      onChangeText={setPkgDescription}
+                      placeholder="Descripción del paquete (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      maxLength={200}
+                    />
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={pkgRecipient}
+                      onChangeText={setPkgRecipient}
+                      placeholder="Nombre del destinatario (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      maxLength={100}
+                    />
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={pkgPhone}
+                      onChangeText={setPkgPhone}
+                      placeholder="Teléfono del destinatario (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="phone-pad"
+                      maxLength={30}
+                    />
                   </View>
                 )}
 
@@ -1513,6 +1590,7 @@ const styles = StyleSheet.create({
 
   // Grid servicios
   serviceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 10 },
+  serviceCardEmoji: { fontSize: 20, marginBottom: 2 },
   serviceCard: {
     width: '47.5%', backgroundColor: '#F8F9FA',
     borderRadius: 12, padding: 10,
@@ -1701,4 +1779,25 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5F5', justifyContent: 'center', alignItems: 'center',
   },
   menuCloseBtnText: { fontSize: 14, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
+
+  // Encomienda form
+  encomiendaForm: {
+    backgroundColor: '#FFF7ED', borderRadius: 12, padding: 14,
+    marginVertical: 8, borderLeftWidth: 4, borderLeftColor: '#F59E0B',
+  },
+  encomiendaTitle: { fontSize: 15, fontWeight: '700', color: '#92400E', marginBottom: 10, fontFamily: 'Inter_700Bold' },
+  encomiendaSectionLabel: { fontSize: 12, fontWeight: '600', color: '#78350F', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5, fontFamily: 'Inter_600SemiBold' },
+  encomiendaSizeRow: { flexDirection: 'row', gap: 6, marginBottom: 10 },
+  encomiendaSizeBtn: { flex: 1, padding: 8, borderRadius: 8, borderWidth: 1.5, borderColor: '#D97706', backgroundColor: '#fff', alignItems: 'center' },
+  encomiendaSizeBtnActive: { backgroundColor: '#D97706', borderColor: '#D97706' },
+  encomiendaSizeBtnLabel: { fontSize: 12, fontWeight: '700', color: '#D97706', fontFamily: 'Inter_700Bold' },
+  encomiendaSizeBtnLabelActive: { color: '#fff' },
+  encomiendaSizeBtnDesc: { fontSize: 9, color: '#92400E', textAlign: 'center', marginTop: 2, fontFamily: 'Inter_400Regular' },
+  encomiendaSizeBtnDescActive: { color: 'rgba(255,255,255,0.85)' },
+  encomiendaInput: {
+    height: 40, borderWidth: 1.5, borderColor: '#D97706' + '60',
+    borderRadius: 8, paddingHorizontal: 10, fontSize: 13,
+    color: BRAND_COLORS.TEXT, backgroundColor: '#fff',
+    marginBottom: 6, fontFamily: 'Inter_400Regular',
+  },
 });

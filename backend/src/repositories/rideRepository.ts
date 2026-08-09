@@ -37,6 +37,11 @@ export interface CreateRideParams {
   promoDiscount?: number;
   estimatedWaitMinutes?: number;
   hourlyPackageHours?: number;
+  // Encomienda / Delivery
+  packageDescription?: string;
+  packageSize?: 'small' | 'medium' | 'large';
+  recipientName?: string;
+  recipientPhone?: string;
 }
 
 export interface RideStop {
@@ -76,12 +81,15 @@ export const rideRepository = {
          dropoff_address, dropoff_location,
          state_code, scheduled_at,
          promo_code, promo_discount,
-         estimated_wait_minutes, hourly_package_hours
+         estimated_wait_minutes, hourly_package_hours,
+         package_description, package_size,
+         recipient_name, recipient_phone
        ) VALUES (
          $1, $2,
          $3, ST_MakePoint($5, $4)::geography,
          $6, ST_MakePoint($8, $7)::geography,
-         $9, $10, $11, $12, $13, $14
+         $9, $10, $11, $12, $13, $14,
+         $15, $16, $17, $18
        ) RETURNING *,
          $4 AS pickup_lat, $5 AS pickup_lng,
          $7 AS dropoff_lat, $8 AS dropoff_lng`,
@@ -97,6 +105,10 @@ export const rideRepository = {
         params.promoDiscount ?? 0,
         params.estimatedWaitMinutes ?? null,
         params.hourlyPackageHours ?? null,
+        params.packageDescription ?? null,
+        params.packageSize ?? null,
+        params.recipientName ?? null,
+        params.recipientPhone ?? null,
       ]
     ),
 

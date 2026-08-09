@@ -308,11 +308,13 @@ export const driverRepository = {
            $3
          )
          -- Filtrar por tipo de servicio: acepta si está en d.services.
-         -- d.services IS NULL = conductor sin servicios configurados aún → acepta cualquier tipo.
+         -- d.services IS NULL = conductor sin servicios configurados → acepta cualquier tipo.
+         -- 'encomienda' = cualquier vehículo puede llevar paquetes.
          AND (
            $4::text IS NULL
            OR d.services IS NULL
            OR $4 = ANY(d.services)
+           OR ($4 = 'encomienda' AND d.services && ARRAY['motorcycle','sedan','suv','pickup','plataforma']::text[])
          )
        ORDER BY distance_meters ASC, d.rating_avg DESC
        LIMIT $5`,

@@ -20,7 +20,7 @@ import { redis } from '../config/redis';
 import { sendSuccess, sendCreated, sendError } from '../utils/response';
 import { ServiceType } from '@vride/shared';
 
-const SERVICE_TYPES = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly', 'wait_and_return'] as const;
+const SERVICE_TYPES = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly', 'wait_and_return', 'encomienda', 'pickup', 'plataforma'] as const;
 
 export const rideController = {
   // POST /ride/estimate — estimar tarifa antes de confirmar
@@ -86,7 +86,7 @@ export const rideController = {
         dropoffLat:     z.number().min(-90).max(90).optional(),
         dropoffLng:     z.number().min(-180).max(180).optional(),
         serviceType:    z.enum(SERVICE_TYPES).default('sedan'),
-        stateCode:      z.string().length(2).default('TX'),
+        stateCode:      z.string().length(2).default('DC'),
         scheduledAt:    z.string().datetime().optional(),
         promoCode:      z.string().max(30).optional(),
         stops:                z.array(z.object({
@@ -96,6 +96,11 @@ export const rideController = {
         })).max(5).optional(),
         estimatedWaitMinutes: z.number().int().min(1).max(480).optional(),
         hourlyPackageHours:   z.number().int().min(1).max(12).optional(),
+        // Encomienda / Delivery
+        packageDescription: z.string().max(200).optional(),
+        packageSize:        z.enum(['small', 'medium', 'large']).optional(),
+        recipientName:      z.string().max(100).optional(),
+        recipientPhone:     z.string().max(30).optional(),
       });
       const body = schema.parse(req.body);
 
@@ -141,6 +146,10 @@ export const rideController = {
         promoDiscount,
         estimatedWaitMinutes: body.estimatedWaitMinutes,
         hourlyPackageHours:   body.hourlyPackageHours,
+        packageDescription:   body.packageDescription,
+        packageSize:          body.packageSize,
+        recipientName:        body.recipientName,
+        recipientPhone:       body.recipientPhone,
       });
 
       // Guardar paradas intermedias si las hay

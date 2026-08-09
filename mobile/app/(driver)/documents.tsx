@@ -14,6 +14,8 @@ const VEHICLE_TYPE_LABEL: Record<string, string> = {
   motorcycle: '🏍️ Moto',
   sedan:      '🚗 Sedán',
   suv:        '🚙 SUV',
+  pickup:     '🛻 Pick-Up',
+  plataforma: '🚛 Plataforma',
 };
 
 const LANGUAGE_LABEL: Record<string, string> = {

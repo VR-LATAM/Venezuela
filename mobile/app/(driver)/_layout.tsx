@@ -33,6 +33,11 @@ interface IncomingRequest {
   passengerName?: string;
   passengerPhotoUrl?: string;
   passengerRating?: number;
+  // Encomienda / Delivery
+  packageDescription?: string;
+  packageSize?: string;
+  recipientName?: string;
+  recipientPhone?: string;
 }
 
 const SPECIAL_NEEDS_LABELS: Record<string, string> = {
@@ -249,15 +254,46 @@ export default function DriverLayout() {
                       </Text>
                     </View>
                     <View style={styles.requestMetaChip}>
-                      <Text style={styles.requestMetaEmoji}>🚗</Text>
+                      <Text style={styles.requestMetaEmoji}>
+                        {incomingRequest.serviceType === 'motorcycle' ? '🏍️' :
+                         incomingRequest.serviceType === 'sedan'      ? '🚗' :
+                         incomingRequest.serviceType === 'suv'        ? '🚙' :
+                         incomingRequest.serviceType === 'encomienda' ? '📦' :
+                         incomingRequest.serviceType === 'pickup'     ? '🛻' :
+                         incomingRequest.serviceType === 'plataforma' ? '🚛' : '🚗'}
+                      </Text>
                       <Text style={styles.requestMetaText}>
-                        {incomingRequest.serviceType === 'standard'   ? 'Estándar'  :
-                         incomingRequest.serviceType === 'executive'  ? 'Ejecutivo' :
-                         incomingRequest.serviceType === 'accessible' ? 'Accesible' :
+                        {incomingRequest.serviceType === 'motorcycle' ? 'Moto'       :
+                         incomingRequest.serviceType === 'sedan'      ? 'Sedán'      :
+                         incomingRequest.serviceType === 'suv'        ? 'SUV'        :
+                         incomingRequest.serviceType === 'encomienda' ? 'Encomienda' :
+                         incomingRequest.serviceType === 'pickup'     ? 'Pick-Up'    :
+                         incomingRequest.serviceType === 'plataforma' ? 'Plataforma' :
                          incomingRequest.serviceType}
                       </Text>
                     </View>
                   </View>
+
+                  {/* Datos de encomienda */}
+                  {incomingRequest.serviceType === 'encomienda' && (
+                    <View style={styles.encomiendaBox}>
+                      <Text style={styles.encomiendaBoxTitle}>📦 Datos del paquete</Text>
+                      {incomingRequest.packageSize && (
+                        <Text style={styles.encomiendaBoxRow}>
+                          Tamaño: {incomingRequest.packageSize === 'small' ? 'Pequeño' : incomingRequest.packageSize === 'medium' ? 'Mediano' : 'Grande'}
+                        </Text>
+                      )}
+                      {incomingRequest.packageDescription && (
+                        <Text style={styles.encomiendaBoxRow}>Descripción: {incomingRequest.packageDescription}</Text>
+                      )}
+                      {incomingRequest.recipientName && (
+                        <Text style={styles.encomiendaBoxRow}>Destinatario: {incomingRequest.recipientName}</Text>
+                      )}
+                      {incomingRequest.recipientPhone && (
+                        <Text style={styles.encomiendaBoxRow}>Teléfono: {incomingRequest.recipientPhone}</Text>
+                      )}
+                    </View>
+                  )}
 
                   {(incomingRequest.specialNeeds ?? []).length > 0 && (
                     <View style={styles.specialNeedsBox}>
@@ -373,6 +409,12 @@ const styles = StyleSheet.create({
   },
   requestMetaEmoji: { fontSize: 16 },
   requestMetaText: { fontSize: 13, color: BRAND_COLORS.TEXT, fontWeight: '500' },
+  encomiendaBox: {
+    backgroundColor: '#FFF7ED', borderRadius: 10, padding: 12,
+    borderLeftWidth: 4, borderLeftColor: '#F59E0B', gap: 3,
+  },
+  encomiendaBoxTitle: { fontSize: 13, fontWeight: '700', color: '#92400E', marginBottom: 4 },
+  encomiendaBoxRow: { fontSize: 13, color: '#78350F' },
   specialNeedsBox: {
     backgroundColor: '#FFFBEB', borderRadius: 10, padding: 12,
     borderLeftWidth: 4, borderLeftColor: '#F59E0B', gap: 4,

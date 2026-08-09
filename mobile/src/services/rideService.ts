@@ -26,6 +26,11 @@ export interface RequestRideParams {
   stops?:               RideStop[];
   estimatedWaitMinutes?: number;
   hourlyPackageHours?:   number;
+  // Encomienda / Delivery
+  packageDescription?: string;
+  packageSize?:        'small' | 'medium' | 'large';
+  recipientName?:      string;
+  recipientPhone?:     string;
 }
 
 export const rideMobileService = {

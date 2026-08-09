@@ -98,6 +98,11 @@ export interface RequestRideParams {
   estimatedWaitMinutes?: number;
   hourlyPackageHours?: number;
   billToCorporate?: boolean;
+  // Encomienda / Delivery
+  packageDescription?: string;
+  packageSize?: 'small' | 'medium' | 'large';
+  recipientName?: string;
+  recipientPhone?: string;
 }
 
 export const rideService = {
@@ -208,12 +213,16 @@ export const rideService = {
              dropoff_address, dropoff_location, state_code, scheduled_at,
              promo_code, promo_discount, estimated_wait_minutes, hourly_package_hours,
              passenger_tier, corporate_account_id, preferred_driver_id,
-             priority_dispatch, vip_multiplier, status
+             priority_dispatch, vip_multiplier,
+             package_description, package_size, recipient_name, recipient_phone,
+             status
            ) VALUES (
              $1, $2, $3, ST_SetSRID(ST_MakePoint($5,$4),4326),
              $6, ST_SetSRID(ST_MakePoint($8,$7),4326), $9, $10,
              $11, $12, $13, $14,
-             $15, $16, $17, $18, $19, 'searching'
+             $15, $16, $17, $18, $19,
+             $20, $21, $22, $23,
+             'searching'
            )
            RETURNING *,
              ST_Y(pickup_location::geometry)  AS pickup_lat,
@@ -224,11 +233,15 @@ export const rideService = {
             params.passengerId, params.serviceType,
             params.pickupAddress, params.pickupLat, params.pickupLng,
             params.dropoffAddress, params.dropoffLat, params.dropoffLng,
-            params.stateCode ?? 'TX', params.scheduledAt ?? null,
+            params.stateCode ?? 'DC', params.scheduledAt ?? null,
             params.promoCode ?? null, params.promoDiscount ?? null,
             params.estimatedWaitMinutes ?? null, params.hourlyPackageHours ?? null,
             passengerTier, corporateAccountId, preferredDriverId,
             priorityDispatch, vipMultiplier,
+            params.packageDescription ?? null,
+            params.packageSize ?? null,
+            params.recipientName ?? null,
+            params.recipientPhone ?? null,
           ]
         );
         const newRide = created.rows[0];
@@ -1077,6 +1090,7 @@ async function searchAndNotifyDrivers(
       if (!driverData?.is_online || driverData?.status !== 'active') continue;
 
       // Notificar al conductor via Socket.io
+      const rideAny2 = ride as any;
       emitToUser(driver.id, 'driver:new_ride_request', {
         rideId,
         pickupAddress:  ride.pickup_address,
@@ -1093,6 +1107,11 @@ async function searchAndNotifyDrivers(
         passengerName:      (passengerProfile as any)?.name      ?? null,
         passengerPhotoUrl:  (passengerProfile as any)?.photo_url ?? null,
         passengerRating:    (passengerProfile as any)?.rating_avg ?? null,
+        // Encomienda / Delivery
+        packageDescription: rideAny2.package_description ?? null,
+        packageSize:        rideAny2.package_size        ?? null,
+        recipientName:      rideAny2.recipient_name      ?? null,
+        recipientPhone:     rideAny2.recipient_phone     ?? null,
       });
 
       // Push al conductor (por si no tiene la app abierta)

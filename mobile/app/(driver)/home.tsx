@@ -441,7 +441,7 @@ export default function DriverHomeScreen() {
       setDocAlerts(alerts.filter(a => a.is_expired || a.urgent));
 
       // Si no tiene tipo de vehículo configurado, abrir selector automáticamente
-      const validTypes = ['motorcycle', 'sedan', 'suv'];
+      const validTypes = ['motorcycle', 'sedan', 'suv', 'pickup', 'plataforma'];
       const hasVehicleType = (profile.services ?? []).some(s => validTypes.includes(s));
       if (!hasVehicleType && profile.status !== 'active') {
         setTimeout(() => setVehicleModalVisible(true), 800);
@@ -1255,7 +1255,7 @@ export default function DriverHomeScreen() {
 
             {/* Banner tipo de vehículo no configurado */}
             {(() => {
-              const validTypes = ['motorcycle', 'sedan', 'suv'];
+              const validTypes = ['motorcycle', 'sedan', 'suv', 'pickup', 'plataforma'];
               const hasType = (driver?.services ?? []).some(s => validTypes.includes(s));
               if (hasType) return null;
               return (
@@ -1653,9 +1653,11 @@ export default function DriverHomeScreen() {
               Solo recibirás solicitudes del tipo que elijas.
             </Text>
             {([
-              { key: 'motorcycle', label: 'Moto',  emoji: '🏍️', desc: 'Motocicleta' },
-              { key: 'sedan',      label: 'Sedán', emoji: '🚗', desc: 'Sedan / Compacto / Familiar' },
-              { key: 'suv',        label: 'SUV',   emoji: '🚙', desc: 'SUV / Camioneta / Minivan' },
+              { key: 'motorcycle', label: 'Moto',       emoji: '🏍️', desc: 'Motocicleta' },
+              { key: 'sedan',      label: 'Sedán',      emoji: '🚗', desc: 'Sedan / Compacto / Familiar' },
+              { key: 'suv',        label: 'SUV',        emoji: '🚙', desc: 'SUV / Camioneta / Minivan' },
+              { key: 'pickup',     label: 'Pick-Up',    emoji: '🛻', desc: 'Camioneta Pick-Up / Carga mediana' },
+              { key: 'plataforma', label: 'Plataforma', emoji: '🚛', desc: 'Camión plataforma / Materiales de construcción' },
             ] as const).map(opt => {
               const current = (driver?.services ?? [])[0];
               const selected = current === opt.key;
