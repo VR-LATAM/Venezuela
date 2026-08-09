@@ -161,7 +161,7 @@ export const rideService = {
         dropoffLat:  params.dropoffLat,
         dropoffLng:  params.dropoffLng,
         serviceType: params.serviceType as ServiceType,
-        stateCode:   params.stateCode ?? 'TX',
+        stateCode:   params.stateCode ?? 'DC',
       });
       estimatedFare     = fareEstimate.total * vipMultiplier;
       tripDistanceMiles = fareEstimate.distance_miles;
@@ -192,8 +192,8 @@ export const rideService = {
         }
       } catch (holdErr: unknown) {
         const errMsg = holdErr instanceof Error ? holdErr.message : String(holdErr);
-        logger.warn(`Hold fallido para pasajero ${params.passengerId}: ${errMsg}`);
-        throw new Error('PAYMENT_METHOD_DECLINED');
+        logger.warn(`Hold Stripe omitido para pasajero ${params.passengerId}: ${errMsg} — viaje continúa como efectivo`);
+        holdIntentId = null;
       }
     }
 

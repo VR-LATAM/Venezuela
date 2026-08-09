@@ -19,6 +19,10 @@ export function usePhotoUpload() {
     setUploading(true);
     try {
       const token = await SecureStore.getItemAsync('access_token');
+      const url   = `${API_BASE}/user/photo`;
+      console.log('[Photo] uri=', asset.uri);
+      console.log('[Photo] url=', url);
+      console.log('[Photo] token=', token ? token.slice(0, 20) + '...' : 'NULL');
 
       const formData = new FormData();
       formData.append('photo', {
@@ -27,16 +31,20 @@ export function usePhotoUpload() {
         type: 'image/jpeg',
       } as any);
 
-      const response = await fetch(`${API_BASE}/user/photo`, {
+      const response = await fetch(url, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token ?? ''}` },
         body: formData,
       });
 
+      console.log('[Photo] status=', response.status);
+
       if (!response.ok) {
-        const body = await response.json().catch(() => ({}));
-        const detail = body?.detail ?? body?.error ?? `HTTP ${response.status}`;
-        Alert.alert('Error al subir foto', detail);
+        const text = await response.text().catch(() => '');
+        console.log('[Photo] body=', text);
+        let detail = `HTTP ${response.status}`;
+        try { detail = JSON.parse(text)?.detail ?? JSON.parse(text)?.error ?? detail; } catch {}
+        Alert.alert('Error al subir foto', `${response.status}: ${detail}`);
         return null;
       }
 
@@ -44,6 +52,7 @@ export function usePhotoUpload() {
       if (user) setUser({ ...user, photo_url: body.photoUrl });
       return body.photoUrl as string;
     } catch (err: any) {
+      console.log('[Photo] catch error=', String(err));
       Alert.alert('Error al subir foto', err?.message ?? String(err));
       return null;
     } finally {
@@ -59,6 +68,7 @@ export function usePhotoUpload() {
     }
     const result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
+      aspect: [1, 1],
       quality: 0.4,
     });
     if (result.canceled || !result.assets[0]) return null;
@@ -72,8 +82,9 @@ export function usePhotoUpload() {
       return null;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
+      aspect: [1, 1],
       quality: 0.4,
     });
     if (result.canceled || !result.assets[0]) return null;
