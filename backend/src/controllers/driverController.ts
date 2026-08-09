@@ -114,7 +114,7 @@ export const driverController = {
         commissionInfo = await getDriverCommissionInfo(req.user!.userId);
       } catch (commErr: any) {
         logger.error('[getProfile] getDriverCommissionInfo FAILED:', { msg: commErr?.message });
-        commissionInfo = { rate: 0.19, tier: 'standard', ridesThisYear: 0, ratingAvg: 5, nextTierRides: null, nextTierRate: null };
+        commissionInfo = { rate: 0, tier: 'standard', ridesThisYear: 0, ratingAvg: 5, nextTierRides: null, nextTierRate: null };
       }
 
       if (!driver) {
@@ -189,6 +189,18 @@ export const driverController = {
           return;
         }
       }
+      next(err);
+    }
+  },
+
+  // POST /driver/save-contract — guardar firma del contrato
+  saveContractSignature: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { signature } = req.body;
+      if (!signature) { sendError(res, 400, 'Firma requerida', 'MISSING_SIGNATURE'); return; }
+      await driverService.saveContractSignature(req.user!.userId, signature);
+      sendSuccess(res, { message: 'Contrato firmado correctamente.' });
+    } catch (err) {
       next(err);
     }
   },

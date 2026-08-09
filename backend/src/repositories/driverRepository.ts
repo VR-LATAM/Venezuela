@@ -227,6 +227,14 @@ export const driverRepository = {
       [id]
     ),
 
+  saveContractSignature: (id: string, signature: string) =>
+    queryOne<{ id: string }>(
+      `UPDATE drivers
+       SET contract_signature = $2, contract_signed_at = NOW(), updated_at = NOW()
+       WHERE id = $1 RETURNING id`,
+      [id, signature]
+    ),
+
   // Actualizar posición GPS en tiempo real (llamado cada 4 segundos)
   // Usa PostGIS ST_MakePoint(lng, lat) para actualizar la geometría
   updateLocation: (id: string, longitude: number, latitude: number, currentStateCode?: string) =>
@@ -309,12 +317,13 @@ export const driverRepository = {
          )
          -- Filtrar por tipo de servicio: acepta si está en d.services.
          -- d.services IS NULL = conductor sin servicios configurados → acepta cualquier tipo.
-         -- 'encomienda' = cualquier vehículo puede llevar paquetes.
+         -- 'encomienda' = moto, sedán o SUV. 'carga' = 350 o NPR.
          AND (
            $4::text IS NULL
            OR d.services IS NULL
            OR $4 = ANY(d.services)
-           OR ($4 = 'encomienda' AND d.services && ARRAY['motorcycle','sedan','suv','pickup','plataforma']::text[])
+           OR ($4 = 'encomienda' AND d.services && ARRAY['motorcycle','sedan','suv']::text[])
+           OR ($4 = 'carga'      AND d.services && ARRAY['350','npr']::text[])
          )
        ORDER BY distance_meters ASC, d.rating_avg DESC
        LIMIT $5`,

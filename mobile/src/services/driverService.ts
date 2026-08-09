@@ -137,6 +137,10 @@ export const driverMobileService = {
   // Enviar todos los documentos para revisión del admin
   // Solo funciona si todos los documentos requeridos están subidos
   // ─────────────────────────────────────
+  saveContractSignature: async (signature: string): Promise<void> => {
+    await apiClient.post('/driver/save-contract', { signature });
+  },
+
   submitForReview: async (): Promise<Driver> => {
     const response = await apiClient.post('/driver/submit-review');
     return response.data.data.driver as Driver;

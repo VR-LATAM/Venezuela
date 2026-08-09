@@ -37,25 +37,23 @@ import { smsService } from './smsService';
 // Reset automático: el 1 de enero cada año el contador vuelve a cero.
 // Si la calificación baja de 4.75 → pierde el nivel inmediatamente.
 // ─────────────────────────────────────────────────────────────
-export type CommissionTier = 'standard' | 'silver' | 'elite';
+export type CommissionTier = 'standard';
 
 export interface DriverCommissionInfo {
-  rate:          number;           // 0.19, 0.18 ó 0.17
+  rate:          number;
   tier:          CommissionTier;
   ridesThisYear: number;
   ratingAvg:     number;
-  nextTierRides: number | null;    // cuántos viajes faltan para el siguiente nivel
+  nextTierRides: number | null;
   nextTierRate:  number | null;
 }
 
 export async function getDriverCommissionInfo(driverId: string): Promise<DriverCommissionInfo> {
   const { rows } = await db.query<{
-    rating_avg:     number;
+    rating_avg:      number;
     rides_this_year: string;
   }>(
-    `SELECT
-       d.rating_avg,
-       COUNT(r.id)::text AS rides_this_year
+    `SELECT d.rating_avg, COUNT(r.id)::text AS rides_this_year
      FROM drivers d
      LEFT JOIN rides r ON r.driver_id = d.id
        AND r.status = 'completed'
@@ -65,17 +63,14 @@ export async function getDriverCommissionInfo(driverId: string): Promise<DriverC
     [driverId]
   );
 
-  const ratingAvg     = Number(rows[0]?.rating_avg ?? 5);
-  const ridesThisYear = parseInt(rows[0]?.rides_this_year ?? '0');
-  const qualifies     = ratingAvg >= 4.75;
-
-  if (qualifies && ridesThisYear >= 1500) {
-    return { rate: 0.17, tier: 'elite',    ridesThisYear, ratingAvg, nextTierRides: null, nextTierRate: null };
-  }
-  if (qualifies && ridesThisYear >= 500) {
-    return { rate: 0.18, tier: 'silver',   ridesThisYear, ratingAvg, nextTierRides: 1500 - ridesThisYear, nextTierRate: 0.17 };
-  }
-  return   { rate: 0.19, tier: 'standard', ridesThisYear, ratingAvg, nextTierRides: qualifies ? 500 - ridesThisYear : null, nextTierRate: qualifies ? 0.18 : null };
+  return {
+    rate:          0,
+    tier:          'standard',
+    ridesThisYear: parseInt(rows[0]?.rides_this_year ?? '0'),
+    ratingAvg:     Number(rows[0]?.rating_avg ?? 5),
+    nextTierRides: null,
+    nextTierRate:  null,
+  };
 }
 
 // Radio dinámico de búsqueda nacional — sin límite geográfico (no geofencing)
@@ -101,8 +96,14 @@ export interface RequestRideParams {
   // Encomienda / Delivery
   packageDescription?: string;
   packageSize?: 'small' | 'medium' | 'large';
+  senderName?: string;
+  senderPhone?: string;
   recipientName?: string;
   recipientPhone?: string;
+  deliveryVehicle?: 'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma' | '350' | 'npr';
+  // Carga — precio ofrecido por el pasajero
+  offeredPrice?: number;
+  cargaVehicle?: '350' | 'npr';
 }
 
 export const rideService = {
@@ -118,10 +119,13 @@ export const rideService = {
     stateCode: string;
     estimatedWaitMinutes?: number;
     hourlyPackageHours?: number;
+    packageSize?: 'small' | 'medium' | 'large';
+    deliveryVehicle?: 'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma';
+    cargaVehicle?: '350' | 'npr';
   }): Promise<FareEstimate> => {
     return calculateFareEstimate({
       ...params,
-      driverEtaMinutes: undefined, // Sin ETA hasta asignar conductor
+      driverEtaMinutes: undefined,
     });
   },
 
@@ -157,21 +161,27 @@ export const rideService = {
     }
 
     // Calcular tarifa estimada
+    // Para carga: usar el precio ofrecido por el pasajero directamente
     let estimatedFare = 0;
     let tripDistanceMiles = 0;
-    try {
-      const fareEstimate = await calculateFareEstimate({
-        pickupLat:   params.pickupLat,
-        pickupLng:   params.pickupLng,
-        dropoffLat:  params.dropoffLat,
-        dropoffLng:  params.dropoffLng,
-        serviceType: params.serviceType as ServiceType,
-        stateCode:   params.stateCode ?? 'DC',
-      });
-      estimatedFare     = fareEstimate.total * vipMultiplier;
-      tripDistanceMiles = fareEstimate.distance_miles;
-    } catch {
-      // Si falla el cálculo continuar sin hold
+    if (params.serviceType === 'carga' && params.offeredPrice) {
+      estimatedFare = params.offeredPrice;
+    } else {
+      try {
+        const fareEstimate = await calculateFareEstimate({
+          pickupLat:   params.pickupLat,
+          pickupLng:   params.pickupLng,
+          dropoffLat:  params.dropoffLat,
+          dropoffLng:  params.dropoffLng,
+          serviceType: params.serviceType as ServiceType,
+          stateCode:   params.stateCode ?? 'DC',
+          cargaVehicle: params.cargaVehicle,
+        });
+        estimatedFare     = fareEstimate.total * vipMultiplier;
+        tripDistanceMiles = fareEstimate.distance_miles;
+      } catch {
+        // Si falla el cálculo continuar sin hold
+      }
     }
 
     // ── Pre-autorización de pago (hold) ──
@@ -214,14 +224,22 @@ export const rideService = {
              promo_code, promo_discount, estimated_wait_minutes, hourly_package_hours,
              passenger_tier, corporate_account_id, preferred_driver_id,
              priority_dispatch, vip_multiplier,
-             package_description, package_size, recipient_name, recipient_phone,
+             package_description, package_size,
+             sender_name, sender_phone,
+             recipient_name, recipient_phone,
+             delivery_vehicle, offered_price,
+             initial_estimated_fare,
              status
            ) VALUES (
              $1, $2, $3, ST_SetSRID(ST_MakePoint($5,$4),4326),
              $6, ST_SetSRID(ST_MakePoint($8,$7),4326), $9, $10,
              $11, $12, $13, $14,
              $15, $16, $17, $18, $19,
-             $20, $21, $22, $23,
+             $20, $21,
+             $22, $23,
+             $24, $25,
+             $26, $27,
+             $28,
              'searching'
            )
            RETURNING *,
@@ -240,8 +258,13 @@ export const rideService = {
             priorityDispatch, vipMultiplier,
             params.packageDescription ?? null,
             params.packageSize ?? null,
+            params.senderName ?? null,
+            params.senderPhone ?? null,
             params.recipientName ?? null,
             params.recipientPhone ?? null,
+            params.deliveryVehicle ?? null,
+            params.offeredPrice ?? null,
+            estimatedFare > 0 ? estimatedFare : null,
           ]
         );
         const newRide = created.rows[0];
@@ -284,7 +307,8 @@ export const rideService = {
     searchAndNotifyDrivers(ride.id, {
       lat: params.pickupLat,
       lng: params.pickupLng,
-    }, params.serviceType, params.passengerId, estimatedFare, tripDistanceMiles)
+    }, params.serviceType, params.passengerId, estimatedFare, tripDistanceMiles,
+      params.serviceType === 'encomienda' ? (params.deliveryVehicle ?? undefined) : undefined)
       .finally(() => clearTimeout(_safetyTimer))
       .catch(async (err) => {
         console.error('[searchAndNotify] CRASH:', err?.message ?? err, err?.stack ?? '');
@@ -486,6 +510,14 @@ export const rideService = {
       hourlyPackageHours:   rideAny.hourly_package_hours ?? undefined,
       estimatedWaitMinutes: rideAny.wait_minutes > 0 ? rideAny.wait_minutes : undefined,
     });
+    // Para carga: respetar el precio negociado (counter_price si fue contra-oferta, offered_price si fue directo)
+    if (ride.service_type === 'carga') {
+      const negotiatedPrice = +(rideAny.counter_price ?? rideAny.offered_price ?? fareEstimate.total);
+      if (negotiatedPrice > 0) {
+        fareEstimate.total    = negotiatedPrice;
+        fareEstimate.subtotal = negotiatedPrice;
+      }
+    }
 
     // Para wait_and_return: sumar el wait_fare real al total
     const realWaitFare = +(rideAny.wait_fare ?? 0);
@@ -528,93 +560,55 @@ export const rideService = {
     }
     logger.info(`Comisión Venezuela 0% — conductor recibe $${driverEarnings} de $${fareEstimate.total}`);
 
-    // ── Cobrar al pasajero vía Stripe ─────────────────────────────────────────
-    // Si hay un hold previo → capturar. Si no → cobrar directo.
+    // Venezuela: pago en efectivo — el conductor recibe el dinero del pasajero directamente.
+    // No hay integración con Stripe; el viaje se marca como pagado al finalizarlo.
     let stripePaymentIntentId: string | undefined;
-    let paymentStatus: 'completed' | 'failed' | 'pending' = 'pending';
-
-    try {
-      const actualAmountCents = Math.round(totalCharged * 100);
-      const existingHoldId    = (ride as any).stripe_payment_intent_id as string | null;
-
-      if (existingHoldId) {
-        // Capturar el hold pre-autorizado
-        const capture = await stripeService.captureRide({
-          paymentIntentId: existingHoldId,
-          amountCents:     actualAmountCents,
-        });
-        stripePaymentIntentId = existingHoldId;
-        paymentStatus = capture.status === 'succeeded' ? 'completed' : 'failed';
-        logger.info(`Hold capturado para viaje ${rideId}: ${capture.status}`);
-      } else {
-        // Sin hold — cobrar directamente (fallback para viajes legacy)
-        const [stripeCustomerId, defaultCard] = await Promise.all([
-          paymentRepository.getStripeCustomerId(ride.passenger_id),
-          paymentRepository.getDefault(ride.passenger_id),
-        ]);
-        if (stripeCustomerId && defaultCard) {
-          const charge = await stripeService.chargeRide({
-            stripeCustomerId,
-            paymentMethodId: defaultCard.stripe_payment_method_id,
-            amountCents:     actualAmountCents,
-            rideId,
-            passengerName:   ride.passenger_id,
-          });
-          stripePaymentIntentId = charge.paymentIntentId;
-          paymentStatus = charge.status === 'succeeded' ? 'completed' : 'failed';
-        }
-      }
-    } catch (err) {
-      logger.error('Fallo en cobro Stripe al completar viaje', { rideId, err });
-      paymentStatus = 'failed';
-    }
+    const paymentStatus: 'completed' | 'failed' | 'pending' = 'completed';
 
     // Completar viaje + registrar ganancia en una sola transacción (atómico)
-    // Si el UPDATE del ride falla, la ganancia no se registra (y viceversa)
+    // Queries secuenciales — pg no soporta client.query() concurrentes en el mismo cliente
     const { completedRide, driverStats } = await withTransaction(async (client) => {
-      const [updated] = await Promise.all([
-        client.query<Ride>(
-          `UPDATE rides SET
-             status = 'completed', completed_at = NOW(),
-             distance_km = $2, duration_minutes = $3,
-             base_fare = $4, distance_fare = $5, time_fare = $6,
-             surge_multiplier = $7, service_multiplier = $8,
-             subtotal = $9, platform_commission = $10,
-             driver_earnings = $11, total_charged = $12,
-             stripe_payment_intent_id = $13, payment_status = $14
-           WHERE id = $1 RETURNING *`,
-          [
-            rideId,
-            fareEstimate.distance_miles, fareEstimate.duration_minutes,
-            fareEstimate.base_fare, fareEstimate.distance_fare, fareEstimate.time_fare,
-            fareEstimate.surge_multiplier, fareEstimate.service_multiplier,
-            fareEstimate.subtotal, platformFee,
-            driverEarnings, fareEstimate.total,
-            stripePaymentIntentId ?? null, paymentStatus,
-          ]
-        ),
-        client.query(
-          `INSERT INTO driver_earnings (driver_id, ride_id, type, gross_amount, platform_fee, net_amount, description)
-           VALUES ($1, $2, 'ride', $3, $4, $5, 'Ganancia por viaje completado')`,
-          [driverId, rideId, fareEstimate.total, platformFee, driverEarnings]
-        ),
-      ]);
+      const updated = await client.query<Ride>(
+        `UPDATE rides SET
+           status = 'completed', completed_at = NOW(),
+           distance_km = $2, duration_minutes = $3,
+           base_fare = $4, distance_fare = $5, time_fare = $6,
+           surge_multiplier = $7, service_multiplier = $8,
+           subtotal = $9, platform_commission = $10,
+           driver_earnings = $11, total_charged = $12,
+           stripe_payment_intent_id = $13, payment_status = $14
+         WHERE id = $1 RETURNING *`,
+        [
+          rideId,
+          fareEstimate.distance_miles, fareEstimate.duration_minutes,
+          fareEstimate.base_fare, fareEstimate.distance_fare, fareEstimate.time_fare,
+          fareEstimate.surge_multiplier, fareEstimate.service_multiplier,
+          fareEstimate.subtotal, platformFee,
+          driverEarnings, fareEstimate.total,
+          stripePaymentIntentId ?? null, paymentStatus,
+        ]
+      );
 
       const completedRide = updated.rows[0];
       if (!completedRide) throw new Error('RIDE_NOT_FOUND');
 
-      const [statsResult] = await Promise.all([
-        client.query<{ total_rides: number }>(
-          `UPDATE drivers SET total_rides = COALESCE(total_rides,0)+1,
-             available_balance = COALESCE(available_balance,0)+$2
-           WHERE id = $1 RETURNING total_rides`,
-          [driverId, driverEarnings]
-        ),
-        client.query(
-          `UPDATE passengers SET total_rides = COALESCE(total_rides,0)+1 WHERE id = $1`,
-          [ride.passenger_id]
-        ),
-      ]);
+      await client.query(
+        `INSERT INTO driver_earnings (driver_id, ride_id, type, gross_amount, platform_fee, net_amount, description)
+         VALUES ($1, $2, 'ride', $3, $4, $5, 'Ganancia por viaje completado')`,
+        [driverId, rideId, fareEstimate.total, platformFee, driverEarnings]
+      );
+
+      const statsResult = await client.query<{ total_rides: number }>(
+        `UPDATE drivers SET total_rides = COALESCE(total_rides,0)+1,
+           available_balance = COALESCE(available_balance,0)+$2
+         WHERE id = $1 RETURNING total_rides`,
+        [driverId, driverEarnings]
+      );
+
+      await client.query(
+        `UPDATE passengers SET total_rides = COALESCE(total_rides,0)+1 WHERE id = $1`,
+        [ride.passenger_id]
+      );
 
       return { completedRide, driverStats: statsResult.rows[0] };
     });
@@ -650,8 +644,10 @@ export const rideService = {
       ).catch(() => {});
     }
 
-    // Limpiar estado del conductor en Redis
-    await redis.del(REDIS_KEYS.driverActiveRide(driverId));
+    // Limpiar estado del conductor en Redis (no bloquear si falla)
+    await redis.del(REDIS_KEYS.driverActiveRide(driverId)).catch((err: unknown) =>
+      logger.warn('Error limpiando Redis al completar viaje', { rideId, driverId, err })
+    );
 
     // Notificar al pasajero con el monto cobrado (socket + push)
     emitToUser(ride.passenger_id, 'passenger:ride_completed', {
@@ -726,58 +722,31 @@ export const rideService = {
       throw new Error('CANNOT_CANCEL_IN_STATUS');
     }
 
-    // Cobro por cancelación tardía (solo aplica al pasajero)
-    // Se cobra si el conductor ya llegó, o si pasaron más de FREE_WINDOW_MINUTES desde la asignación
+    // Fee por cancelación tardía (Venezuela — efectivo, el pasajero se lo da al conductor)
     let cancellationFee: number | undefined;
     if (role === 'passenger') {
       const driverArrived = ride.status === 'driver_arrived';
       const pastFreeWindow = (() => {
         if (!ride.driver_assigned_at) return false;
-        const assignedMs = new Date(ride.driver_assigned_at).getTime();
-        const elapsedMinutes = (Date.now() - assignedMs) / 60_000;
+        const elapsedMinutes = (Date.now() - new Date(ride.driver_assigned_at).getTime()) / 60_000;
         return elapsedMinutes > CANCELLATION.FREE_WINDOW_MINUTES;
       })();
 
       if (driverArrived || pastFreeWindow) {
-        cancellationFee = CANCELLATION.FEE_USD;
-
-        // 1. Cobrar al pasajero (fallo silencioso — el viaje se cancela igual)
-        try {
-          const [stripeCustomerId, defaultCard, passenger] = await Promise.all([
-            paymentRepository.getStripeCustomerId(ride.passenger_id),
-            paymentRepository.getDefault(ride.passenger_id),
-            passengerRepository.findById(ride.passenger_id),
-          ]);
-          if (stripeCustomerId && defaultCard) {
-            await stripeService.chargeRide({
-              stripeCustomerId,
-              paymentMethodId: defaultCard.stripe_payment_method_id,
-              amountCents:     Math.round(CANCELLATION.FEE_USD * 100),
-              rideId,
-              passengerName:   passenger?.name ?? 'Pasajero',
-            });
-          }
-        } catch (err) {
-          logger.warn(`Cancellation fee charge failed for ride ${rideId}`, err);
+        const pct = CANCELLATION.FEE_PCT[ride.service_type];
+        if (pct !== undefined) {
+          const base = ride.initial_estimated_fare ?? ride.offered_price ?? 0;
+          cancellationFee = Math.round(base * pct * 100) / 100;
+        } else {
+          cancellationFee = CANCELLATION.FEE_FIXED[ride.service_type] ?? CANCELLATION.DEFAULT_FIXED;
         }
 
-        // 2. Acreditar al conductor (siempre, independiente del cobro)
         if (ride.driver_id) {
           try {
             await Promise.all([
-              rideRepository.recordCancellationFeeEarning(ride.driver_id, rideId, CANCELLATION.FEE_USD),
-              rideRepository.updateDriverStats(ride.driver_id, CANCELLATION.FEE_USD),
+              rideRepository.recordCancellationFeeEarning(ride.driver_id, rideId, cancellationFee),
+              rideRepository.updateDriverStats(ride.driver_id, cancellationFee),
             ]);
-            // Transferir a Stripe Connect si el conductor tiene cuenta verificada
-            const driverStripeInfo = await paymentRepository.getDriverStripeInfo(ride.driver_id);
-            if (driverStripeInfo?.stripe_account_id && driverStripeInfo.stripe_account_verified) {
-              await stripeService.transferToDriver({
-                stripeAccountId: driverStripeInfo.stripe_account_id,
-                amountCents:     Math.round(CANCELLATION.FEE_USD * 100),
-                rideId,
-                driverId:        ride.driver_id,
-              });
-            }
           } catch (err) {
             logger.warn(`Cancellation fee driver credit failed for ride ${rideId}`, err);
           }
@@ -791,14 +760,6 @@ export const rideService = {
       cancellationFee,
     });
     if (!updated) throw new Error('RIDE_NOT_FOUND');
-
-    // Liberar el hold de Stripe si existe y no se cobró la tarifa de cancelación
-    const holdId = (ride as any).stripe_payment_intent_id as string | null;
-    if (holdId && !cancellationFee) {
-      stripeService.releaseHold(holdId).catch(err =>
-        logger.warn(`No se pudo liberar hold ${holdId} para viaje ${rideId}`, err)
-      );
-    }
 
     // Limpiar Redis si hay conductor asignado
     if (ride.driver_id) {
@@ -930,6 +891,82 @@ export const rideService = {
     return { waitMinutes, waitFare };
   },
 
+  // ──────────��──────────────────────────
+  // CONTRA-OFERTA DEL CONDUCTOR (solo carga)
+  // ────────────────────���────────────────
+  submitCounterOffer: async (rideId: string, driverId: string, counterPrice: number, counterReason: string): Promise<void> => {
+    const ride = await rideRepository.findById(rideId);
+    if (!ride) throw new Error('RIDE_NOT_FOUND');
+    if (ride.service_type !== 'carga') throw new Error('NOT_CARGA_RIDE');
+    if (!['searching', 'price_negotiation'].includes(ride.status)) throw new Error('INVALID_RIDE_STATUS');
+
+    await rideRepository.updateCounterOffer(rideId, driverId, counterPrice, counterReason);
+
+    // Extender TTL del pending para dar tiempo al pasajero (5 minutos)
+    await redis.expire(`ride:pending:${rideId}`, 5 * 60);
+
+    // Obtener nombre del conductor para el pasajero
+    const driverData = await driverRepository.findById(driverId);
+    emitToUser(ride.passenger_id, 'passenger:counter_offer', {
+      rideId,
+      counterPrice,
+      counterReason,
+      driverName: driverData?.name ?? 'Conductor',
+    });
+
+    logger.info(`Contra-oferta: viaje=${rideId} conductor=${driverId} precio=$${counterPrice}`);
+  },
+
+  // ───────���─────────────────────────────
+  // RESPUESTA DEL PASAJERO A LA CONTRA-OFERTA
+  // ────────���─────────────────��──────────
+  respondToCounterOffer: async (rideId: string, passengerId: string, accept: boolean): Promise<void> => {
+    const ride = await rideRepository.findById(rideId);
+    if (!ride) throw new Error('RIDE_NOT_FOUND');
+    if (ride.passenger_id !== passengerId) throw new Error('NOT_YOUR_RIDE');
+    if (ride.status !== 'price_negotiation') throw new Error('INVALID_RIDE_STATUS');
+
+    const counterDriverId = (ride as any).counter_driver_id as string | null;
+    if (!counterDriverId) throw new Error('NO_COUNTER_OFFER');
+
+    if (accept) {
+      const updated = await rideRepository.acceptCounterOffer(rideId);
+      if (!updated) throw new Error('RIDE_NOT_FOUND');
+
+      // Liberar la clave pending → waitForDriverResponse resolverá true
+      await redis.del(`ride:pending:${rideId}`);
+      await redis.setex(REDIS_KEYS.driverActiveRide(counterDriverId), 7200, rideId);
+
+      const [driver, passenger] = await Promise.all([
+        driverRepository.findById(counterDriverId),
+        passengerRepository.findById(passengerId),
+      ]);
+
+      emitToUser(passengerId, 'passenger:driver_assigned', {
+        rideId,
+        driver: {
+          id: driver?.id, name: driver?.name, photo_url: driver?.photo_url,
+          rating_avg: driver?.rating_avg, vehicle_brand: driver?.vehicle_brand,
+          vehicle_model: driver?.vehicle_model, vehicle_color: driver?.vehicle_color,
+          vehicle_plate: driver?.vehicle_plate,
+        },
+      });
+      emitToUser(counterDriverId, 'driver:passenger_assigned', {
+        rideId,
+        passenger: { id: passenger?.id, name: passenger?.name, photo_url: passenger?.photo_url },
+      });
+      emitToAdmins('admin:ride_status_changed', { rideId, status: 'driver_assigned', driverId: counterDriverId });
+      logger.info(`Contra-oferta aceptada: viaje=${rideId} conductor=${counterDriverId}`);
+    } else {
+      // Rechazar: resetear y seguir buscando
+      await rideRepository.rejectCounterOffer(rideId);
+      // Liberar la clave pending → waitForDriverResponse resolverá false → búsqueda continúa
+      await redis.del(`ride:pending:${rideId}`);
+      emitToUser(counterDriverId, 'driver:counter_rejected', { rideId });
+      logger.info(`Contra-oferta rechazada: viaje=${rideId} conductor=${counterDriverId}`);
+    }
+  },
+
   submitRating: async (params: {
     rideId: string;
     raterId: string;
@@ -973,7 +1010,8 @@ async function searchAndNotifyDrivers(
   serviceType: string,
   passengerId: string,
   estimatedFare: number = 0,
-  tripDistanceMiles: number = 0
+  tripDistanceMiles: number = 0,
+  deliveryVehicle?: string
 ): Promise<void> {
   const triedDriverIds = new Set<string>();
   let currentRadiusIndex = 0;
@@ -1019,11 +1057,15 @@ async function searchAndNotifyDrivers(
       return;
     }
 
-    // Buscar conductores disponibles en el radio (PostGIS ST_DWithin)
+    // Para encomienda con vehículo específico, buscar ese tipo de conductor
+    const matchServiceType = (serviceType === 'encomienda' && deliveryVehicle)
+      ? deliveryVehicle
+      : serviceType;
+
     let nearbyDrivers = await driverRepository.findNearby(
       pickup.lng, pickup.lat,
       radiusKm * 1000,
-      serviceType,
+      matchServiceType,
       10
     );
 
@@ -1110,6 +1152,8 @@ async function searchAndNotifyDrivers(
         // Encomienda / Delivery
         packageDescription: rideAny2.package_description ?? null,
         packageSize:        rideAny2.package_size        ?? null,
+        senderName:         rideAny2.sender_name         ?? null,
+        senderPhone:        rideAny2.sender_phone        ?? null,
         recipientName:      rideAny2.recipient_name      ?? null,
         recipientPhone:     rideAny2.recipient_phone     ?? null,
       });
@@ -1191,6 +1235,11 @@ async function waitForDriverResponse(rideId: string, driverId: string): Promise<
         }
 
         if (elapsed >= DRIVER_ACCEPT_TIMEOUT_MS) {
+          // Si el pasajero está revisando una contra-oferta, esperar hasta 5 minutos
+          if (elapsed < 5 * 60 * 1000) {
+            const rideNow = await rideRepository.findById(rideId).catch(() => null);
+            if (rideNow?.status === 'price_negotiation') return;
+          }
           clearInterval(interval);
           try { await redis.del(`ride:pending:${rideId}`); } catch { /* ignorar */ }
           safeResolve(false);

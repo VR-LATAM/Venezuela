@@ -149,6 +149,11 @@ export const driverService = {
     return updated;
   },
 
+  saveContractSignature: async (driverId: string, signature: string): Promise<void> => {
+    if (!signature || signature.trim().length === 0) throw new Error('INVALID_SIGNATURE');
+    await driverRepository.saveContractSignature(driverId, signature);
+  },
+
   // ─────────────────────────────────────
   // Aprobar conductor (admin)
   // ─────────────────────────────────────

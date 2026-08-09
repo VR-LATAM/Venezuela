@@ -58,7 +58,6 @@ const envSchema = z.object({
   DRIVER_SEARCH_MAX_RADIUS_KM: z.string().default('150').transform(Number),
   DRIVER_ACCEPT_TIMEOUT_SECONDS: z.string().default('30').transform(Number),
   PASSENGER_FREE_CANCEL_MINUTES: z.string().default('2').transform(Number),
-  CANCELLATION_FEE_USD: z.string().default('3.00').transform(Number),
   DRIVER_MIN_WITHDRAWAL_USD: z.string().default('10.00').transform(Number),
   DRIVER_REFERRAL_BONUS_USD: z.string().default('600.00').transform(Number),
   DRIVER_REFERRAL_RIDES_REQUIRED: z.string().default('50').transform(Number),

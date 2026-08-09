@@ -22,6 +22,10 @@ const SERVICE_MULTIPLIERS: Record<ServiceType, number> = {
   scheduled:       1.0,
   hourly:          1.0,
   wait_and_return: 1.0,
+  encomienda:      1.0,
+  pickup:          1.4,
+  plataforma:      1.8,
+  carga:           2.0,
 };
 
 // ─────────────────────────────────────
@@ -136,6 +140,9 @@ export async function calculateFareEstimate(params: {
   driverEtaMinutes?: number;
   estimatedWaitMinutes?: number;
   hourlyPackageHours?: number;
+  packageSize?: 'small' | 'medium' | 'large';
+  deliveryVehicle?: 'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma';
+  cargaVehicle?: '350' | 'npr';
 }): Promise<FareEstimate> {
   // Configuración del estado (tarifas configurables por admin)
   let stateConfig: USState | null = null;
@@ -155,11 +162,27 @@ export async function calculateFareEstimate(params: {
   const motorcycleMultiplier = +(stateConfig?.motorcycle_multiplier ?? 0.75);
   const suvMultiplier        = +(stateConfig?.suv_multiplier        ?? 1.30);
 
-  // Multiplicador de servicio según tipo de vehículo
-  const serviceMultiplier =
-    params.serviceType === 'motorcycle' ? motorcycleMultiplier :
-    params.serviceType === 'suv'        ? suvMultiplier        :
-    1.0;
+  // Encomienda: pasajero elige vehículo; siempre 40% más barato que transporte de personas
+  // Carga: vehículo pesado (350 o NPR), precio de referencia para la negociación
+  // Otros servicios: multiplicador fijo por tipo de vehículo
+  let serviceMultiplier: number;
+  if (params.serviceType === 'encomienda') {
+    const vehicle = params.deliveryVehicle ?? 'motorcycle';
+    const vehicleBase =
+      vehicle === 'motorcycle' ? motorcycleMultiplier :
+      vehicle === 'suv'        ? suvMultiplier        :
+      1.0;
+    serviceMultiplier = vehicleBase * 0.60;
+  } else if (params.serviceType === 'carga') {
+    serviceMultiplier = params.cargaVehicle === 'npr' ? 2.5 : 2.0;
+  } else {
+    serviceMultiplier =
+      params.serviceType === 'motorcycle' ? motorcycleMultiplier :
+      params.serviceType === 'suv'        ? suvMultiplier        :
+      params.serviceType === 'pickup'     ? 1.20                 :
+      params.serviceType === 'plataforma' ? 1.60                 :
+      1.0;
+  }
 
   // Surge pricing (hora pico)
   const surgeMultiplier = isSurgeHour() ? +(stateConfig?.surge_multiplier ?? 1.5) : 1.0;
@@ -236,11 +259,19 @@ export async function calculateFareEstimate(params: {
   const safeDistMiles   = isFinite(distanceMiles)   ? distanceMiles   : 0;
   const safeDurationMin = isFinite(durationMinutes) ? durationMinutes : 0;
 
+  // Mínimo diferenciado: encomienda más barato, plataforma más caro
+  const effectiveMinFare =
+    params.serviceType === 'encomienda' ? Math.min(minFare, 2.00) :
+    params.serviceType === 'pickup'     ? Math.max(minFare, 6.00) :
+    params.serviceType === 'plataforma' ? Math.max(minFare, 10.00) :
+    params.serviceType === 'carga'      ? Math.max(minFare, 15.00) :
+    minFare;
+
   // Tarifa desglosada en millas
   const distanceFare = safeDistMiles   * pricePerMile;
   const timeFare     = safeDurationMin * pricePerMin;
   const rawSubtotal  = (baseFare + distanceFare + timeFare) * serviceMultiplier * surgeMultiplier;
-  const subtotal     = Math.max(rawSubtotal, minFare);
+  const subtotal     = Math.max(rawSubtotal, effectiveMinFare);
   const total        = Math.round(subtotal * 100) / 100;
   const { ves, rate } = await convertToVES(total);
 

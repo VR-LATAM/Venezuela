@@ -16,7 +16,8 @@ export type Language = 'es' | 'en';
 export type ServiceType =
   | 'motorcycle' | 'sedan' | 'suv'
   | 'scheduled' | 'hourly' | 'wait_and_return'
-  | 'encomienda' | 'pickup' | 'plataforma';
+  | 'encomienda' | 'pickup' | 'plataforma'
+  | 'carga';
 
 // ─────────────────────────────────────
 // ESTADOS DEL VIAJE
@@ -30,7 +31,8 @@ export type RideStatus =
   | 'completed'
   | 'cancelled_passenger'
   | 'cancelled_driver'
-  | 'no_driver_found';
+  | 'no_driver_found'
+  | 'price_negotiation';
 
 // ─────────────────────────────────────
 // ESTADOS DEL CONDUCTOR
@@ -290,6 +292,13 @@ export interface Ride {
   package_size?: 'small' | 'medium' | 'large';
   recipient_name?: string;
   recipient_phone?: string;
+  delivery_vehicle?: string;
+  initial_estimated_fare?: number;
+  // Carga — negociación de precio
+  offered_price?: number;
+  counter_price?: number;
+  counter_reason?: string;
+  counter_driver_id?: string;
   // Relaciones populadas (para UI)
   passenger?: Passenger;
   driver?: Driver;

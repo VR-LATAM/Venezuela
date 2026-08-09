@@ -45,8 +45,22 @@ export const DRIVER_SEARCH = {
 // CANCELACIÓN
 // ─────────────────────────────────────
 export const CANCELLATION = {
-  FREE_WINDOW_MINUTES: 2,     // Primeros 2 minutos: cancelación gratis
-  FEE_USD: 3.00,              // Cargo por cancelar después de 2 minutos
+  FREE_WINDOW_MINUTES: 2,
+  /* Moto / Sedán / SUV: tarifa fija en USD */
+  FEE_FIXED: {
+    motorcycle: 0.75,
+    sedan:      0.80,
+    suv:        0.90,
+    scheduled:  0.80,
+  } as Record<string, number>,
+  /* Encomienda / Carga: porcentaje de la tarifa estimada */
+  FEE_PCT: {
+    encomienda: 0.25,
+    pickup:     0.35,
+    plataforma: 0.35,
+    carga:      0.35,
+  } as Record<string, number>,
+  DEFAULT_FIXED: 0.80,
 } as const;
 
 // ─────────────────────────────────────

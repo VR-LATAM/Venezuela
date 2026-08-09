@@ -20,7 +20,7 @@ import { redis } from '../config/redis';
 import { sendSuccess, sendCreated, sendError } from '../utils/response';
 import { ServiceType } from '@vride/shared';
 
-const SERVICE_TYPES = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly', 'wait_and_return', 'encomienda', 'pickup', 'plataforma'] as const;
+const SERVICE_TYPES = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly', 'wait_and_return', 'encomienda', 'pickup', 'plataforma', 'carga'] as const;
 
 export const rideController = {
   // POST /ride/estimate — estimar tarifa antes de confirmar
@@ -36,6 +36,9 @@ export const rideController = {
         stateCode:             z.string().length(2).default('TX'),
         estimatedWaitMinutes:  z.number().int().min(1).max(480).optional(),
         hourlyPackageHours:    z.number().int().min(1).max(12).optional(),
+        packageSize:           z.enum(['small', 'medium', 'large']).optional(),
+        deliveryVehicle:       z.enum(['motorcycle', 'sedan', 'suv', 'pickup', 'plataforma']).optional(),
+        cargaVehicle:          z.enum(['350', 'npr']).optional(),
       });
       const body = schema.parse(req.body);
 
@@ -67,6 +70,9 @@ export const rideController = {
         stateCode:            body.stateCode,
         estimatedWaitMinutes: body.estimatedWaitMinutes,
         hourlyPackageHours:   body.hourlyPackageHours,
+        packageSize:          body.packageSize,
+        deliveryVehicle:      body.deliveryVehicle,
+        cargaVehicle:         body.cargaVehicle,
       });
 
       sendSuccess(res, estimate);
@@ -97,10 +103,16 @@ export const rideController = {
         estimatedWaitMinutes: z.number().int().min(1).max(480).optional(),
         hourlyPackageHours:   z.number().int().min(1).max(12).optional(),
         // Encomienda / Delivery
-        packageDescription: z.string().max(200).optional(),
+        packageDescription: z.string().max(500).optional(),
         packageSize:        z.enum(['small', 'medium', 'large']).optional(),
+        senderName:         z.string().max(100).optional(),
+        senderPhone:        z.string().max(30).optional(),
         recipientName:      z.string().max(100).optional(),
         recipientPhone:     z.string().max(30).optional(),
+        deliveryVehicle:    z.enum(['motorcycle', 'sedan', 'suv', 'pickup', 'plataforma']).optional(),
+        // Carga
+        cargaVehicle:       z.enum(['350', 'npr']).optional(),
+        offeredPrice:       z.number().positive().max(10000).optional(),
       });
       const body = schema.parse(req.body);
 
@@ -148,8 +160,13 @@ export const rideController = {
         hourlyPackageHours:   body.hourlyPackageHours,
         packageDescription:   body.packageDescription,
         packageSize:          body.packageSize,
+        senderName:           body.senderName,
+        senderPhone:          body.senderPhone,
         recipientName:        body.recipientName,
         recipientPhone:       body.recipientPhone,
+        deliveryVehicle:      body.deliveryVehicle,
+        cargaVehicle:         body.cargaVehicle,
+        offeredPrice:         body.offeredPrice,
       });
 
       // Guardar paradas intermedias si las hay
@@ -469,6 +486,67 @@ export const rideController = {
     } catch (err) { next(err); }
   },
 
+  // GET /ride/geocode?address=... — geocodificar una dirección
+  geocodeAddress: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const address = (req.query['address'] as string ?? '').trim();
+      if (!address || address.length < 3) {
+        sendError(res, 422, 'Address too short', 'INVALID_ADDRESS');
+        return;
+      }
+      const coords = await geocodeAddress(address);
+      sendSuccess(res, coords ?? null);
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  // POST /ride/:rideId/counter-offer — conductor envía contra-oferta (solo carga)
+  counterOffer: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const schema = z.object({
+        counterPrice:  z.number().positive().max(10000),
+        counterReason: z.string().min(5).max(300),
+      });
+      const { counterPrice, counterReason } = schema.parse(req.body);
+      await rideService.submitCounterOffer(
+        req.params['rideId'] ?? '',
+        req.user!.userId,
+        counterPrice,
+        counterReason
+      );
+      sendSuccess(res, { sent: true });
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message === 'RIDE_NOT_FOUND')      { sendError(res, 404, 'Ride not found', 'NOT_FOUND'); return; }
+        if (err.message === 'NOT_CARGA_RIDE')       { sendError(res, 422, 'Only carga rides support counter-offers', 'INVALID_SERVICE'); return; }
+        if (err.message === 'INVALID_RIDE_STATUS')  { sendError(res, 409, 'Ride is not in a valid state for counter-offer', 'INVALID_STATUS'); return; }
+      }
+      next(err);
+    }
+  },
+
+  // POST /ride/:rideId/respond-counter — pasajero acepta o rechaza contra-oferta
+  respondCounter: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { accept } = z.object({ accept: z.boolean() }).parse(req.body);
+      await rideService.respondToCounterOffer(
+        req.params['rideId'] ?? '',
+        req.user!.userId,
+        accept
+      );
+      sendSuccess(res, { processed: true });
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.message === 'RIDE_NOT_FOUND')      { sendError(res, 404, 'Ride not found', 'NOT_FOUND'); return; }
+        if (err.message === 'NOT_YOUR_RIDE')        { sendError(res, 403, 'Not your ride', 'FORBIDDEN'); return; }
+        if (err.message === 'INVALID_RIDE_STATUS')  { sendError(res, 409, 'No counter-offer pending', 'INVALID_STATUS'); return; }
+        if (err.message === 'NO_COUNTER_OFFER')     { sendError(res, 409, 'No counter-offer to respond to', 'INVALID_STATUS'); return; }
+      }
+      next(err);
+    }
+  },
+
   // GET /ride/track/:token — seguimiento público por token (no requiere auth)
   trackByToken: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
@@ -502,6 +580,8 @@ function handleRideError(err: unknown, res: Response, next: NextFunction): void 
       case 'INVALID_RIDE_STATUS':
         sendError(res, 409, 'Ride is not in the correct status for this action', 'INVALID_STATUS'); return;
     }
+    sendError(res, 500, 'Internal server error', 'INTERNAL_ERROR');
+    return;
   }
   next(err);
 }

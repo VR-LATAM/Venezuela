@@ -29,7 +29,7 @@ export default function TrainingQuizScreen() {
   const [phase, setPhase]         = useState<QuizPhase>('loading');
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [moduleTitle, setModuleTitle] = useState('');
-  const [passingScore, setPassingScore] = useState(8);
+  const [passingScore, setPassingScore] = useState(10);
   const [totalQ, setTotalQ]       = useState(10);
 
   // Respuestas seleccionadas: {question_id: selected_key}

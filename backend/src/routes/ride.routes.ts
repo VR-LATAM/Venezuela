@@ -30,6 +30,9 @@ router.use(requireAuth, userLimiter);
 // Estimación de tarifa (passenger y driver pueden calcular)
 router.post('/estimate', rideController.estimate);
 
+// Geocodificar dirección (para pickup personalizado en delivery)
+router.get('/geocode', rideController.geocodeAddress);
+
 // Solicitar viaje — solo pasajeros
 router.post('/request', requireRole('passenger'), rideController.requestRide);
 
@@ -47,10 +50,14 @@ router.get ('/:rideId/receipt',    rideController.getReceipt);
 router.post('/:rideId/share',      requireRole('passenger'), rideController.createShareToken);
 
 // Solo conductores pueden avanzar el estado del viaje
-router.post('/:rideId/arrived',             requireRole('driver'), rideController.driverArrived);
-router.post('/:rideId/start',               requireRole('driver'), rideController.startRide);
-router.post('/:rideId/complete',            requireRole('driver'), rideController.completeRide);
+router.post('/:rideId/arrived',             requireRole('driver'),    rideController.driverArrived);
+router.post('/:rideId/start',               requireRole('driver'),    rideController.startRide);
+router.post('/:rideId/complete',            requireRole('driver'),    rideController.completeRide);
 router.get ('/:rideId/stops',               rideController.getStops);
-router.post('/:rideId/stops/:stopId/arrive', requireRole('driver'), rideController.markStopArrived);
+router.post('/:rideId/stops/:stopId/arrive', requireRole('driver'),   rideController.markStopArrived);
+
+// Negociación de precio para Carga
+router.post('/:rideId/counter-offer',       requireRole('driver'),    rideController.counterOffer);
+router.post('/:rideId/respond-counter',     requireRole('passenger'), rideController.respondCounter);
 
 export default router;

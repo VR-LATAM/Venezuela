@@ -40,8 +40,14 @@ export interface CreateRideParams {
   // Encomienda / Delivery
   packageDescription?: string;
   packageSize?: 'small' | 'medium' | 'large';
+  senderName?: string;
+  senderPhone?: string;
   recipientName?: string;
   recipientPhone?: string;
+  deliveryVehicle?: string;
+  // Carga — precio ofrecido por el pasajero
+  offeredPrice?: number;
+  initialEstimatedFare?: number;
 }
 
 export interface RideStop {
@@ -83,13 +89,17 @@ export const rideRepository = {
          promo_code, promo_discount,
          estimated_wait_minutes, hourly_package_hours,
          package_description, package_size,
-         recipient_name, recipient_phone
+         sender_name, sender_phone,
+         recipient_name, recipient_phone,
+         delivery_vehicle, offered_price,
+         initial_estimated_fare
        ) VALUES (
          $1, $2,
          $3, ST_MakePoint($5, $4)::geography,
          $6, ST_MakePoint($8, $7)::geography,
          $9, $10, $11, $12, $13, $14,
-         $15, $16, $17, $18
+         $15, $16, $17, $18, $19, $20, $21, $22,
+         $23
        ) RETURNING *,
          $4 AS pickup_lat, $5 AS pickup_lng,
          $7 AS dropoff_lat, $8 AS dropoff_lng`,
@@ -107,8 +117,13 @@ export const rideRepository = {
         params.hourlyPackageHours ?? null,
         params.packageDescription ?? null,
         params.packageSize ?? null,
+        params.senderName ?? null,
+        params.senderPhone ?? null,
         params.recipientName ?? null,
         params.recipientPhone ?? null,
+        params.deliveryVehicle ?? null,
+        params.offeredPrice ?? null,
+        params.initialEstimatedFare ?? null,
       ]
     ),
 
@@ -367,6 +382,41 @@ export const rideRepository = {
        WHERE p.id = $1
        RETURNING rating_avg`,
       [passengerId]
+    ),
+
+  // Carga — conductor envía contra-oferta
+  updateCounterOffer: (rideId: string, driverId: string, counterPrice: number, counterReason: string) =>
+    queryOne<Ride>(
+      `UPDATE rides
+       SET counter_price = $2, counter_reason = $3, counter_driver_id = $4, status = 'price_negotiation'
+       WHERE id = $1 AND status IN ('searching', 'price_negotiation')
+       RETURNING *`,
+      [rideId, counterPrice, counterReason, driverId]
+    ),
+
+  // Carga — pasajero acepta la contra-oferta
+  acceptCounterOffer: (rideId: string) =>
+    queryOne<Ride>(
+      `UPDATE rides
+       SET driver_id = counter_driver_id, status = 'driver_assigned', driver_assigned_at = NOW()
+       WHERE id = $1 AND status = 'price_negotiation'
+       RETURNING *,
+         ST_Y(pickup_location::geometry)  AS pickup_lat,
+         ST_X(pickup_location::geometry)  AS pickup_lng,
+         ST_Y(dropoff_location::geometry) AS dropoff_lat,
+         ST_X(dropoff_location::geometry) AS dropoff_lng`,
+      [rideId]
+    ),
+
+  // Carga — pasajero rechaza la contra-oferta, vuelve a buscar
+  rejectCounterOffer: (rideId: string) =>
+    queryOne<{ counter_driver_id: string | null }>(
+      `UPDATE rides
+       SET counter_price = NULL, counter_reason = NULL,
+           counter_driver_id = NULL, status = 'searching'
+       WHERE id = $1 AND status = 'price_negotiation'
+       RETURNING counter_driver_id`,
+      [rideId]
     ),
 
   // Historial de viajes (pasajero o conductor)

@@ -22,6 +22,7 @@ router.get('/profile',                         driverController.getProfile);
 router.patch('/profile',                       driverController.updateProfile);
 router.post('/documents/:docType',
   upload.single('file'),                       driverController.uploadDocument);
+router.post('/save-contract',                  driverController.saveContractSignature);
 router.post('/submit-review',                  driverController.submitForReview);
 router.patch('/online',                        driverController.updateOnlineStatus);
 router.get('/acceptance-rate',                 driverController.getAcceptanceRate);

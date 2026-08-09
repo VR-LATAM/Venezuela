@@ -12,12 +12,14 @@
 // Paso 8: Revisión y envío
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput,
   SafeAreaView, KeyboardAvoidingView, Platform,
   ActivityIndicator, Alert, ScrollView, Modal, FlatList, Image,
+  PanResponder,
 } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
 import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
@@ -129,7 +131,15 @@ interface DocState {
 
 const emptyDoc = (): DocState => ({ uri: null, uploading: false, uploaded: false });
 
-const TOTAL_STEPS = 8;
+const TOTAL_STEPS = 9;
+
+const WEEKLY_FEE: Record<string, number> = {
+  motorcycle: 15,
+  sedan:      25,
+  suv:        30,
+  pickup:     35,
+  plataforma: 40,
+};
 
 export default function RegisterDriverScreen() {
   const { registerDriver, setDriverWizardActive, isLoading: isCreatingAccount } = useAuthStore();
@@ -182,6 +192,45 @@ export default function RegisterDriverScreen() {
   const [longDistanceAvailable, setLongDistanceAvailable] = useState(false);
   const [musicPreference, setMusicPreference]   = useState('any');
   const [musicArtist, setMusicArtist]           = useState('');
+
+  // ── PASO 9: Contrato y firma ──
+  const livePathRef   = useRef('');
+  const [committedPaths, setCommittedPaths] = useState<string[]>([]);
+  const [livePath, setLivePath]             = useState('');
+  const [scrollEnabled, setScrollEnabled]   = useState(true);
+  const signaturePanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder:  () => true,
+      onPanResponderGrant: (e) => {
+        setScrollEnabled(false);
+        const { locationX: x, locationY: y } = e.nativeEvent;
+        livePathRef.current = `M${x.toFixed(1)},${y.toFixed(1)}`;
+        setLivePath(livePathRef.current);
+      },
+      onPanResponderMove: (e) => {
+        const { locationX: x, locationY: y } = e.nativeEvent;
+        livePathRef.current += ` L${x.toFixed(1)},${y.toFixed(1)}`;
+        setLivePath(livePathRef.current);
+      },
+      onPanResponderRelease: () => {
+        setScrollEnabled(true);
+        if (livePathRef.current) {
+          setCommittedPaths(prev => [...prev, livePathRef.current]);
+          livePathRef.current = '';
+          setLivePath('');
+        }
+      },
+    })
+  ).current;
+
+  const clearSignature = () => {
+    setCommittedPaths([]);
+    livePathRef.current = '';
+    setLivePath('');
+  };
+
+  const hasSignature = committedPaths.length > 0;
 
   // ── Documentos ──
   const [docs, setDocs] = useState<Record<DocumentType, DocState>>({
@@ -563,11 +612,17 @@ export default function RegisterDriverScreen() {
   // PASO 8 → Enviar para revisión
   // ─────────────────────────────────────
   const handleSubmitReview = async () => {
+    if (!hasSignature) {
+      Alert.alert('Firma requerida', 'Por favor firma el contrato antes de continuar.');
+      return;
+    }
     setIsSubmittingReview(true);
     try {
+      const signatureData = JSON.stringify(committedPaths);
+      await driverMobileService.saveContractSignature(signatureData);
       await driverMobileService.submitForReview();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setDriverWizardActive(false); // Permite que el layout redirija a verify-email
+      setDriverWizardActive(false);
       router.replace('/(auth)/verify-email');
     } catch (err) {
       const msg = err instanceof Error ? err.message : '';
@@ -652,7 +707,8 @@ export default function RegisterDriverScreen() {
     'Fotos del vehículo',
     'Certificaciones',
     'Idiomas y equipamiento',
-    'Revisión y envío',
+    'Revisión',
+    'Contrato y firma',
   ];
 
   const progressPercent = ((step - 1) / (TOTAL_STEPS - 1)) * 100;
@@ -689,6 +745,7 @@ export default function RegisterDriverScreen() {
           contentContainerStyle={styles.scroll}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
+          scrollEnabled={scrollEnabled}
         >
 
           {/* ══════════════════════════════
@@ -1356,14 +1413,175 @@ export default function RegisterDriverScreen() {
               </View>
 
               <TouchableOpacity
-                style={[styles.submitButton, isSubmittingReview && styles.buttonDisabled]}
+                style={styles.submitButton}
+                onPress={() => setStep(9)}
+                accessibilityRole="button"
+              >
+                <Text style={styles.primaryButtonText}>Continuar al contrato →</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* ── PASO 9: CONTRATO Y FIRMA ── */}
+          {step === 9 && (
+            <View>
+              <Text style={styles.stepHint}>
+                Lee el contrato completo y firma con el dedo al final.
+              </Text>
+
+              {/* Texto del contrato */}
+              <View style={styles.contractBox}>
+                <Text style={styles.contractTitle}>
+                  CONTRATO DE PRESTACIÓN DE SERVICIOS{'\n'}CONDUCTOR INDEPENDIENTE — VERONA RIDE VENEZUELA
+                </Text>
+
+                <Text style={styles.contractBody}>
+                  Yo, <Text style={styles.contractBold}>{name.trim() || '___________'}</Text>,
+                  titular de la Cédula de Identidad N°{' '}
+                  <Text style={styles.contractBold}>{cedulaNumber.trim() || '___________'}</Text>,
+                  con número de teléfono{' '}
+                  <Text style={styles.contractBold}>{phone.trim() || '___________'}</Text>,
+                  correo electrónico{' '}
+                  <Text style={styles.contractBold}>{email.trim() || '___________'}</Text>,
+                  domiciliado en el estado{' '}
+                  <Text style={styles.contractBold}>{selectedStateName}</Text>, Venezuela,
+                  en adelante EL CONDUCTOR, celebro el presente contrato de prestación
+                  de servicios con VERONA RIDE, bajo las siguientes cláusulas:
+                </Text>
+
+                <Text style={styles.contractClause}>PRIMERA — NATURALEZA DEL SERVICIO</Text>
+                <Text style={styles.contractBody}>
+                  EL CONDUCTOR prestará servicios de transporte y/o encomiendas a través
+                  de la plataforma VERONA Ride, operando como trabajador independiente.
+                  No existe relación laboral ni de dependencia entre EL CONDUCTOR y LA PLATAFORMA.
+                </Text>
+
+                <Text style={styles.contractClause}>SEGUNDA — MEMBRESÍA SEMANAL</Text>
+                <Text style={styles.contractBody}>
+                  EL CONDUCTOR se compromete a pagar la membresía semanal de{' '}
+                  <Text style={styles.contractBold}>
+                    ${WEEKLY_FEE[vehicleType] ?? 25} USD
+                  </Text>{' '}
+                  correspondiente al vehículo tipo{' '}
+                  <Text style={styles.contractBold}>
+                    {VEHICLE_TYPE_OPTIONS.find(v => v.key === vehicleType)?.label ?? vehicleType}
+                  </Text>{' '}
+                  por semana (período viernes a jueves), antes de iniciar operaciones cada semana.
+                </Text>
+
+                <Text style={styles.contractClause}>TERCERA — COMISIÓN</Text>
+                <Text style={styles.contractBody}>
+                  VERONA Ride Venezuela opera con{' '}
+                  <Text style={styles.contractBold}>CERO POR CIENTO (0%)</Text> de comisión.
+                  EL CONDUCTOR conserva el 100% del valor cobrado por cada servicio prestado.
+                </Text>
+
+                <Text style={styles.contractClause}>CUARTA — TARIFAS Y FORMA DE COBRO</Text>
+                <Text style={styles.contractBody}>
+                  El cobro se realiza en dólares estadounidenses (USD) en efectivo.
+                  Las tarifas son calculadas automáticamente por la plataforma según distancia,
+                  tiempo y tipo de servicio. Los montos en bolívares se expresan conforme
+                  a la tasa BCV vigente.
+                </Text>
+
+                <Text style={styles.contractClause}>QUINTA — PENALIZACIÓN POR CANCELACIÓN</Text>
+                <Text style={styles.contractBody}>
+                  Las cancelaciones después de 2 minutos de gracia conllevan:{'\n'}
+                  {'  '}• Motocicleta: USD 0,75 fijos{'\n'}
+                  {'  '}• Sedán: USD 0,80 fijos{'\n'}
+                  {'  '}• SUV: USD 0,90 fijos{'\n'}
+                  {'  '}• Encomienda: 25% de la tarifa estimada{'\n'}
+                  {'  '}• Pick-Up / Plataforma / Carga: 35% de la tarifa estimada
+                </Text>
+
+                <Text style={styles.contractClause}>SEXTA — CÓDIGO DE CONDUCTA</Text>
+                <Text style={styles.contractBody}>
+                  EL CONDUCTOR se compromete a:{'\n'}
+                  {'  '}a) Mantener una calificación mínima de 4,5 estrellas.{'\n'}
+                  {'  '}b) No operar bajo efectos de alcohol, drogas u otras sustancias.{'\n'}
+                  {'  '}c) Mantener el vehículo limpio y en condiciones mecánicas óptimas.{'\n'}
+                  {'  '}d) Tratar a los pasajeros con respeto y profesionalismo.{'\n'}
+                  {'  '}e) No fumar dentro del vehículo durante servicios activos.{'\n'}
+                  {'  '}f) No compartir información personal de los pasajeros.{'\n'}
+                  {'  '}g) Completar los cursos de certificación requeridos por LA PLATAFORMA.
+                </Text>
+
+                <Text style={styles.contractClause}>SÉPTIMA — SUSPENSIÓN DE CUENTA</Text>
+                <Text style={styles.contractBody}>
+                  LA PLATAFORMA podrá suspender o cancelar la cuenta de EL CONDUCTOR en caso de
+                  incumplimiento de cualquiera de las cláusulas aquí establecidas, calificación
+                  sostenida inferior a 4,5 estrellas, uso fraudulento o comportamiento inapropiado
+                  reportado por pasajeros.
+                </Text>
+
+                <Text style={styles.contractClause}>OCTAVA — DATOS DEL VEHÍCULO</Text>
+                <Text style={styles.contractBody}>
+                  Tipo: <Text style={styles.contractBold}>{VEHICLE_TYPE_OPTIONS.find(v => v.key === vehicleType)?.label ?? vehicleType}</Text>{'\n'}
+                  Marca / Modelo / Año:{' '}
+                  <Text style={styles.contractBold}>{vehicleBrand} {vehicleModel} {vehicleYear}</Text>{'\n'}
+                  Color: <Text style={styles.contractBold}>{vehicleColor}</Text>{' '}
+                  — Placa: <Text style={styles.contractBold}>{vehiclePlate}</Text>{'\n'}
+                  Seguro: <Text style={styles.contractBold}>{insuranceCompany}</Text>{' '}
+                  — Póliza: <Text style={styles.contractBold}>{insurancePolicyNumber}</Text>{'\n'}
+                  Vencimiento: <Text style={styles.contractBold}>{insuranceExpiry}</Text>
+                </Text>
+
+                <Text style={styles.contractClause}>NOVENA — VIGENCIA</Text>
+                <Text style={styles.contractBody}>
+                  Este contrato entra en vigencia a partir de la fecha de firma y tiene
+                  duración indefinida, pudiendo ser terminado por cualquiera de las partes
+                  con previo aviso de 7 días calendario.
+                </Text>
+
+                <Text style={styles.contractBody}>
+                  {'\n'}EL CONDUCTOR declara haber leído y comprendido el presente contrato
+                  en su totalidad y procede a estampar su firma digital:
+                </Text>
+
+                <Text style={styles.contractDate}>
+                  Venezuela, {new Date().toLocaleDateString('es-VE', {
+                    day: '2-digit', month: 'long', year: 'numeric',
+                  })}
+                </Text>
+              </View>
+
+              {/* Pad de firma */}
+              <Text style={styles.signLabel}>Firma del conductor</Text>
+              <View style={styles.signatureWrapper}>
+                <View style={styles.signatureCanvas} {...signaturePanResponder.panHandlers}>
+                  <Svg width="100%" height="180">
+                    {committedPaths.map((d, i) => (
+                      <Path key={i} d={d} stroke="#1E3A8A" strokeWidth={2.5}
+                        strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    ))}
+                    {livePath ? (
+                      <Path d={livePath} stroke="#1E3A8A" strokeWidth={2.5}
+                        strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                    ) : null}
+                  </Svg>
+                  {!hasSignature && (
+                    <View style={styles.signaturePlaceholder} pointerEvents="none">
+                      <Text style={styles.signaturePlaceholderText}>✍️  Firma aquí con el dedo</Text>
+                    </View>
+                  )}
+                </View>
+                <TouchableOpacity style={styles.clearButton} onPress={clearSignature}>
+                  <Text style={styles.clearButtonText}>Borrar firma</Text>
+                </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  (!hasSignature || isSubmittingReview) && styles.buttonDisabled,
+                ]}
                 onPress={handleSubmitReview}
-                disabled={isSubmittingReview}
+                disabled={!hasSignature || isSubmittingReview}
                 accessibilityRole="button"
               >
                 {isSubmittingReview
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.primaryButtonText}>Enviar solicitud</Text>
+                  : <Text style={styles.primaryButtonText}>Firmar y enviar solicitud</Text>
                 }
               </TouchableOpacity>
             </View>
@@ -1803,6 +2021,95 @@ const styles = StyleSheet.create({
     color: BRAND_COLORS.PRIMARY,
     lineHeight: 22,
     fontFamily: 'Inter_400Regular',
+  },
+
+  contractBox: {
+    backgroundColor: '#F8FAFF',
+    borderWidth: 1,
+    borderColor: '#C7D7F0',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  contractTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1E3A8A',
+    textAlign: 'center',
+    marginBottom: 16,
+    lineHeight: 20,
+    fontFamily: 'Inter_700Bold',
+  },
+  contractClause: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#1E3A8A',
+    marginTop: 14,
+    marginBottom: 4,
+    fontFamily: 'Inter_700Bold',
+  },
+  contractBody: {
+    fontSize: 13,
+    color: '#333',
+    lineHeight: 20,
+    fontFamily: 'Inter_400Regular',
+  },
+  contractBold: {
+    fontWeight: '700',
+    color: '#111',
+    fontFamily: 'Inter_700Bold',
+  },
+  contractDate: {
+    fontSize: 13,
+    color: '#555',
+    marginTop: 16,
+    fontStyle: 'italic',
+    fontFamily: 'Inter_400Regular',
+  },
+  signLabel: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: BRAND_COLORS.TEXT,
+    marginBottom: 8,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  signatureWrapper: {
+    marginBottom: 24,
+  },
+  signatureCanvas: {
+    height: 180,
+    borderWidth: 2,
+    borderColor: '#1E3A8A',
+    borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  signaturePlaceholder: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0, bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  signaturePlaceholderText: {
+    fontSize: 16,
+    color: '#B0C4DE',
+    fontFamily: 'Inter_400Regular',
+  },
+  clearButton: {
+    alignSelf: 'flex-end',
+    marginTop: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 8,
+    backgroundColor: '#F0F4FF',
+    borderWidth: 1,
+    borderColor: '#C7D7F0',
+  },
+  clearButtonText: {
+    fontSize: 13,
+    color: '#1E3A8A',
+    fontFamily: 'Inter_500Medium',
   },
 
   modalOverlay: {
