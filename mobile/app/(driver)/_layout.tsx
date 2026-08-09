@@ -70,7 +70,19 @@ export default function DriverLayout() {
 
     return () => {
       socketService.off('driver:new_ride_request');
+      socketService.off('driver:ride_cancelled');
     };
+  }, []);
+
+  // ── Cancelación del pasajero mientras el popup está visible ──
+  useEffect(() => {
+    socketService.on('driver:ride_cancelled', (data: any) => {
+      const current = useRideStore.getState().incomingRequest;
+      if (current && (!data?.rideId || current.rideId === data.rideId)) {
+        setIncomingRequest(null);
+      }
+    });
+    return () => { socketService.off('driver:ride_cancelled'); };
   }, []);
 
   // ── Countdown + tono repetido cada 5 s cuando hay solicitud activa ──

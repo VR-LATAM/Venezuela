@@ -790,9 +790,17 @@ export const rideService = {
     // Limpiar Redis si hay conductor asignado
     if (ride.driver_id) {
       await redis.del(REDIS_KEYS.driverActiveRide(ride.driver_id));
-      // Notificar al conductor si el pasajero cancela
       if (role === 'passenger') {
         emitToUser(ride.driver_id, 'driver:ride_cancelled', { rideId, reason, cancellationFee });
+      }
+    }
+
+    // Notificar al conductor pendiente (viaje aún en búsqueda, sin driver_id asignado)
+    if (role === 'passenger' && !ride.driver_id) {
+      const pendingDriverId = await redis.get(`ride:pending:${rideId}`);
+      if (pendingDriverId) {
+        emitToUser(pendingDriverId, 'driver:ride_cancelled', { rideId, reason });
+        await redis.del(`ride:pending:${rideId}`);
       }
     }
 
