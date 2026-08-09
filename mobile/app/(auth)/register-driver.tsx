@@ -234,9 +234,9 @@ export default function RegisterDriverScreen() {
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'] as any,
         allowsEditing: true, aspect: [1, 1], quality: 0.85,
-        cameraType: ImagePicker.CameraType.front,
+        cameraType: 'front' as any,
       });
       if (!result.canceled && result.assets[0]) setProfilePhotoUri(result.assets[0].uri);
       return;
@@ -246,9 +246,9 @@ export default function RegisterDriverScreen() {
         text: 'Tomar selfie',
         onPress: async () => {
           const result = await ImagePicker.launchCameraAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'] as any,
             allowsEditing: true, aspect: [1, 1], quality: 0.85,
-            cameraType: ImagePicker.CameraType.front,
+            cameraType: 'front' as any,
           });
           if (!result.canceled && result.assets[0]) setProfilePhotoUri(result.assets[0].uri);
         },
@@ -257,7 +257,7 @@ export default function RegisterDriverScreen() {
         text: 'Elegir de galería',
         onPress: async () => {
           const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'] as any,
             allowsEditing: true, aspect: [1, 1], quality: 0.85,
           });
           if (!result.canceled && result.assets[0]) setProfilePhotoUri(result.assets[0].uri);
@@ -289,15 +289,15 @@ export default function RegisterDriverScreen() {
 
     const pickerResult = useCamera
       ? await ImagePicker.launchCameraAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ['images'] as any,
           allowsEditing: true,
           quality: 0.85,
           cameraType: docType === 'selfie'
-            ? ImagePicker.CameraType.front
-            : ImagePicker.CameraType.back,
+            ? 'front' as any
+            : 'back' as any,
         })
       : await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          mediaTypes: ['images'] as any,
           allowsEditing: false,
           quality: 0.85,
         });

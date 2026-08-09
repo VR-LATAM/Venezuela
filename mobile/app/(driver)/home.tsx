@@ -440,6 +440,13 @@ export default function DriverHomeScreen() {
       setDriver(profile);
       setDocAlerts(alerts.filter(a => a.is_expired || a.urgent));
 
+      // Si no tiene tipo de vehículo configurado, abrir selector automáticamente
+      const validTypes = ['motorcycle', 'sedan', 'suv'];
+      const hasVehicleType = (profile.services ?? []).some(s => validTypes.includes(s));
+      if (!hasVehicleType && profile.status !== 'active') {
+        setTimeout(() => setVehicleModalVisible(true), 800);
+      }
+
       // Si tiene viaje activo en la BD, restaurar estado y reiniciar GPS
       if (profile.status === 'active') {
         const active = await rideMobileService.getActiveRide();
@@ -1246,7 +1253,24 @@ export default function DriverHomeScreen() {
               );
             })()}
 
-            {/* Estadísticas */}
+            {/* Banner tipo de vehículo no configurado */}
+            {(() => {
+              const validTypes = ['motorcycle', 'sedan', 'suv'];
+              const hasType = (driver?.services ?? []).some(s => validTypes.includes(s));
+              if (hasType) return null;
+              return (
+                <TouchableOpacity
+                  style={styles.vehicleTypeBanner}
+                  onPress={() => setVehicleModalVisible(true)}
+                >
+                  <Text style={styles.vehicleTypeBannerText}>
+                    🚗 Elige tu tipo de vehículo para recibir solicitudes
+                  </Text>
+                  <Text style={styles.vehicleTypeBannerCta}>Configurar →</Text>
+                </TouchableOpacity>
+              );
+            })()}
+
             {/* Document expiry alerts */}
             {docAlerts.map(alert => (
               <View
@@ -1943,6 +1967,9 @@ const styles = StyleSheet.create({
   chatSendDisabled: { opacity: 0.4 },
   chatSendText: { color: '#fff', fontWeight: '600', fontSize: 15, fontFamily: 'Inter_600SemiBold' },
   // Document expiry banners
+  vehicleTypeBanner: { backgroundColor: '#FFF7ED', borderRadius: 10, padding: 12, marginBottom: 8, borderLeftWidth: 4, borderLeftColor: '#F59E0B', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  vehicleTypeBannerText: { fontSize: 13, color: '#92400E', fontWeight: '500', fontFamily: 'Inter_500Medium', flex: 1 },
+  vehicleTypeBannerCta: { fontSize: 13, color: '#D97706', fontWeight: '700', fontFamily: 'Inter_700Bold', marginLeft: 8 },
   docAlertBanner:  { borderRadius: 10, padding: 10, marginBottom: 6 },
   docAlertExpired: { backgroundColor: '#FEE2E2' },
   docAlertUrgent:  { backgroundColor: '#FFF7ED' },
