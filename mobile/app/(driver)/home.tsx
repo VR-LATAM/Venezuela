@@ -1558,8 +1558,9 @@ export default function DriverHomeScreen() {
               <Text style={styles.menuItemIcon}>🚗</Text>
               <Text style={[styles.menuItemText, { flex: 1 }]}>Tipo de vehículo</Text>
               <Text style={{ fontSize: 13, color: '#888' }}>
-                {driver?.services?.[0] === 'motorcycle' ? 'Moto' :
-                 driver?.services?.[0] === 'suv'        ? 'SUV'  : 'Sedán'} ›
+                {driver?.services?.[0] === 'motorcycle' ? 'Moto'  :
+                 driver?.services?.[0] === 'suv'        ? 'SUV'   :
+                 driver?.services?.[0] === 'sedan'      ? 'Sedán' : 'Sin configurar'} ›
               </Text>
             </TouchableOpacity>
             {[
@@ -1632,7 +1633,7 @@ export default function DriverHomeScreen() {
               { key: 'suv',        label: 'SUV',   emoji: '🚙', desc: 'SUV / Camioneta / Minivan' },
             ] as const).map(opt => {
               const current = (driver?.services ?? [])[0];
-              const selected = current === opt.key || (!current && opt.key === 'sedan');
+              const selected = current === opt.key;
               return (
                 <TouchableOpacity
                   key={opt.key}
