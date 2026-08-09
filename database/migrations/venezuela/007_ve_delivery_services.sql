@@ -22,8 +22,8 @@ ALTER TABLE rides
   ADD COLUMN IF NOT EXISTS recipient_name      VARCHAR(100),
   ADD COLUMN IF NOT EXISTS recipient_phone     VARCHAR(30);
 
-/* Planes de membresía para nuevos tipos de vehículo */
-INSERT INTO membership_plans (code, name, weekly_price)
+/* Tipos de vehículo para Pick-Up y Plataforma */
+INSERT INTO ve_vehicle_types (code, name, weekly_fee_usd)
 VALUES
   ('pickup',     'Pick-Up',     35.00),
   ('plataforma', 'Plataforma',  40.00)
