@@ -28,12 +28,12 @@ interface FareConfig {
 
 const FIELDS: { key: keyof FareConfig; label: string; min: number; max: number; step: number }[] = [
   { key: 'base_fare',                   label: 'Tarifa base ($)',         min: 0.5,  max: 20,  step: 0.1 },
-  { key: 'price_per_km',               label: 'Precio/mi ($)',           min: 0.1,  max: 5,   step: 0.05 },
+  { key: 'price_per_km',               label: 'Precio/km ($)',           min: 0.1,  max: 5,   step: 0.05 },
   { key: 'price_per_minute',           label: 'Precio/min ($)',          min: 0.05, max: 2,   step: 0.01 },
-  { key: 'min_fare',                   label: 'Minimum fare ($)',        min: 1,    max: 20,  step: 0.5 },
+  { key: 'min_fare',                   label: 'Tarifa mínima ($)',       min: 1,    max: 20,  step: 0.5 },
   { key: 'surge_multiplier',           label: 'Multiplicador surge',     min: 1,    max: 5,   step: 0.1 },
-  { key: 'platform_commission_percent',label: 'Platform commission (%)', min: 5,    max: 30,  step: 0.5 },
-  { key: 'executive_multiplier',       label: 'Multiplicador executive', min: 1,    max: 5,   step: 0.1 },
+  { key: 'platform_commission_percent',label: 'Comisión plataforma (%)', min: 0,    max: 30,  step: 0.5 },
+  { key: 'executive_multiplier',       label: 'Multiplicador ejecutivo', min: 1,    max: 5,   step: 0.1 },
   { key: 'accessible_multiplier',      label: 'Multiplicador accesible', min: 1,    max: 5,   step: 0.1 },
   { key: 'hourly_rate',                label: 'Tarifa por hora ($)',     min: 10,   max: 200, step: 1 },
   { key: 'scheduled_surcharge',        label: 'Recargo programado',      min: 1,    max: 3,   step: 0.05 },
@@ -88,19 +88,19 @@ export default function StatesPage() {
   );
 
   return (
-    <AdminShell title="Fares by state" subtitle="Price configuration for each US state">
+    <AdminShell title="Tarifas por estado" subtitle="Configuración de precios por estado de Venezuela">
 
       <Card>
         <div className="flex gap-3 mb-5">
           <Input
-            placeholder="Search state…"
+            placeholder="Buscar estado…"
             icon={<Search className="w-4 h-4" />}
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="max-w-xs"
           />
           <p className="ml-auto text-sm text-gray-400 self-center">
-            {filtered.length} of {fares.length} states
+            {filtered.length} de {fares.length} estados
           </p>
         </div>
 
@@ -109,14 +109,14 @@ export default function StatesPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-gray-100 text-xs text-gray-500 uppercase tracking-wide">
-                  <th className="text-left pb-3 pr-3">State</th>
+                  <th className="text-left pb-3 pr-3">Estado</th>
                   <th className="text-right pb-3 pr-3">Base</th>
-                  <th className="text-right pb-3 pr-3">$/mi</th>
+                  <th className="text-right pb-3 pr-3">$/km</th>
                   <th className="text-right pb-3 pr-3">$/min</th>
                   <th className="text-right pb-3 pr-3">Min.</th>
                   <th className="text-right pb-3 pr-3">Commission</th>
                   <th className="text-right pb-3 pr-3">Surge</th>
-                  <th className="text-left pb-3">Actions</th>
+                  <th className="text-left pb-3">Acciones</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -179,7 +179,7 @@ export default function StatesPage() {
         </div>
 
         <div className="flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => setEditing(null)}>Cancel</Button>
+          <Button variant="secondary" onClick={() => setEditing(null)}>Cancelar</Button>
           <Button
             variant="primary"
             loading={saving}

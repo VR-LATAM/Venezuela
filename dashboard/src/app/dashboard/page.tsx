@@ -28,25 +28,25 @@ const HEAT_PERIODS = [
   { label: '7d',  hours: 168 },
 ];
 
-// Ciudades principales de Texas con coordenadas y peso de demanda simulado
-const TX_CITIES = [
-  { name: 'Houston',       lat: 29.7604, lng: -95.3698, demand: 120 },
-  { name: 'San Antonio',   lat: 29.4241, lng: -98.4936, demand: 90  },
-  { name: 'Dallas',        lat: 32.7767, lng: -96.7970, demand: 110 },
-  { name: 'Austin',        lat: 30.2672, lng: -97.7431, demand: 95  },
-  { name: 'Fort Worth',    lat: 32.7555, lng: -97.3308, demand: 70  },
-  { name: 'El Paso',       lat: 31.7619, lng: -106.4850,demand: 50  },
-  { name: 'Corpus Christi',lat: 27.8006, lng: -97.3964, demand: 40  },
-  { name: 'Laredo',        lat: 27.5306, lng: -99.4803, demand: 35  },
-  { name: 'Lubbock',       lat: 33.5779, lng: -101.8552,demand: 30  },
-  { name: 'Amarillo',      lat: 35.2220, lng: -101.8313,demand: 25  },
+// Ciudades principales de Venezuela con coordenadas y peso de demanda simulado
+const VE_CITIES = [
+  { name: 'Caracas',        lat: 10.4806, lng: -66.9036, demand: 150 },
+  { name: 'Maracaibo',      lat: 10.6666, lng: -71.6125, demand: 110 },
+  { name: 'Valencia',       lat: 10.1620, lng: -68.0077, demand: 100 },
+  { name: 'Barquisimeto',   lat:  9.9986, lng: -69.2990, demand: 90  },
+  { name: 'Maracay',        lat: 10.2469, lng: -67.5958, demand: 80  },
+  { name: 'Maturín',        lat:  9.7458, lng: -63.1811, demand: 55  },
+  { name: 'Barcelona',      lat: 10.1337, lng: -64.6857, demand: 50  },
+  { name: 'Ciudad Bolívar', lat:  8.1222, lng: -63.5500, demand: 45  },
+  { name: 'Mérida',         lat:  8.5980, lng: -71.1440, demand: 40  },
+  { name: 'Cumaná',         lat: 10.4639, lng: -64.1740, demand: 35  },
 ];
 
 function generateSimulatedHeat(): HeatPoint[] {
   const points: HeatPoint[] = [];
   const rng = (min: number, max: number) => min + Math.random() * (max - min);
 
-  for (const city of TX_CITIES) {
+  for (const city of VE_CITIES) {
     // Núcleo de alta demanda (centro de la ciudad)
     for (let i = 0; i < city.demand; i++) {
       points.push({
@@ -65,12 +65,12 @@ function generateSimulatedHeat(): HeatPoint[] {
     }
   }
 
-  // Algunos puntos aislados en carreteras entre ciudades
+  // Algunos puntos aislados en autopistas entre ciudades
   const highways = [
-    { lat: 30.9, lng: -96.5 }, // I-45 Houston→Dallas
-    { lat: 29.9, lng: -97.1 }, // I-35 Austin→San Antonio
-    { lat: 31.5, lng: -97.1 }, // I-35 Waco
-    { lat: 30.5, lng: -98.3 }, // TX-71
+    { lat: 10.3, lng: -67.5 }, // Caracas → Valencia
+    { lat: 10.1, lng: -68.9 }, // Valencia → Barquisimeto
+    { lat: 10.4, lng: -66.5 }, // Guarenas → Caracas
+    { lat:  9.9, lng: -65.5 }, // Anzoátegui → Miranda
   ];
   for (const hw of highways) {
     for (let i = 0; i < 8; i++) {
@@ -165,37 +165,37 @@ export default function DashboardPage() {
 
   const kpiCards = [
     {
-      label: 'Rides today',
+      label: 'Viajes hoy',
       value: kpis?.ridesToday ?? 0,
       icon:  Car,
       color: 'text-blue-600 bg-blue-50',
-      sub:   `${kpis?.ridesWeek ?? 0} this week`,
+      sub:   `${kpis?.ridesWeek ?? 0} esta semana`,
     },
     {
-      label: 'Revenue today',
+      label: 'Ingresos hoy',
       value: formatCurrency(kpis?.revenueToday ?? 0),
       icon:  TrendingUp,
       color: 'text-green-600 bg-green-50',
-      sub:   `${formatCurrency(kpis?.revenueMonth ?? 0)} this month`,
+      sub:   `${formatCurrency(kpis?.revenueMonth ?? 0)} este mes`,
     },
     {
-      label: 'Drivers online',
+      label: 'Conductores online',
       value: drivers.length,
       icon:  Users,
       color: 'text-purple-600 bg-purple-50',
-      sub:   `${kpis?.activeDrivers ?? 0} approved`,
+      sub:   `${kpis?.activeDrivers ?? 0} aprobados`,
     },
     {
-      label: 'Average rating',
+      label: 'Calificación promedio',
       value: kpis?.avgRating?.toFixed(2) ?? '—',
       icon:  Star,
       color: 'text-amber-600 bg-amber-50',
-      sub:   `${((kpis?.cancelRate ?? 0) * 100).toFixed(1)}% cancel rate`,
+      sub:   `${((kpis?.cancelRate ?? 0) * 100).toFixed(1)}% tasa cancelación`,
     },
   ];
 
   return (
-    <AdminShell title="Dashboard" subtitle="National operations overview">
+    <AdminShell title="Dashboard" subtitle="Operaciones nacionales — Venezuela">
 
       {/* SOS Banner */}
       {sosList.length > 0 && (
@@ -268,10 +268,10 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <div>
             <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-              Drivers online · Demand zones
+              Conductores online · Zonas de demanda
             </p>
             <p className="text-xs text-gray-400 mt-0.5">
-              {drivers.length} active · {heatPoints.length} zones · Map updates every 10s
+              {drivers.length} activos · {heatPoints.length} zonas · Se actualiza cada 10s
             </p>
           </div>
 
@@ -312,7 +312,7 @@ export default function DashboardPage() {
                   : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'
               }`}
             >
-              {simulating ? '⚡ Simulating — stop' : '⚡ Simulate demand'}
+              {simulating ? '⚡ Simulando — detener' : '⚡ Simular demanda'}
             </button>
 
             {/* Refresh mapa */}
@@ -335,10 +335,10 @@ export default function DashboardPage() {
       {finance && (
         <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total revenue 30d',   value: formatCurrency(finance.totals.revenue) },
-            { label: 'Commission 30d',      value: formatCurrency(finance.totals.commission) },
-            { label: 'Completed rides',     value: finance.totals.rides.toLocaleString() },
-            { label: 'Failed payments',     value: finance.totals.failedPayments.toLocaleString() },
+            { label: 'Ingresos totales 30d',   value: formatCurrency(finance.totals.revenue) },
+            { label: 'Comisión 30d',           value: formatCurrency(finance.totals.commission) },
+            { label: 'Viajes completados',     value: finance.totals.rides.toLocaleString() },
+            { label: 'Pagos fallidos',         value: finance.totals.failedPayments.toLocaleString() },
           ].map(({ label, value }) => (
             <div key={label} className="card p-4 text-center">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">{label}</p>

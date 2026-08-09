@@ -27,13 +27,13 @@ export function LiveMap({ drivers, heatPoints = [], height = 400 }: LiveMapProps
   const heatLayer    = useRef<google.maps.visualization.HeatmapLayer | null>(null);
   const [showHeat, setShowHeat] = useState(true);
 
-  // Inicializar mapa centrado en Texas
+  // Inicializar mapa centrado en Venezuela
   useEffect(() => {
     loader.load().then(async () => {
       if (!mapRef.current) return;
       const { Map: GMap } = await google.maps.importLibrary('maps') as google.maps.MapsLibrary;
       mapInstance.current = new GMap(mapRef.current, {
-        center:             { lat: 31.0, lng: -99.0 },
+        center:             { lat: 8.0, lng: -66.5 },
         zoom:               6,
         mapId:              'VERONARIDE_ADMIN_MAP',
         mapTypeControl:     false,
