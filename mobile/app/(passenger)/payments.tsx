@@ -267,7 +267,7 @@ export default function PaymentsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
 
   header: {
     flexDirection: 'row',

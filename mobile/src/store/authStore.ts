@@ -76,10 +76,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         authService.checkSession(),
         AsyncStorage.getItem(WIZARD_KEY),
       ]);
-      if (wizardFlag === 'true') {
-        // Conductor en mitad del wizard — no redirigir a driver/home
+      if (wizardFlag === 'true' && user?.role === 'driver') {
         set({ user: user ?? null, isAuthenticated: false, emailVerificationPending: true, driverWizardActive: true, isLoading: false });
       } else {
+        if (wizardFlag === 'true') AsyncStorage.removeItem(WIZARD_KEY).catch(() => {});
         set({ user, isAuthenticated: !!user, isLoading: false });
       }
     } catch {

@@ -263,7 +263,7 @@ export default function FavoritesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container:    { flex: 1, backgroundColor: '#F8FAFC' },
+  container:    { flex: 1, backgroundColor: '#F8FAFC', paddingTop: 24 },
   header:       { flexDirection: 'row', alignItems: 'center', padding: 16, paddingTop: 8, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#E2E8F0' },
   backBtn:      { padding: 4, marginRight: 8 },
   backBtnText:  { fontSize: 28, color: BRAND_COLORS.PRIMARY, lineHeight: 32 },

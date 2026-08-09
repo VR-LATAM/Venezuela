@@ -152,7 +152,7 @@ export default function TrainingModuleScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F8F9FA' },
+  container: { flex: 1, backgroundColor: '#F8F9FA', paddingTop: 24 },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
   header: {

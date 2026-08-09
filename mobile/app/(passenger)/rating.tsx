@@ -201,7 +201,7 @@ export default function RatingScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe:      { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   scroll:    { flex: 1 },
   container: { padding: 24, paddingBottom: 40 },
 

@@ -187,7 +187,7 @@ export default function SpendingScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
 
   header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

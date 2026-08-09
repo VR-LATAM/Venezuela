@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     alignItems: 'center',
-    paddingBottom: 40,
+    paddingTop: 24, paddingBottom: 40,
   },
   skipButton: {
     alignSelf: 'flex-end',

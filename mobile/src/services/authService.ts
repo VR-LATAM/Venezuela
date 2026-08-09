@@ -83,7 +83,13 @@ export const authService = {
       await saveTokens(tokens.accessToken, tokens.refreshToken);
       return { user, ...tokens };
     }
-    const credential = await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+    const firebaseTimeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('No se pudo conectar. Verifica tu conexión a internet e intenta de nuevo.')), 20_000)
+    );
+    const credential = await Promise.race([
+      signInWithEmailAndPassword(getFirebaseAuth(), email, password),
+      firebaseTimeout,
+    ]);
     const firebaseToken = await credential.user.getIdToken();
     const response = await apiClient.post('/auth/login', { firebaseToken });
     const { user, tokens } = response.data.data;

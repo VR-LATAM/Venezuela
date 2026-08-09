@@ -145,7 +145,7 @@ export default function VerifyEmailScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   container: {
     flex: 1,
     alignItems: 'center',

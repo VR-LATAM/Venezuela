@@ -357,7 +357,7 @@ export default function EarningsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: { flex: 1, backgroundColor: '#fff', paddingTop: 24 },
   scroll: { paddingBottom: 40 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
