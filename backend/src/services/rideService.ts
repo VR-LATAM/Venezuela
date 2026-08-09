@@ -481,9 +481,8 @@ export const rideService = {
       fareEstimate.subtotal = fareEstimate.total;
     }
 
-    // ── Comisión dinámica del conductor (15% / 14% / 13% según desempeño) ──
-    const commissionInfo = await getDriverCommissionInfo(driverId);
-    const commissionRate = commissionInfo.rate;
+    // ── Comisión Venezuela: 0% — conductor recibe el 100% de la tarifa ──
+    const commissionRate = 0;
 
     // ── Descuento de lealtad al pasajero (absorbido por la plataforma) ──
     // Califica: 15+ viajes esta semana ó 50+ viajes este mes
