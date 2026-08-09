@@ -54,13 +54,13 @@ const VE_STATES = [
   { code: 'ZU', name: 'Zulia' },
 ];
 
-const SERVICE_OPTIONS = [
-  { key: 'standard',   label: 'Estándar',       emoji: '🚗' },
-  { key: 'executive',  label: 'Ejecutivo',       emoji: '🚙' },
-  { key: 'accessible', label: 'Accesible',       emoji: '♿' },
-  { key: 'scheduled',  label: 'Programado',      emoji: '📅' },
-  { key: 'hourly',     label: 'Por hora',        emoji: '⏱️' },
-];
+const VEHICLE_TYPE_OPTIONS = [
+  { key: 'motorcycle', label: 'Moto',  emoji: '🏍️', desc: 'Motocicleta' },
+  { key: 'sedan',      label: 'Sedán', emoji: '🚗', desc: 'Sedan / Compacto / Familiar' },
+  { key: 'suv',        label: 'SUV',   emoji: '🚙', desc: 'SUV / Camioneta / Minivan' },
+] as const;
+
+type VehicleType = 'motorcycle' | 'sedan' | 'suv';
 
 const LANGUAGE_OPTIONS = [
   { key: 'spanish',      label: 'Español',    emoji: '🇻🇪' },
@@ -163,7 +163,7 @@ export default function RegisterDriverScreen() {
   const [vehicleColor, setVehicleColor]       = useState('');
   const [vehicleVin, setVehicleVin]           = useState('');
   const [vehicleSeats, setVehicleSeats]       = useState('4');
-  const [services, setServices]               = useState<string[]>(['standard']);
+  const [vehicleType, setVehicleType]         = useState<VehicleType>('sedan');
 
   // ── PASO 4: Seguro ──
   const [insuranceCompany, setInsuranceCompany]           = useState('');
@@ -439,7 +439,6 @@ export default function RegisterDriverScreen() {
     if (!vehicleModel.trim()) { Alert.alert('', 'El modelo del vehículo es requerido'); return; }
     if (!vehicleYear.trim())  { Alert.alert('', 'El año del vehículo es requerido'); return; }
     if (!vehicleColor.trim()) { Alert.alert('', 'El color del vehículo es requerido'); return; }
-    if (services.length === 0) { Alert.alert('', 'Selecciona al menos un tipo de servicio'); return; }
 
     const year = parseInt(vehicleYear.trim(), 10);
     if (isNaN(year) || year < 2000 || year > new Date().getFullYear() + 1) {
@@ -455,7 +454,7 @@ export default function RegisterDriverScreen() {
         vehicleColor: vehicleColor.trim(),
         vehicleVin: vehicleVin.trim() || undefined,
         vehicleSeats: vehicleSeats ? parseInt(vehicleSeats, 10) : undefined,
-        services,
+        services: [vehicleType],
       });
       setStep(4);
     } catch (err) {
@@ -937,27 +936,30 @@ export default function RegisterDriverScreen() {
               </View>
 
               <View style={styles.field}>
-                <Text style={styles.label}>Tipos de servicio que ofrecerás *</Text>
-                <View style={styles.servicesGrid}>
-                  {SERVICE_OPTIONS.map(svc => {
-                    const selected = services.includes(svc.key);
+                <Text style={styles.label}>Tipo de vehículo *</Text>
+                <Text style={styles.stepHint}>
+                  Solo recibirás solicitudes del tipo que selecciones.
+                </Text>
+                <View style={styles.vehicleTypeGrid}>
+                  {VEHICLE_TYPE_OPTIONS.map(opt => {
+                    const selected = vehicleType === opt.key;
                     return (
                       <TouchableOpacity
-                        key={svc.key}
-                        style={[styles.serviceChip, selected && styles.serviceChipSelected]}
+                        key={opt.key}
+                        style={[styles.vehicleTypeCard, selected && styles.vehicleTypeCardSelected]}
                         onPress={() => {
-                          setServices(prev =>
-                            selected ? prev.filter(s => s !== svc.key) : [...prev, svc.key]
-                          );
+                          setVehicleType(opt.key);
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         }}
-                        accessibilityRole="checkbox"
-                        accessibilityState={{ checked: selected }}
+                        accessibilityRole="radio"
+                        accessibilityState={{ selected }}
                       >
-                        <Text style={styles.serviceEmoji}>{svc.emoji}</Text>
-                        <Text style={[styles.serviceLabel, selected && styles.serviceLabelSelected]}>
-                          {svc.label}
+                        <Text style={styles.vehicleTypeEmoji}>{opt.emoji}</Text>
+                        <Text style={[styles.vehicleTypeLabel, selected && styles.vehicleTypeLabelSelected]}>
+                          {opt.label}
                         </Text>
+                        <Text style={styles.vehicleTypeDesc}>{opt.desc}</Text>
+                        {selected && <Text style={styles.vehicleTypeCheck}>✓</Text>}
                       </TouchableOpacity>
                     );
                   })}
@@ -1279,10 +1281,10 @@ export default function RegisterDriverScreen() {
                   <ReviewRow label="Vehículo"  value={`${vehicleBrand} ${vehicleModel} ${vehicleYear}`} />
                   <ReviewRow label="Color"     value={vehicleColor} />
                   {vehicleVin ? <ReviewRow label="Serial" value={vehicleVin} /> : null}
-                  <ReviewRow label="Asientos"  value={vehicleSeats} />
-                  <ReviewRow label="Servicios" value={services.map(s =>
-                    SERVICE_OPTIONS.find(o => o.key === s)?.label ?? s
-                  ).join(', ')} />
+                  <ReviewRow label="Asientos"       value={vehicleSeats} />
+                  <ReviewRow label="Tipo de vehículo" value={
+                    VEHICLE_TYPE_OPTIONS.find(o => o.key === vehicleType)?.label ?? vehicleType
+                  } />
                 </View>
 
                 <View style={styles.reviewSection}>
@@ -1582,6 +1584,43 @@ const styles = StyleSheet.create({
   serviceEmoji: { fontSize: 18 },
   serviceLabel: { fontSize: 15, color: '#666', fontFamily: 'Inter_400Regular' },
   serviceLabelSelected: { color: BRAND_COLORS.PRIMARY, fontFamily: 'Inter_600SemiBold' },
+
+  vehicleTypeGrid: { flexDirection: 'row', gap: 10 },
+  vehicleTypeCard: {
+    flex: 1,
+    alignItems: 'center',
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    backgroundColor: '#FAFAFA',
+    gap: 4,
+  },
+  vehicleTypeCardSelected: {
+    borderColor: BRAND_COLORS.PRIMARY,
+    backgroundColor: BRAND_COLORS.PRIMARY + '12',
+  },
+  vehicleTypeEmoji: { fontSize: 30, marginBottom: 4 },
+  vehicleTypeLabel: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#666',
+    fontFamily: 'Inter_700Bold',
+  },
+  vehicleTypeLabelSelected: { color: BRAND_COLORS.PRIMARY },
+  vehicleTypeDesc: {
+    fontSize: 11,
+    color: '#aaa',
+    textAlign: 'center',
+    fontFamily: 'Inter_400Regular',
+  },
+  vehicleTypeCheck: {
+    fontSize: 16,
+    color: BRAND_COLORS.PRIMARY,
+    fontWeight: '700',
+    marginTop: 4,
+  },
 
   scanBtn: {
     flexDirection: 'row',
