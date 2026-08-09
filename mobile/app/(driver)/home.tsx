@@ -1564,6 +1564,7 @@ export default function DriverHomeScreen() {
               </Text>
             </TouchableOpacity>
             {[
+              { icon: '📄', label: 'Mis documentos',         route: '/(driver)/documents'       as const },
               { icon: '💳', label: 'Mi membresía',           route: '/(driver)/membership'      as const },
               { icon: '🗂️', label: 'Historial de servicio', route: '/(driver)/service-history' as const },
               { icon: '💰', label: 'Ganancias',             route: '/(driver)/earnings'        as const },
