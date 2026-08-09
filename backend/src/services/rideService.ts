@@ -1079,7 +1079,7 @@ async function searchAndNotifyDrivers(
         distanceFromDriver: Math.round((driver as unknown as { distance_meters: number }).distance_meters / 100) / 10,
         timeoutSeconds:     env.DRIVER_ACCEPT_TIMEOUT_SECONDS,
         estimatedFare,
-        estimatedDriverEarnings: Math.round(estimatedFare * 0.87 * 100) / 100,
+        estimatedDriverEarnings: estimatedFare,
         tripDistanceMiles,
         specialNeeds: specialCategories,
         passengerName:      (passengerProfile as any)?.name      ?? null,
