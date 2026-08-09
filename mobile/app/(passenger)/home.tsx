@@ -544,7 +544,7 @@ export default function PassengerHomeScreen() {
           setEstimateError(`No se pudo obtener tarifas${status ? ` (${status})` : ''}: ${detail}`);
         } else {
           setAllEstimates(estimates);
-          const active = estimates[selectedService] ?? estimates['sedan'];
+          const active = estimates[selectedService];
           if (active) setFareEstimate(active);
         }
       } catch (err) {
@@ -962,7 +962,7 @@ export default function PassengerHomeScreen() {
                                 });
                                 if (Object.keys(est2).length > 0) {
                                   setAllEstimates(est2);
-                                  const active = est2[selectedService] ?? est2['sedan'];
+                                  const active = est2[selectedService];
                                   if (active) setFareEstimate(active);
                                 } else {
                                   setEstimateError('Reintentar falló. Verifica tu conexión al servidor.');
