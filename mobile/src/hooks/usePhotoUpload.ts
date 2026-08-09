@@ -1,37 +1,25 @@
-// Diseñado por: Edward Labrador
-// Para: ELITE GROUP - Integral Services LLC
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+import * as SecureStore from 'expo-secure-store';
 import { Alert } from 'react-native';
-import { apiClient } from '../services/apiClient';
+import Constants from 'expo-constants';
 import { useAuthStore } from '../store/authStore';
+
+const API_BASE = `${
+  Constants.expoConfig?.extra?.apiUrl ??
+  process.env['EXPO_PUBLIC_API_URL'] ??
+  'http://localhost:3000'
+}/api/v1`;
 
 export function usePhotoUpload() {
   const [uploading, setUploading] = useState(false);
   const { setUser, user } = useAuthStore();
 
-  const pickAndUpload = async (): Promise<string | null> => {
-    // Pedir permiso a la galería
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería para cambiar la foto.');
-      return null;
-    }
-
-    // Abrir galería
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.7,
-    });
-
-    if (result.canceled || !result.assets[0]) return null;
-
-    const asset = result.assets[0];
+  const uploadAsset = async (asset: ImagePicker.ImagePickerAsset): Promise<string | null> => {
     setUploading(true);
-
     try {
+      const token = await SecureStore.getItemAsync('access_token');
+
       const formData = new FormData();
       formData.append('photo', {
         uri:  asset.uri,
@@ -39,26 +27,71 @@ export function usePhotoUpload() {
         type: 'image/jpeg',
       } as any);
 
-      const { data } = await apiClient.post<{ photoUrl: string }>(
-        '/user/photo',
-        formData,
-        {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          transformRequest: [(d: any) => d], // evitar que axios serialice el FormData a JSON
-        }
-      );
+      const response = await fetch(`${API_BASE}/user/photo`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token ?? ''}` },
+        body: formData,
+      });
 
-      // Actualizar el store local con la nueva URL
-      if (user) setUser({ ...user, photo_url: data.photoUrl });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        const detail = body?.detail ?? body?.error ?? `HTTP ${response.status}`;
+        Alert.alert('Error al subir foto', detail);
+        return null;
+      }
 
-      return data.photoUrl;
-    } catch {
-      Alert.alert('Error', 'No se pudo subir la foto. Intenta de nuevo.');
+      const body = await response.json();
+      if (user) setUser({ ...user, photo_url: body.photoUrl });
+      return body.photoUrl as string;
+    } catch (err: any) {
+      Alert.alert('Error al subir foto', err?.message ?? String(err));
       return null;
     } finally {
       setUploading(false);
     }
   };
+
+  const fromCamera = async (): Promise<string | null> => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso requerido', 'Necesitamos acceso a tu cámara para tomar la foto.');
+      return null;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.4,
+    });
+    if (result.canceled || !result.assets[0]) return null;
+    return uploadAsset(result.assets[0]);
+  };
+
+  const fromGallery = async (): Promise<string | null> => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso requerido', 'Necesitamos acceso a tu galería para elegir la foto.');
+      return null;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.4,
+    });
+    if (result.canceled || !result.assets[0]) return null;
+    return uploadAsset(result.assets[0]);
+  };
+
+  const pickAndUpload = (): Promise<string | null> =>
+    new Promise((resolve) => {
+      Alert.alert(
+        'Foto de perfil',
+        'Elige cómo agregar tu foto',
+        [
+          { text: '📷 Tomar foto',        onPress: () => fromCamera().then(resolve)  },
+          { text: '🖼️ Elegir de galería', onPress: () => fromGallery().then(resolve) },
+          { text: 'Cancelar', style: 'cancel', onPress: () => resolve(null) },
+        ]
+      );
+    });
 
   return { pickAndUpload, uploading };
 }

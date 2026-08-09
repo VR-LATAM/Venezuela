@@ -83,7 +83,7 @@ export async function uploadProfilePhoto(
   await axios.post(
     `${env.SUPABASE_URL}/storage/v1/object/${BUCKET}/${filePath}`,
     fileBuffer,
-    { headers: { ...authHeaders(), 'Content-Type': mimeType } }
+    { headers: { ...authHeaders(), 'Content-Type': mimeType, 'x-upsert': 'true' } }
   );
 
   return getSignedUrl(filePath);

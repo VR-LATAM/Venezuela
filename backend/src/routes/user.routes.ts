@@ -29,26 +29,38 @@ const upload = multer({
 // ─────────────────────────────────────
 // POST /user/photo — subir foto de perfil
 // ─────────────────────────────────────
-router.post('/photo', upload.single('photo'), async (req: Request, res: Response): Promise<void> => {
-  try {
-    if (!req.file) {
-      res.status(400).json({ error: 'No image was received' });
+router.post('/photo', (req: Request, res: Response): void => {
+  upload.single('photo')(req, res, async (multerErr) => {
+    if (multerErr) {
+      const msg = (multerErr as any).code === 'LIMIT_FILE_SIZE'
+        ? 'La foto no debe superar 5 MB'
+        : multerErr.message ?? 'Error al procesar la imagen';
+      logger.warn('multer error en /user/photo:', multerErr.message);
+      res.status(400).json({ error: msg });
       return;
     }
 
-    const userId  = req.user!.userId;
-    const photoUrl = await uploadProfilePhoto(req.file.buffer, req.file.mimetype, userId);
+    try {
+      if (!req.file) {
+        res.status(400).json({ error: 'No se recibió ninguna imagen' });
+        return;
+      }
 
-    await queryOne(
-      'UPDATE users SET photo_url = $1, updated_at = NOW() WHERE id = $2 RETURNING id',
-      [photoUrl, userId]
-    );
+      const userId   = (req as any).user!.userId;
+      const photoUrl = await uploadProfilePhoto(req.file.buffer, req.file.mimetype, userId);
 
-    res.json({ photoUrl });
-  } catch (err) {
-    logger.error('Error al subir foto de perfil:', err);
-    res.status(500).json({ error: 'Could not upload the photo' });
-  }
+      await queryOne(
+        'UPDATE users SET photo_url = $1, updated_at = NOW() WHERE id = $2 RETURNING id',
+        [photoUrl, userId]
+      );
+
+      res.json({ photoUrl });
+    } catch (err: any) {
+      const detail = err?.response?.data ?? err?.message ?? String(err);
+      logger.error('Error al subir foto de perfil:', detail);
+      res.status(500).json({ error: 'No se pudo subir la foto', detail });
+    }
+  });
 });
 
 // ─────────────────────────────────────

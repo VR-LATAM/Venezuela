@@ -48,11 +48,11 @@ interface Prediction {
   };
 }
 
-const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string }[] = [
-  { key: 'motorcycle', label: 'Moto',       emoji: '🏍️' },
-  { key: 'sedan',      label: 'Sedán',      emoji: '🚗' },
-  { key: 'suv',        label: 'SUV',        emoji: '🚙' },
-  { key: 'scheduled',  label: 'Programado', emoji: '📅' },
+const SERVICE_OPTIONS: { key: ServiceType; label: string }[] = [
+  { key: 'motorcycle', label: 'Moto'       },
+  { key: 'sedan',      label: 'Sedán'      },
+  { key: 'suv',        label: 'SUV'        },
+  { key: 'scheduled',  label: 'Programado' },
 ];
 
 export default function PassengerHomeScreen() {
@@ -555,7 +555,8 @@ export default function PassengerHomeScreen() {
       }
     };
     void fetchAll();
-  }, [userLocation, dropoffCoords, user?.state_code]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dropoffCoords, user?.state_code]);
 
   useEffect(() => {
     const est = allEstimates[selectedService];
@@ -587,8 +588,8 @@ export default function PassengerHomeScreen() {
     // Feature 13: foto de perfil requerida para pedir viaje
     if (!user?.photo_url) {
       Alert.alert(
-        'Profile photo required',
-        'Por favor agrega una foto de perfil antes de solicitar un viaje. Esto ayuda a tu conductor a identificarte.',
+        'Foto de perfil requerida',
+        'Agrega una foto de perfil para que tu conductor pueda identificarte.',
         [
           { text: 'Después', style: 'cancel' },
           {
@@ -983,18 +984,13 @@ export default function PassengerHomeScreen() {
                         return (
                           <TouchableOpacity
                             key={svc.key}
-                            style={[
-                              styles.serviceCard,
-                              isSched && styles.serviceCardFull,
-                              isActive && styles.serviceCardActive,
-                            ]}
+                            style={[styles.serviceCard, isActive && styles.serviceCardActive]}
                             onPress={() => {
                               setSelectedService(svc.key);
                               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             }}
                             activeOpacity={0.75}
                           >
-                            <Text style={styles.serviceCardEmoji}>{svc.emoji}</Text>
                             <Text style={[styles.serviceCardLabel, isActive && styles.textWhite]}>
                               {svc.label}
                             </Text>
@@ -1006,7 +1002,7 @@ export default function PassengerHomeScreen() {
                               <ActivityIndicator
                                 size="small"
                                 color={isActive ? '#fff' : BRAND_COLORS.PRIMARY}
-                                style={{ marginTop: 4 }}
+                                style={{ marginTop: 2 }}
                               />
                             ) : est ? (
                               <>
@@ -1041,7 +1037,6 @@ export default function PassengerHomeScreen() {
                           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         }}
                       >
-                        <Text style={styles.chipEmoji}>{svc.emoji}</Text>
                         <Text style={[styles.chipLabel, selectedService === svc.key && { color: '#fff' }]}>
                           {svc.label}
                         </Text>
@@ -1517,19 +1512,17 @@ const styles = StyleSheet.create({
   searchGlass:     { fontSize: 16 },
 
   // Grid servicios
-  serviceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginVertical: 12 },
+  serviceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 10 },
   serviceCard: {
     width: '47.5%', backgroundColor: '#F8F9FA',
-    borderRadius: 14, padding: 14,
-    borderWidth: 2, borderColor: 'transparent', minHeight: 100,
+    borderRadius: 12, padding: 10,
+    borderWidth: 2, borderColor: 'transparent',
   },
-  serviceCardActive:  { backgroundColor: BRAND_COLORS.PRIMARY, borderColor: BRAND_COLORS.PRIMARY },
-  serviceCardFull:    { width: '100%' },
-  serviceCardEmoji:   { fontSize: 24, marginBottom: 4 },
-  serviceCardLabel:   { fontSize: 13, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
-  serviceCardPrice:   { fontSize: 20, fontWeight: '700', color: BRAND_COLORS.TEXT, marginTop: 4, fontFamily: 'Inter_700Bold' },
-  serviceCardMeta:    { fontSize: 11, color: '#888', marginTop: 2, fontFamily: 'Inter_400Regular' },
-  serviceCardBook:    { fontSize: 13, color: '#666', marginTop: 4, fontFamily: 'Inter_400Regular' },
+  serviceCardActive: { backgroundColor: BRAND_COLORS.PRIMARY, borderColor: BRAND_COLORS.PRIMARY },
+  serviceCardLabel:  { fontSize: 13, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
+  serviceCardPrice:  { fontSize: 17, fontWeight: '700', color: BRAND_COLORS.TEXT, marginTop: 2, fontFamily: 'Inter_700Bold' },
+  serviceCardMeta:   { fontSize: 10, color: '#888', marginTop: 1, fontFamily: 'Inter_400Regular' },
+  serviceCardBook:   { fontSize: 12, color: '#666', marginTop: 2, fontFamily: 'Inter_400Regular' },
   textWhite:          { color: '#fff' },
   textWhiteAlpha:     { color: 'rgba(255,255,255,0.75)' },
   surgeTag: {
