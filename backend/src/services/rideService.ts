@@ -513,7 +513,7 @@ export const rideService = {
     if (loyaltyDiscount > 0) {
       logger.info(`Loyalty 10% discount: $${loyaltyDiscount} for passenger ${ride.passenger_id} (week:${ridesThisWeek} month:${ridesThisMonth})`);
     }
-    logger.info(`Commission for driver ${driverId}: ${commissionRate * 100}% (tier:${commissionInfo.tier} rides:${commissionInfo.ridesThisYear} rating:${commissionInfo.ratingAvg})`);
+    logger.info(`Comisión Venezuela 0% — conductor recibe $${driverEarnings} de $${fareEstimate.total}`);
 
     // ── Cobrar al pasajero vía Stripe ─────────────────────────────────────────
     // Si hay un hold previo → capturar. Si no → cobrar directo.

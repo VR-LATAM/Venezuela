@@ -1441,11 +1441,13 @@ export default function DriverHomeScreen() {
                         onPress: async () => {
                           try {
                             if (activeRide) await rideMobileService.cancelRide(activeRide.id, 'Cancelado por el conductor');
-                            setActiveRide(null);
-                            setActivePhase(null);
-                          } catch {
-                            Alert.alert('Error', 'No se pudo cancelar el viaje. Intenta de nuevo.');
+                          } catch (err: any) {
+                            const msg = err?.response?.data?.error ?? err?.message ?? 'Error desconocido';
+                            Alert.alert('No se pudo cancelar', msg);
+                            return;
                           }
+                          setActiveRide(null);
+                          setActivePhase(null);
                         },
                       },
                     ]

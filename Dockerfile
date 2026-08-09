@@ -18,7 +18,7 @@ COPY backend/ ./backend/
 
 # Compilar shared primero, luego backend
 RUN mkdir -p /app/shared/dist && (npm run build --workspace=shared || true)
-RUN npm run build --workspace=backend && echo "v1.5"
+RUN npm run build --workspace=backend && echo "v1.8"
 
 # ─── Etapa 2: Runtime ────────────────────────────────────────────────────────
 FROM node:20-alpine AS runner
