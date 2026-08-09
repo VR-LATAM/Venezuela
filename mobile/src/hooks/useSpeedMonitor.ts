@@ -10,16 +10,16 @@ import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
 import { Alert, Platform } from 'react-native';
 
-const SPEED_LIMIT_MPH        = 75;   // Umbral de alerta
+const SPEED_LIMIT_KMH        = 120;  // Umbral de alerta
 const ALERT_COOLDOWN_MS      = 30000; // No repetir alerta por 30 segundos
 
 export interface SpeedState {
-  speedMph: number;
+  speedKmh: number;
   isOverLimit: boolean;
 }
 
 export function useSpeedMonitor(active: boolean): SpeedState {
-  const [speedMph, setSpeedMph]       = useState(0);
+  const [speedKmh, setSpeedKmh]       = useState(0);
   const [isOverLimit, setIsOverLimit] = useState(false);
   const lastAlertRef  = useRef<number>(0);
   const watchRef      = useRef<Location.LocationSubscription | null>(null);
@@ -28,7 +28,7 @@ export function useSpeedMonitor(active: boolean): SpeedState {
     if (!active) {
       watchRef.current?.remove();
       watchRef.current = null;
-      setSpeedMph(0);
+      setSpeedKmh(0);
       setIsOverLimit(false);
       return;
     }
@@ -50,10 +50,10 @@ export function useSpeedMonitor(active: boolean): SpeedState {
           const rawSpeed = location.coords.speed ?? 0;
           if (rawSpeed < 0) return;
 
-          const mph = rawSpeed * 2.237; // m/s → mph
-          setSpeedMph(Math.round(mph));
+          const kmh = rawSpeed * 3.6; // m/s → km/h
+          setSpeedKmh(Math.round(kmh));
 
-          const over = mph > SPEED_LIMIT_MPH;
+          const over = kmh > SPEED_LIMIT_KMH;
           setIsOverLimit(over);
 
           if (over) {
@@ -62,8 +62,8 @@ export function useSpeedMonitor(active: boolean): SpeedState {
               lastAlertRef.current = now;
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
               Alert.alert(
-                '⚠️ Speed Alert',
-                `You are driving at ${Math.round(mph)} mph. Please slow down.`,
+                '⚠️ Velocidad alta',
+                `Estás conduciendo a ${Math.round(kmh)} km/h. Por favor reduce la velocidad.`,
                 [{ text: 'OK' }]
               );
             }
@@ -80,5 +80,5 @@ export function useSpeedMonitor(active: boolean): SpeedState {
     };
   }, [active]);
 
-  return { speedMph, isOverLimit };
+  return { speedKmh, isOverLimit };
 }

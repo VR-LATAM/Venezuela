@@ -138,7 +138,13 @@ export async function calculateFareEstimate(params: {
   hourlyPackageHours?: number;
 }): Promise<FareEstimate> {
   // Configuración del estado (tarifas configurables por admin)
-  const stateConfig = await getStateConfig(params.stateCode);
+  let stateConfig: USState | null = null;
+  try {
+    stateConfig = await getStateConfig(params.stateCode);
+  } catch (err) {
+    logger.error(`calculateFareEstimate: getStateConfig falló para stateCode="${params.stateCode}"`, err);
+    throw err;
+  }
 
   // pg devuelve columnas NUMERIC como strings — convertir siempre a número
   // price_per_km almacena la tarifa por MILLA (mercado EE.UU.)
@@ -159,6 +165,7 @@ export async function calculateFareEstimate(params: {
   const surgeMultiplier = isSurgeHour() ? +(stateConfig?.surge_multiplier ?? 1.5) : 1.0;
 
   // Distancia y tiempo real via Google Maps / Haversine (en millas)
+  logger.info(`calculateFareEstimate: state=${params.stateCode} svc=${params.serviceType} coords=(${params.pickupLat.toFixed(4)},${params.pickupLng.toFixed(4)})→(${params.dropoffLat.toFixed(4)},${params.dropoffLng.toFixed(4)})`);
   const { distanceMiles, durationMinutes } = await getDistanceAndDuration(
     params.pickupLat, params.pickupLng,
     params.dropoffLat, params.dropoffLng

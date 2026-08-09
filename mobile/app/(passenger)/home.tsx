@@ -49,26 +49,10 @@ interface Prediction {
 }
 
 const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string }[] = [
-  { key: 'motorcycle',      label: 'Moto',         emoji: '🏍️' },
-  { key: 'sedan',           label: 'Sedán',        emoji: '🚗' },
-  { key: 'suv',             label: 'SUV',          emoji: '🚙' },
-  { key: 'scheduled',       label: 'Programado',   emoji: '📅' },
-  { key: 'wait_and_return', label: 'Esperar y regresar', emoji: '⏳' },
-  { key: 'hourly',          label: 'Por hora',     emoji: '🕐' },
-];
-
-const HOURLY_PACKAGES = [
-  { hours: 2, label: '2 hrs' },
-  { hours: 4, label: '4 hrs' },
-  { hours: 8, label: '8 hrs' },
-];
-
-const WAIT_TIMES = [
-  { minutes: 30,  label: '30 min' },
-  { minutes: 60,  label: '1 hr' },
-  { minutes: 90,  label: '1.5 hrs' },
-  { minutes: 120, label: '2 hrs' },
-  { minutes: 180, label: '3 hrs' },
+  { key: 'motorcycle', label: 'Moto',       emoji: '🏍️' },
+  { key: 'sedan',      label: 'Sedán',      emoji: '🚗' },
+  { key: 'suv',        label: 'SUV',        emoji: '🚙' },
+  { key: 'scheduled',  label: 'Programado', emoji: '📅' },
 ];
 
 export default function PassengerHomeScreen() {
@@ -120,10 +104,6 @@ export default function PassengerHomeScreen() {
   const [isLoadingEstimates, setIsLoadingEstimates] = useState(false);
   const [estimateError, setEstimateError]           = useState<string | null>(null);
 
-  // Wait & Return — tiempo de espera estimado
-  const [estimatedWaitMinutes, setEstimatedWaitMinutes] = useState(60);
-  // Hourly — paquete de horas seleccionado
-  const [hourlyPackageHours, setHourlyPackageHours]     = useState(2);
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [keyboardHeight, setKeyboardHeight] = useState(0);
@@ -286,11 +266,20 @@ export default function PassengerHomeScreen() {
       Alert.alert('Permiso requerido', 'Se necesita acceso a tu ubicación para solicitar un viaje.');
       return;
     }
+    // Posición desde caché del SO (instantánea) — evita que el mapa abra en coordenadas incorrectas
+    try {
+      const last = await Location.getLastKnownPositionAsync({});
+      if (last) {
+        const cached = { latitude: last.coords.latitude, longitude: last.coords.longitude };
+        setUserLocation(cached);
+      }
+    } catch {}
+    // Posición GPS precisa — actualiza el mapa cuando está lista
     const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
     const coords = { latitude: loc.coords.latitude, longitude: loc.coords.longitude };
     setUserLocation(coords);
     mapZoomRef.current = 15;
-    mapRef.current?.animateToRegion({ ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 1000);
+    mapRef.current?.animateToRegion({ ...coords, latitudeDelta: 0.01, longitudeDelta: 0.01 }, 600);
     try {
       const [addr] = await Location.reverseGeocodeAsync(coords);
       if (addr) {
@@ -398,7 +387,7 @@ export default function PassengerHomeScreen() {
       const locationBias = userLocation
         ? `&location=${userLocation.latitude},${userLocation.longitude}&radius=50000`
         : '';
-      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&key=${GOOGLE_MAPS_KEY}&components=country:us&language=en&types=establishment|geocode${locationBias}`;
+      const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(text)}&key=${GOOGLE_MAPS_KEY}&language=es&types=establishment|geocode${locationBias}`;
       const res  = await fetch(url);
       const data = await res.json() as { status: string; predictions: Prediction[] };
       if (data.status === 'OK') setPredictions(data.predictions.slice(0, 5));
@@ -449,7 +438,7 @@ export default function PassengerHomeScreen() {
     setIsResolvingPlace(true);
     setPredictions([]);
     try {
-      const url  = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&key=${GOOGLE_MAPS_KEY}&components=country:US`;
+      const url  = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(text)}&key=${GOOGLE_MAPS_KEY}`;
       const res  = await fetch(url);
       const data = await res.json() as {
         status: string;
@@ -525,7 +514,7 @@ export default function PassengerHomeScreen() {
       setEstimateError(null);
 
       try {
-        const services: ServiceType[] = ['motorcycle', 'sedan', 'suv', 'wait_and_return', 'hourly'];
+        const services: ServiceType[] = ['motorcycle', 'sedan', 'suv', 'scheduled'];
         const results = await Promise.allSettled(
           services.map(svc =>
             rideMobileService.estimateFare({
@@ -534,9 +523,7 @@ export default function PassengerHomeScreen() {
               dropoffLat:           dropoffCoords.latitude,
               dropoffLng:           dropoffCoords.longitude,
               serviceType:          svc,
-              stateCode:            user?.state_code ?? 'TX',
-              estimatedWaitMinutes: svc === 'wait_and_return' ? estimatedWaitMinutes : undefined,
-              hourlyPackageHours:   svc === 'hourly' ? hourlyPackageHours : undefined,
+              stateCode:            user?.state_code ?? 'DC',
             })
           )
         );
@@ -568,7 +555,7 @@ export default function PassengerHomeScreen() {
       }
     };
     void fetchAll();
-  }, [userLocation, dropoffCoords, user?.state_code, estimatedWaitMinutes, hourlyPackageHours]);
+  }, [userLocation, dropoffCoords, user?.state_code]);
 
   useEffect(() => {
     const est = allEstimates[selectedService];
@@ -627,10 +614,8 @@ export default function PassengerHomeScreen() {
         dropoffLat:           dropoffCoords.latitude,
         dropoffLng:           dropoffCoords.longitude,
         serviceType:          selectedService,
-        stateCode:            user?.state_code ?? 'TX',
+        stateCode:            user?.state_code ?? 'DC',
         promoCode:            promoApplied ? promoCode : undefined,
-        estimatedWaitMinutes: selectedService === 'wait_and_return' ? estimatedWaitMinutes : undefined,
-        hourlyPackageHours:   selectedService === 'hourly' ? hourlyPackageHours : undefined,
       });
       setCurrentRide(ride);
       setSearchStatus('searching');
@@ -719,7 +704,13 @@ export default function PassengerHomeScreen() {
     <View style={styles.container}>
 
       {/* ══ MAPA ══ */}
-      <MapView
+      {!userLocation && (
+        <View style={[styles.map, styles.mapLoading]}>
+          <ActivityIndicator size="large" color={BRAND_COLORS.PRIMARY} />
+          <Text style={styles.mapLoadingText}>Obteniendo ubicación...</Text>
+        </View>
+      )}
+      {userLocation && <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
@@ -728,8 +719,8 @@ export default function PassengerHomeScreen() {
         showsMyLocationButton={false}
         mapPadding={{ top: 0, right: 0, bottom: 360, left: 0 }}
         initialRegion={{
-          latitude:      userLocation?.latitude  ?? 29.7604,
-          longitude:     userLocation?.longitude ?? -95.3698,
+          latitude:      userLocation.latitude,
+          longitude:     userLocation.longitude,
           latitudeDelta: 0.01,
           longitudeDelta: 0.01,
         }}
@@ -775,7 +766,7 @@ export default function PassengerHomeScreen() {
             </View>
           </Marker>
         )}
-      </MapView>
+      </MapView>}
 
       {/* ── CONTROLES DE ZOOM ── */}
       <View style={styles.zoomControls}>
@@ -960,7 +951,7 @@ export default function PassengerHomeScreen() {
                                   services.map(svc => rideMobileService.estimateFare({
                                     pickupLat: userLocation.latitude, pickupLng: userLocation.longitude,
                                     dropoffLat: dropoffCoords.latitude, dropoffLng: dropoffCoords.longitude,
-                                    serviceType: svc, stateCode: user?.state_code ?? 'TX',
+                                    serviceType: svc, stateCode: user?.state_code ?? 'DC',
                                   }))
                                 );
                                 const est2: Partial<Record<ServiceType, FareEstimate>> = {};
@@ -1023,7 +1014,7 @@ export default function PassengerHomeScreen() {
                                   ${(est.total ?? 0).toFixed(2)}
                                 </Text>
                                 <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
-                                  {est.duration_minutes ?? 0} min · {(est.distance_miles ?? 0).toFixed(1)} km
+                                  {est.duration_minutes ?? 0} min · {((est.distance_miles ?? 0) * 1.609).toFixed(1)} km
                                 </Text>
                                 {est.surge_multiplier > 1 && (
                                   <Text style={styles.surgeTag}>⚡ Alta demanda</Text>
@@ -1037,56 +1028,6 @@ export default function PassengerHomeScreen() {
                       })}
                     </View>
 
-                    {/* ── Selector de tiempo de espera (Wait & Return) ── */}
-                    {selectedService === 'wait_and_return' && (
-                      <View style={styles.subSelectorBox}>
-                        <Text style={styles.subSelectorTitle}>⏳ Tiempo estimado de espera en la cita</Text>
-                        <View style={styles.subSelectorRow}>
-                          {WAIT_TIMES.map(w => (
-                            <TouchableOpacity
-                              key={w.minutes}
-                              style={[styles.subSelectorChip, estimatedWaitMinutes === w.minutes && styles.subSelectorChipActive]}
-                              onPress={() => setEstimatedWaitMinutes(w.minutes)}
-                            >
-                              <Text style={[styles.subSelectorChipText, estimatedWaitMinutes === w.minutes && styles.subSelectorChipTextActive]}>
-                                {w.label}
-                              </Text>
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                        <Text style={styles.subSelectorNote}>
-                          El conductor cobra mientras espera. El costo final usa el tiempo real de espera.
-                        </Text>
-                      </View>
-                    )}
-
-                    {/* ── Selector de paquete de horas (Hourly Ride) ── */}
-                    {selectedService === 'hourly' && (
-                      <View style={styles.subSelectorBox}>
-                        <Text style={styles.subSelectorTitle}>🕐 Selecciona tu paquete de tiempo</Text>
-                        <View style={styles.subSelectorRow}>
-                          {HOURLY_PACKAGES.map(p => (
-                            <TouchableOpacity
-                              key={p.hours}
-                              style={[styles.subSelectorChip, hourlyPackageHours === p.hours && styles.subSelectorChipActive]}
-                              onPress={() => setHourlyPackageHours(p.hours)}
-                            >
-                              <Text style={[styles.subSelectorChipText, hourlyPackageHours === p.hours && styles.subSelectorChipTextActive]}>
-                                {p.label}
-                              </Text>
-                              {allEstimates['hourly'] && (
-                                <Text style={[styles.subSelectorChipPrice, hourlyPackageHours === p.hours && styles.subSelectorChipTextActive]}>
-                                  ${hourlyPackageHours === p.hours ? (allEstimates['hourly']?.total ?? 0).toFixed(0) : '—'}
-                                </Text>
-                              )}
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                        <Text style={styles.subSelectorNote}>
-                          Precio fijo · Múltiples paradas incluidas · El conductor se queda contigo
-                        </Text>
-                      </View>
-                    )}
                   </>
                 ) : (
                   /* Chips sin destino */
@@ -1418,6 +1359,8 @@ export default function PassengerHomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   map:       { ...StyleSheet.absoluteFillObject },
+  mapLoading: { justifyContent: 'center', alignItems: 'center', backgroundColor: '#EEF2FF' },
+  mapLoadingText: { marginTop: 10, fontSize: 14, color: '#666', fontFamily: 'Inter_400Regular' },
 
   // Controles de zoom
   zoomControls: {

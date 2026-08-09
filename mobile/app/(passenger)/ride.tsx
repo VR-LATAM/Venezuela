@@ -97,7 +97,7 @@ export default function RideScreen() {
   const [isRecording, setIsRecording]     = useState(false);
   const recordingRef = useRef<Audio.Recording | null>(null);
   const [etaMinutes, setEtaMinutes]       = useState<number | null>(null);
-  const [distanceMiles, setDistanceMiles] = useState<number | null>(null);
+  const [distanceKm, setDistanceKm] = useState<number | null>(null);
 
   // Centrar mapa en el PASAJERO cuando su posición cambia y actualizar routeOrigin
   useEffect(() => {
@@ -408,7 +408,7 @@ export default function RideScreen() {
             optimizeWaypoints={false}
             onReady={(result) => {
               setEtaMinutes(Math.ceil(result.duration));
-              setDistanceMiles(Math.round(result.distance * 0.621371 * 10) / 10);
+              setDistanceKm(Math.round(result.distance * 10) / 10);
             }}
           />
         )}
@@ -455,7 +455,7 @@ export default function RideScreen() {
             <View style={styles.statusDot} />
             <Text style={styles.statusText}>Viaje en curso</Text>
             {etaMinutes !== null && (
-              <Text style={styles.etaText}>  ·  {etaMinutes} min  {distanceMiles !== null ? `· ${distanceMiles} km` : ''}</Text>
+              <Text style={styles.etaText}>  ·  {etaMinutes} min  {distanceKm !== null ? `· ${distanceKm} km` : ''}</Text>
             )}
           </View>
         </View>
@@ -681,7 +681,7 @@ const styles = StyleSheet.create({
 
   headerSafe: {
     position: 'absolute', top: 0, left: 0, right: 0,
-    paddingTop: Platform.OS === 'android' ? 32 : 44,
+    paddingTop: Platform.OS === 'android' ? 56 : 68,
   },
   header: { margin: 16, alignItems: 'center' },
   statusBadge: {

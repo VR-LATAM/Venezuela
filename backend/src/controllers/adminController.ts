@@ -362,10 +362,11 @@ export const adminController = {
   listFares: async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const { rows } = await db.query(
-        `SELECT code, name, base_fare::float, price_per_km::float, price_per_minute::float,
+        `SELECT code, name, base_fare::float, price_per_mile::float, price_per_minute::float,
                 min_fare::float, surge_multiplier::float, platform_commission_percent::float,
                 motorcycle_multiplier::float, suv_multiplier::float,
-                hourly_rate::float, scheduled_surcharge::float
+                hourly_2h_price::float, hourly_4h_price::float, hourly_8h_price::float,
+                wait_per_minute_rate::float
          FROM us_states ORDER BY name ASC`
       );
       sendSuccess(res, { fares: rows });
@@ -376,15 +377,17 @@ export const adminController = {
     try {
       const schema = z.object({
         base_fare:                   z.number().positive().optional(),
-        price_per_km:                z.number().positive().optional(),
+        price_per_mile:              z.number().positive().optional(),
         price_per_minute:            z.number().positive().optional(),
         min_fare:                    z.number().positive().optional(),
         surge_multiplier:            z.number().min(1).max(5).optional(),
         platform_commission_percent: z.number().min(5).max(30).optional(),
         motorcycle_multiplier:       z.number().min(0.1).max(5).optional(),
         suv_multiplier:              z.number().min(1).max(5).optional(),
-        hourly_rate:                 z.number().positive().optional(),
-        scheduled_surcharge:         z.number().min(1).max(3).optional(),
+        hourly_2h_price:             z.number().positive().optional(),
+        hourly_4h_price:             z.number().positive().optional(),
+        hourly_8h_price:             z.number().positive().optional(),
+        wait_per_minute_rate:        z.number().positive().optional(),
       });
 
       const updates = schema.parse(req.body);

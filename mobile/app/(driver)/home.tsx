@@ -183,7 +183,7 @@ export default function DriverHomeScreen() {
   const WAIT_RATE_PER_SEC                          = 0.30 / 60; // default $0.30/min
 
   // Speed monitoring — activo solo cuando el viaje está en progreso
-  const { speedMph, isOverLimit } = useSpeedMonitor(activePhase === 'in_progress');
+  const { speedKmh, isOverLimit } = useSpeedMonitor(activePhase === 'in_progress');
 
 
   // Animación del toggle online
@@ -221,15 +221,6 @@ export default function DriverHomeScreen() {
     void nokiaToneService.preload();
     void loadTrainingStatus();
     void loadCertifications();
-
-    // Obtener posición real inmediatamente al montar para evitar mostrar Houston por defecto
-    Location.requestForegroundPermissionsAsync().then(({ status }) => {
-      if (status === 'granted') {
-        Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
-          .then(loc => setDriverPos({ latitude: loc.coords.latitude, longitude: loc.coords.longitude }))
-          .catch(() => {});
-      }
-    });
 
     // Si el conductor ya estaba online (ej. regresó de la pantalla de calificación),
     // reiniciar el GPS para que el marcador del vehículo vuelva al mapa
@@ -429,10 +420,21 @@ export default function DriverHomeScreen() {
 
   const loadProfile = async () => {
     try {
-      const [profile, alerts] = await Promise.all([
+      const locationPromise = Location.requestForegroundPermissionsAsync().then(async ({ status }) => {
+        if (status !== 'granted') return null;
+        try {
+          const last = await Location.getLastKnownPositionAsync({});
+          if (last) return last;
+          return await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        } catch { return null; }
+      });
+
+      const [profile, alerts, loc] = await Promise.all([
         driverMobileService.getProfile(),
         driverMobileService.getDocumentExpiry().catch(() => []),
+        locationPromise,
       ]);
+      if (loc) setDriverPos({ latitude: loc.coords.latitude, longitude: loc.coords.longitude });
       setDriver(profile);
       setDocAlerts(alerts.filter(a => a.is_expired || a.urgent));
 
@@ -619,7 +621,7 @@ export default function DriverHomeScreen() {
     currentStepIdxRef.current = 0;
     setCurrentNavStep(steps[0] ?? null);
     setNavEta(Math.ceil(result.duration));
-    setNavTotalDist(`${(result.distance * 0.621371).toFixed(1)} mi`);
+    setNavTotalDist(`${result.distance.toFixed(1)} km`);
   }, []);
 
   // ─────────────────────────────────────
@@ -1023,8 +1025,8 @@ export default function DriverHomeScreen() {
         showsUserLocation={false}
         mapPadding={{ top: 80, right: 20, bottom: activeRide ? (panelExpanded ? 370 : 150) : 200, left: 20 }}
         initialRegion={{
-          latitude:      driverPos?.latitude  ?? 29.7604,
-          longitude:     driverPos?.longitude ?? -95.3698,
+          latitude:      driverPos?.latitude  ?? 10.4806,
+          longitude:     driverPos?.longitude ?? -66.9036,
           latitudeDelta: 0.02,
           longitudeDelta: 0.02,
         }}
@@ -1392,52 +1394,7 @@ export default function DriverHomeScreen() {
               </TouchableOpacity>
             )}
 
-            {activePhase === 'in_progress' && (activeRide as any)?.service_type !== 'wait_and_return' && (
-              <TouchableOpacity
-                style={[styles.rideActionButton, { backgroundColor: BRAND_COLORS.ACCENT }]}
-                onPress={handleCompleteRide}
-                disabled={isActionLoading}
-              >
-                {isActionLoading
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.rideActionText}>✅ Completar viaje</Text>
-                }
-              </TouchableOpacity>
-            )}
-
-            {/* ── Wait & Return: controles de espera ── */}
-            {activePhase === 'in_progress' && (activeRide as any)?.service_type === 'wait_and_return' && !waitStartedAt && (
-              <TouchableOpacity
-                style={[styles.rideActionButton, { backgroundColor: '#0EA5E9' }]}
-                onPress={handleStartWait}
-                disabled={isActionLoading}
-              >
-                {isActionLoading
-                  ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.rideActionText}>⏳ Llegué — Iniciar espera</Text>
-                }
-              </TouchableOpacity>
-            )}
-
-            {activePhase === 'in_progress' && (activeRide as any)?.service_type === 'wait_and_return' && waitStartedAt && (
-              <View style={styles.waitTimerBox}>
-                <Text style={styles.waitTimerLabel}>⏱ Esperando en cita</Text>
-                <Text style={styles.waitTimerValue}>
-                  {String(Math.floor(waitElapsedSec / 60)).padStart(2, '0')}:{String(waitElapsedSec % 60).padStart(2, '0')}
-                </Text>
-                <Text style={styles.waitFareAccrued}>+${waitFareAccrued.toFixed(2)}</Text>
-                <TouchableOpacity
-                  style={[styles.rideActionButton, { backgroundColor: '#7B2FBE', marginTop: 10 }]}
-                  onPress={handleEndWait}
-                  disabled={isActionLoading}
-                >
-                  <Text style={styles.rideActionText}>🚗 El pasajero regresó — Iniciar retorno</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-
-            {/* Wait & Return — Complete después del regreso */}
-            {activePhase === 'in_progress' && (activeRide as any)?.service_type === 'wait_and_return' && !waitStartedAt && (activeRide as any)?.wait_ended_at && (
+            {activePhase === 'in_progress' && (
               <TouchableOpacity
                 style={[styles.rideActionButton, { backgroundColor: BRAND_COLORS.ACCENT }]}
                 onPress={handleCompleteRide}
@@ -1459,10 +1416,10 @@ export default function DriverHomeScreen() {
                   address={activeRide.dropoff_address}
                   label="Navigate"
                 />
-                {speedMph > 0 && (
+                {speedKmh > 0 && (
                   <View style={[styles.speedBadge, isOverLimit && styles.speedBadgeAlert]}>
-                    <Text style={[styles.speedValue, isOverLimit && { color: '#fff' }]}>{speedMph}</Text>
-                    <Text style={[styles.speedUnit, isOverLimit && { color: 'rgba(255,255,255,0.8)' }]}>mph</Text>
+                    <Text style={[styles.speedValue, isOverLimit && { color: '#fff' }]}>{speedKmh}</Text>
+                    <Text style={[styles.speedUnit, isOverLimit && { color: 'rgba(255,255,255,0.8)' }]}>km/h</Text>
                   </View>
                 )}
               </View>

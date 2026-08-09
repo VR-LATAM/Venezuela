@@ -888,7 +888,7 @@ export const rideService = {
     if (ride.service_type !== 'wait_and_return') throw new Error('NOT_WAIT_AND_RETURN');
     if (!ride.wait_started_at) throw new Error('WAIT_NOT_STARTED');
 
-    const stateConfig = await getStateConfig(ride.state_code ?? 'TX');
+    const stateConfig = await getStateConfig(ride.state_code ?? 'DC');
     const waitPerMin  = +(stateConfig?.wait_per_minute_rate ?? 0.30);
     const waitMs      = Date.now() - new Date(ride.wait_started_at).getTime();
     const waitMinutes = Math.ceil(waitMs / 60_000);
