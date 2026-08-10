@@ -18,6 +18,7 @@ export default function ContractScreen() {
 
   const [contractSignedAt, setContractSignedAt] = useState<string | null>(null);
   const [savedSignature, setSavedSignature]      = useState<string[]>([]);
+  const [driver, setDriver]                      = useState<Record<string, any> | null>(null);
   const [loadingStatus, setLoadingStatus]        = useState(true);
   const [saving, setSaving]                      = useState(false);
   const [scrollEnabled, setScrollEnabled]        = useState(true);
@@ -30,6 +31,7 @@ export default function ContractScreen() {
   React.useEffect(() => {
     apiClient.get('/driver/profile').then(res => {
       const d = res.data?.data;
+      setDriver(d);
       setContractSignedAt(d?.contract_signed_at ?? null);
       if (d?.contract_signature) {
         setSavedSignature((d.contract_signature as string).split('|').filter(Boolean));
@@ -130,6 +132,15 @@ ${signedLine}
 <div class="field"><b>Nombre:</b> ${user?.name ?? '—'}</div>
 <div class="field"><b>Correo:</b> ${user?.email ?? '—'}</div>
 <div class="field"><b>Teléfono:</b> ${user?.phone ?? '—'}</div>
+
+<h3>DATOS DEL VEHÍCULO</h3>
+<div class="field"><b>Marca:</b> ${driver?.vehicle_brand ?? '—'}</div>
+<div class="field"><b>Modelo:</b> ${driver?.vehicle_model ?? '—'}</div>
+<div class="field"><b>Año:</b> ${driver?.vehicle_year ?? '—'}</div>
+<div class="field"><b>Color:</b> ${driver?.vehicle_color ?? '—'}</div>
+<div class="field"><b>Placa:</b> ${driver?.vehicle_plate ?? '—'}</div>
+<div class="field"><b>Seguro:</b> ${driver?.insurance_company ?? '—'}</div>
+<div class="field"><b>Póliza:</b> ${driver?.insurance_policy_number ?? '—'}</div>
 
 <h3>PRIMERA — NATURALEZA DEL SERVICIO</h3>
 <p>EL CONDUCTOR prestará servicios de transporte de personas y/o encomiendas a través de la plataforma tecnológica VERONA Ride, operando como trabajador independiente. No existe relación laboral, de dependencia ni subordinación entre EL CONDUCTOR y LA PLATAFORMA.</p>
@@ -250,6 +261,16 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Nombre:</Text><Text style={styles.fieldValue}>{user?.name ?? '—'}</Text></View>
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Correo:</Text><Text style={styles.fieldValue}>{user?.email ?? '—'}</Text></View>
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Teléfono:</Text><Text style={styles.fieldValue}>{user?.phone ?? '—'}</Text></View>
+
+      {/* Datos del vehículo */}
+      <Text style={styles.sectionTitle}>DATOS DEL VEHÍCULO</Text>
+      <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Marca:</Text><Text style={styles.fieldValue}>{driver?.vehicle_brand ?? '—'}</Text></View>
+      <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Modelo:</Text><Text style={styles.fieldValue}>{driver?.vehicle_model ?? '—'}</Text></View>
+      <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Año:</Text><Text style={styles.fieldValue}>{driver?.vehicle_year ?? '—'}</Text></View>
+      <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Color:</Text><Text style={styles.fieldValue}>{driver?.vehicle_color ?? '—'}</Text></View>
+      <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Placa:</Text><Text style={styles.fieldValue}>{driver?.vehicle_plate ?? '—'}</Text></View>
+      <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Seguro:</Text><Text style={styles.fieldValue}>{driver?.insurance_company ?? '—'}</Text></View>
+      <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Póliza:</Text><Text style={styles.fieldValue}>{driver?.insurance_policy_number ?? '—'}</Text></View>
 
       {/* Cláusulas */}
       <Text style={styles.sectionTitle}>CLÁUSULAS DEL CONTRATO</Text>
