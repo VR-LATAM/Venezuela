@@ -114,7 +114,7 @@ export default function ContractScreen() {
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
-  @page { size: letter; margin: 1cm; }
+  @page { size: letter; margin: 1in; }
   body{font-family:Arial,sans-serif;font-size:11pt;color:#1F2937;margin:0;padding:0;line-height:1.5}
   h1{color:#1E3A8A;font-size:14pt;text-align:center;margin-bottom:4px}
   h2{color:#0D9488;font-size:11pt;text-align:center;margin-top:0}
