@@ -29,8 +29,14 @@ export interface RequestRideParams {
   // Encomienda / Delivery
   packageDescription?: string;
   packageSize?:        'small' | 'medium' | 'large';
+  senderName?:         string;
+  senderPhone?:        string;
   recipientName?:      string;
   recipientPhone?:     string;
+  deliveryVehicle?:    'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma';
+  // Carga
+  cargaVehicle?:       '350' | 'npr';
+  offeredPrice?:       number;
 }
 
 export const rideMobileService = {
@@ -44,6 +50,9 @@ export const rideMobileService = {
     stateCode:             string;
     estimatedWaitMinutes?: number;
     hourlyPackageHours?:   number;
+    packageSize?:          'small' | 'medium' | 'large';
+    deliveryVehicle?:      'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma';
+    cargaVehicle?:         '350' | 'npr';
   }): Promise<FareEstimate> => {
     const r = await apiClient.post('/ride/estimate', params);
     return r.data.data as FareEstimate;
@@ -112,6 +121,31 @@ export const rideMobileService = {
   // Notas del conductor post-viaje
   addDriverNotes: async (rideId: string, notes: string): Promise<void> => {
     await apiClient.post(`/ride/${rideId}/notes`, { notes });
+  },
+
+  // Geocodificar dirección personalizada (para pickup en delivery)
+  geocodeAddress: async (address: string): Promise<{ lat: number; lng: number } | null> => {
+    const r = await apiClient.get('/ride/geocode', { params: { address } });
+    return r.data.data as { lat: number; lng: number } | null;
+  },
+
+  // Contra-oferta de precio (conductor, solo carga)
+  counterOffer: async (rideId: string, counterPrice: number, counterReason: string): Promise<void> => {
+    await apiClient.post(`/ride/${rideId}/counter-offer`, { counterPrice, counterReason });
+  },
+
+  // Respuesta del pasajero a la contra-oferta
+  respondCounter: async (rideId: string, accept: boolean): Promise<void> => {
+    await apiClient.post(`/ride/${rideId}/respond-counter`, { accept });
+  },
+
+  // Perfil público de un conductor (para mostrar al pasajero)
+  getDriverPublicProfile: async (driverId: string): Promise<{
+    id: string; name: string; photo_url?: string; rating_avg: number;
+    vehicle_brand?: string; vehicle_model?: string; vehicle_color?: string; vehicle_plate?: string;
+  }> => {
+    const r = await apiClient.get(`/driver/public/${driverId}`);
+    return r.data.data;
   },
 
   // SOS

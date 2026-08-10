@@ -8,6 +8,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Modal,
+  TextInput, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, router } from 'expo-router';
@@ -38,6 +39,8 @@ interface IncomingRequest {
   packageSize?: string;
   recipientName?: string;
   recipientPhone?: string;
+  // Carga — precio ofrecido
+  offeredPrice?: number;
 }
 
 const SPECIAL_NEEDS_LABELS: Record<string, string> = {
@@ -56,6 +59,12 @@ export default function DriverLayout() {
   const [countdown, setCountdown] = useState(30);
   const countdownRef  = useRef<ReturnType<typeof setInterval> | null>(null);
   const toneIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Panel de contra-oferta (solo carga)
+  const [showCounterPanel, setShowCounterPanel] = useState(false);
+  const [counterPriceInput, setCounterPriceInput] = useState('');
+  const [counterReasonInput, setCounterReasonInput] = useState('');
+  const [sendingCounter, setSendingCounter] = useState(false);
 
   // ── Registrar handler de nuevas solicitudes a nivel de layout ──
   // Siempre activo, independientemente de la pantalla del conductor
@@ -87,6 +96,9 @@ export default function DriverLayout() {
     if (!incomingRequest) return;
 
     setCountdown(incomingRequest.timeoutSeconds ?? 30);
+    setShowCounterPanel(false);
+    setCounterPriceInput(incomingRequest.offeredPrice ? String(incomingRequest.offeredPrice) : '');
+    setCounterReasonInput('');
 
     // Countdown de 1 en 1 segundo
     countdownRef.current = setInterval(() => {
@@ -260,7 +272,8 @@ export default function DriverLayout() {
                          incomingRequest.serviceType === 'suv'        ? '🚙' :
                          incomingRequest.serviceType === 'encomienda' ? '📦' :
                          incomingRequest.serviceType === 'pickup'     ? '🛻' :
-                         incomingRequest.serviceType === 'plataforma' ? '🚛' : '🚗'}
+                         incomingRequest.serviceType === 'plataforma' ? '🚛' :
+                         incomingRequest.serviceType === 'carga'      ? '🏗️' : '🚗'}
                       </Text>
                       <Text style={styles.requestMetaText}>
                         {incomingRequest.serviceType === 'motorcycle' ? 'Moto'       :
@@ -269,6 +282,7 @@ export default function DriverLayout() {
                          incomingRequest.serviceType === 'encomienda' ? 'Encomienda' :
                          incomingRequest.serviceType === 'pickup'     ? 'Pick-Up'    :
                          incomingRequest.serviceType === 'plataforma' ? 'Plataforma' :
+                         incomingRequest.serviceType === 'carga'      ? 'Carga'      :
                          incomingRequest.serviceType}
                       </Text>
                     </View>
@@ -309,7 +323,9 @@ export default function DriverLayout() {
                   {incomingRequest.estimatedDriverEarnings > 0 && (
                     <View style={styles.fareRow}>
                       <View style={[styles.fareBox, styles.fareBoxAccent, { flex: 1 }]}>
-                        <Text style={styles.fareLabel}>Tus ganancias</Text>
+                        <Text style={styles.fareLabel}>
+                          {incomingRequest.serviceType === 'carga' ? 'Precio ofrecido' : 'Tus ganancias'}
+                        </Text>
                         <Text style={styles.fareEarnings}>
                           ${incomingRequest.estimatedDriverEarnings.toFixed(2)}
                         </Text>
@@ -318,23 +334,91 @@ export default function DriverLayout() {
                   )}
                 </View>
 
+                {/* Panel de contra-oferta (carga) */}
+                {showCounterPanel && incomingRequest.serviceType === 'carga' && (
+                  <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+                    <View style={styles.counterPanel}>
+                      <Text style={styles.counterPanelTitle}>Tu contra-oferta</Text>
+                      <TextInput
+                        style={styles.counterPanelInput}
+                        value={counterPriceInput}
+                        onChangeText={setCounterPriceInput}
+                        placeholder="Precio ($)"
+                        placeholderTextColor="#aaa"
+                        keyboardType="decimal-pad"
+                        maxLength={10}
+                      />
+                      <TextInput
+                        style={[styles.counterPanelInput, styles.counterPanelReason]}
+                        value={counterReasonInput}
+                        onChangeText={setCounterReasonInput}
+                        placeholder="Motivo (ej. se requiere un ayudante para descargar)"
+                        placeholderTextColor="#aaa"
+                        multiline
+                        maxLength={300}
+                      />
+                      <View style={{ flexDirection: 'row', gap: 8 }}>
+                        <TouchableOpacity
+                          style={[styles.rejectButton, { flex: 1, height: 48 }]}
+                          onPress={() => setShowCounterPanel(false)}
+                        >
+                          <Text style={styles.rejectButtonText}>Cancelar</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[styles.acceptButton, { flex: 2, height: 48 }]}
+                          disabled={sendingCounter}
+                          onPress={async () => {
+                            const price = parseFloat(counterPriceInput.replace(',', '.'));
+                            if (isNaN(price) || price <= 0) return;
+                            if (!counterReasonInput.trim() || counterReasonInput.trim().length < 5) return;
+                            setSendingCounter(true);
+                            try {
+                              await rideMobileService.counterOffer(incomingRequest.rideId, price, counterReasonInput.trim());
+                              setIncomingRequest(null);
+                              setShowCounterPanel(false);
+                            } catch { /* ignorar */ } finally {
+                              setSendingCounter(false);
+                            }
+                          }}
+                        >
+                          {sendingCounter
+                            ? <ActivityIndicator color="#fff" />
+                            : <Text style={styles.acceptButtonText}>Enviar oferta</Text>
+                          }
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </KeyboardAvoidingView>
+                )}
+
                 {/* Botones */}
-                <View style={styles.requestActions}>
-                  <TouchableOpacity
-                    style={styles.rejectButton}
-                    onPress={() => handleRideResponse(false)}
-                    accessibilityRole="button"
-                  >
-                    <Text style={styles.rejectButtonText}>✕ Rechazar</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.acceptButton}
-                    onPress={() => handleRideResponse(true)}
-                    accessibilityRole="button"
-                  >
-                    <Text style={styles.acceptButtonText}>✓ Aceptar</Text>
-                  </TouchableOpacity>
-                </View>
+                {!showCounterPanel && (
+                  <View style={styles.requestActions}>
+                    <TouchableOpacity
+                      style={styles.rejectButton}
+                      onPress={() => handleRideResponse(false)}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.rejectButtonText}>✕ Rechazar</Text>
+                    </TouchableOpacity>
+                    {incomingRequest.serviceType === 'carga' && (
+                      <TouchableOpacity
+                        style={styles.counterButton}
+                        onPress={() => setShowCounterPanel(true)}
+                        accessibilityRole="button"
+                      >
+                        <Text style={styles.counterButtonText}>💬</Text>
+                      </TouchableOpacity>
+                    )}
+                    <TouchableOpacity
+                      style={styles.acceptButton}
+                      onPress={() => handleRideResponse(true)}
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.acceptButtonText}>✓ Aceptar</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
 
               </View>
             </SafeAreaView>
@@ -452,5 +536,28 @@ const styles = StyleSheet.create({
   },
   acceptButtonText: {
     fontSize: 17, fontWeight: '700', color: '#fff',
+  },
+  counterButton: {
+    width: 60, height: 60, backgroundColor: '#FFF9C4',
+    borderRadius: 16, justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: '#F59E0B',
+  },
+  counterButtonText: {
+    fontSize: 22,
+  },
+  counterPanel: {
+    marginTop: 12, padding: 16, backgroundColor: '#F8F9FA',
+    borderRadius: 16, borderWidth: 1, borderColor: '#E2E8F0', gap: 10,
+  },
+  counterPanelTitle: {
+    fontSize: 15, fontWeight: '700', color: '#1E293B', marginBottom: 2,
+  },
+  counterPanelInput: {
+    backgroundColor: '#fff', borderWidth: 1, borderColor: '#CBD5E1',
+    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
+    fontSize: 15, color: '#1E293B',
+  },
+  counterPanelReason: {
+    minHeight: 72, textAlignVertical: 'top',
   },
 });

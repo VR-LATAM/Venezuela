@@ -176,7 +176,6 @@ export const useRideStore = create<RideState>((set, get) => ({
       const ride = await rideMobileService.getActiveRide();
       if (!ride) return;
 
-      // Restaurar estado según el status del viaje en BD
       const statusMap: Record<string, RideSearchStatus> = {
         searching:       'searching',
         driver_assigned: 'driver_assigned',
@@ -189,6 +188,15 @@ export const useRideStore = create<RideState>((set, get) => ({
         currentRide:  ride,
         searchStatus: statusMap[ride.status] ?? 'idle',
       });
+
+      // Restaurar datos del conductor si ya fue asignado
+      const withDriver = ['driver_assigned', 'driver_arriving', 'driver_arrived', 'in_progress'];
+      if (withDriver.includes(ride.status) && ride.driver_id) {
+        try {
+          const driver = await rideMobileService.getDriverPublicProfile(ride.driver_id);
+          set({ assignedDriver: driver });
+        } catch { /* sin datos de conductor — el panel muestra placeholder */ }
+      }
     } catch {
       // Sin viaje activo
     }

@@ -272,17 +272,6 @@ export default function DriverHomeScreen() {
     }
   }, [activePhase]);
 
-  // Listener de mensajes del pasajero
-  useEffect(() => {
-    const unsub = socketService.on('driver:passenger_message', (data: unknown) => {
-      const d = data as { message: string };
-      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      setChatMessages(prev => [...prev, { text: d.message, fromMe: false, time }]);
-      setChatOpen(true);
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    });
-    return () => unsub();
-  }, []);
 
   // Auto-redirect a training cuando la cuenta está activa pero el entrenamiento no está completo.
   // Solo ocurre una vez por sesión (al montar) — el banner se encarga del resto.
@@ -503,6 +492,15 @@ export default function DriverHomeScreen() {
     socketService.on('driver:passenger_assigned', (data: unknown) => {
       const d = data as { passenger: { id: string; name: string; photo_url?: string; patient_phone?: string | null } };
       if (d?.passenger) setAssignedPassenger(d.passenger);
+    });
+
+    // Mensajes del pasajero durante el viaje
+    socketService.on('driver:passenger_message', (data: unknown) => {
+      const d = data as { message: string };
+      const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      setChatMessages(prev => [...prev, { text: d.message, fromMe: false, time }]);
+      setChatOpen(true);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     });
   };
 
@@ -893,8 +891,9 @@ export default function DriverHomeScreen() {
                   },
                 ]
               );
-            } catch (err) {
-              Alert.alert('', 'No se pudo finalizar el viaje. Intenta de nuevo.');
+            } catch (err: any) {
+              const msg = err?.response?.data?.error ?? err?.message ?? 'Error desconocido';
+              Alert.alert('No se pudo finalizar', msg);
             } finally {
               setIsActionLoading(false);
             }
@@ -1436,32 +1435,23 @@ export default function DriverHomeScreen() {
               </TouchableOpacity>
             )}
 
-            {/* ── Navegación + velocidad (siempre visible en in_progress) ── */}
-            {activePhase === 'in_progress' && activeRide && (
-              <View style={styles.navSpeedRow}>
-                <NavigationButton
-                  lat={(activeRide as any).dropoff_lat}
-                  lng={(activeRide as any).dropoff_lng}
-                  address={activeRide.dropoff_address}
-                  label="Navigate"
-                />
-                {speedKmh > 0 && (
-                  <View style={[styles.speedBadge, isOverLimit && styles.speedBadgeAlert]}>
-                    <Text style={[styles.speedValue, isOverLimit && { color: '#fff' }]}>{speedKmh}</Text>
-                    <Text style={[styles.speedUnit, isOverLimit && { color: 'rgba(255,255,255,0.8)' }]}>km/h</Text>
-                  </View>
+            {/* ── Fila de acciones unificada ── */}
+            {activeRide && (
+              <View style={styles.actionRow}>
+                {activePhase === 'in_progress' && (
+                  <NavigationButton
+                    lat={(activeRide as any).dropoff_lat}
+                    lng={(activeRide as any).dropoff_lng}
+                    address={activeRide.dropoff_address}
+                    label="Navegar"
+                    style={styles.actionItem}
+                  />
                 )}
-              </View>
-            )}
-
-            {/* ── Cancelar y SOS (visibles al expandir) ── */}
-            {panelExpanded && (
-              <View style={styles.rideBottomRow}>
                 <TouchableOpacity
-                  style={styles.cancelRideBtn}
+                  style={[styles.actionItem, styles.actionCancel]}
                   onPress={() => Alert.alert(
                     'Cancelar viaje',
-                    '¿Estás seguro de que quieres cancelar este viaje?',
+                    '¿Estás seguro?',
                     [
                       { text: 'No', style: 'cancel' },
                       {
@@ -1482,17 +1472,18 @@ export default function DriverHomeScreen() {
                     ]
                   )}
                 >
-                  <Text style={styles.cancelRideBtnText}>✕ Cancelar viaje</Text>
+                  <Text style={[styles.actionItemText, { color: BRAND_COLORS.ALERT }]}>✕ Cancelar</Text>
                 </TouchableOpacity>
 
                 <SOSButton
                   rideId={activeRide?.id}
                   lat={driverPos?.latitude}
                   lng={driverPos?.longitude}
+                  style={styles.actionItem}
                 />
 
-                <TouchableOpacity style={styles.chatBtn} onPress={() => setChatOpen(true)}>
-                  <Text style={styles.chatBtnText}>💬 Chat</Text>
+                <TouchableOpacity style={[styles.actionItem, styles.actionChat]} onPress={() => setChatOpen(true)}>
+                  <Text style={[styles.actionItemText, { color: '#fff' }]}>💬 Chat</Text>
                   {chatMessages.filter(m => !m.fromMe).length > 0 && (
                     <View style={styles.chatBadge}>
                       <Text style={styles.chatBadgeText}>{chatMessages.filter(m => !m.fromMe).length}</Text>
@@ -1501,59 +1492,68 @@ export default function DriverHomeScreen() {
                 </TouchableOpacity>
               </View>
             )}
+
+            {/* ── Velocímetro (solo en_route) ── */}
+            {activePhase === 'in_progress' && speedKmh > 0 && (
+              <View style={[styles.speedBadge, isOverLimit && styles.speedBadgeAlert, { alignSelf: 'flex-start', marginTop: 6 }]}>
+                <Text style={[styles.speedValue, isOverLimit && { color: '#fff' }]}>{speedKmh}</Text>
+                <Text style={[styles.speedUnit, isOverLimit && { color: 'rgba(255,255,255,0.8)' }]}>km/h</Text>
+              </View>
+            )}
           </View>
         )}
       </View>
 
       {/* ══ MODAL DE CHAT CON PASAJERO ══ */}
       <Modal visible={chatOpen} animationType="slide" transparent onRequestClose={() => setChatOpen(false)}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-          <View style={styles.chatOverlay}>
-            <View style={styles.chatSheet}>
-              <View style={styles.chatHeader}>
-                <Text style={styles.chatTitle}>Chat con pasajero</Text>
-                <TouchableOpacity onPress={() => setChatOpen(false)}>
-                  <Text style={styles.chatClose}>✕</Text>
-                </TouchableOpacity>
-              </View>
-              <FlatList
-                ref={chatListRef}
-                data={chatMessages}
-                keyExtractor={(_, i) => String(i)}
-                style={styles.chatMessages}
-                contentContainerStyle={{ padding: 12, gap: 8 }}
-                ListEmptyComponent={<Text style={styles.chatEmpty}>Sin mensajes aún.</Text>}
-                renderItem={({ item }) => (
-                  <View style={[styles.bubble, item.fromMe ? styles.bubbleMe : styles.bubbleThem]}>
-                    <Text style={[styles.bubbleText, item.fromMe ? styles.bubbleTextMe : styles.bubbleTextThem]}>
-                      {item.text}
-                    </Text>
-                    <Text style={styles.bubbleTime}>{item.time}</Text>
-                  </View>
-                )}
-              />
-              <View style={styles.chatInputRow}>
-                <TextInput
-                  style={styles.chatInput}
-                  value={chatMessage}
-                  onChangeText={setChatMessage}
-                  placeholder="Escribe un mensaje..."
-                  placeholderTextColor="#aaa"
-                  autoCapitalize="none"
-                  returnKeyType="send"
-                  onSubmitEditing={() => sendDriverMessage(chatMessage)}
-                />
-                <TouchableOpacity
-                  style={[styles.chatSendBtn, !chatMessage.trim() && styles.chatSendDisabled]}
-                  onPress={() => sendDriverMessage(chatMessage)}
-                  disabled={!chatMessage.trim()}
-                >
-                  <Text style={styles.chatSendText}>Enviar</Text>
-                </TouchableOpacity>
-              </View>
+        <View style={styles.chatOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.chatSheet}
+          >
+            <View style={styles.chatHeader}>
+              <Text style={styles.chatTitle}>Chat con pasajero</Text>
+              <TouchableOpacity onPress={() => setChatOpen(false)}>
+                <Text style={styles.chatClose}>✕</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-        </KeyboardAvoidingView>
+            <FlatList
+              ref={chatListRef}
+              data={chatMessages}
+              keyExtractor={(_, i) => String(i)}
+              style={styles.chatMessages}
+              contentContainerStyle={{ padding: 12, gap: 8 }}
+              ListEmptyComponent={<Text style={styles.chatEmpty}>Sin mensajes aún.</Text>}
+              renderItem={({ item }) => (
+                <View style={[styles.bubble, item.fromMe ? styles.bubbleMe : styles.bubbleThem]}>
+                  <Text style={[styles.bubbleText, item.fromMe ? styles.bubbleTextMe : styles.bubbleTextThem]}>
+                    {item.text}
+                  </Text>
+                  <Text style={styles.bubbleTime}>{item.time}</Text>
+                </View>
+              )}
+            />
+            <View style={styles.chatInputRow}>
+              <TextInput
+                style={styles.chatInput}
+                value={chatMessage}
+                onChangeText={setChatMessage}
+                placeholder="Escribe un mensaje..."
+                placeholderTextColor="#aaa"
+                autoCapitalize="none"
+                returnKeyType="send"
+                onSubmitEditing={() => sendDriverMessage(chatMessage)}
+              />
+              <TouchableOpacity
+                style={[styles.chatSendBtn, !chatMessage.trim() && styles.chatSendDisabled]}
+                onPress={() => sendDriverMessage(chatMessage)}
+                disabled={!chatMessage.trim()}
+              >
+                <Text style={styles.chatSendText}>Enviar</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
 
       {/* ══ MENÚ DEL CONDUCTOR ══ */}
@@ -1923,12 +1923,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontFamily: 'Inter_700Bold',
   },
-  rideBottomRow: {
+  actionRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    gap: 5,
     marginTop: 8,
-    gap: 10,
+  },
+  actionItem: {
+    flex: 1,
+    height: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  actionCancel: {
+    borderWidth: 1,
+    borderColor: BRAND_COLORS.ALERT,
+    backgroundColor: '#FEF2F2',
+  },
+  actionChat: {
+    backgroundColor: BRAND_COLORS.PRIMARY,
+  },
+  actionItemText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#374151',
+    fontFamily: 'Inter_700Bold',
   },
   cancelRideBtn: {
     flex: 1,
@@ -1950,11 +1970,11 @@ const styles = StyleSheet.create({
   chatBadge: { backgroundColor: BRAND_COLORS.ALERT, borderRadius: 10, minWidth: 18, height: 18, alignItems: 'center', justifyContent: 'center', marginLeft: 6 },
   chatBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
   chatOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  chatSheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '70%' },
-  chatHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
-  chatTitle: { fontSize: 18, fontWeight: '600', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_600SemiBold' },
+  chatSheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '80%', minHeight: 300 },
+  chatHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  chatTitle: { fontSize: 17, fontWeight: '600', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_600SemiBold' },
   chatClose: { fontSize: 20, color: '#888', padding: 4 },
-  chatMessages: { maxHeight: 220 },
+  chatMessages: { flex: 1 },
   chatEmpty: { textAlign: 'center', color: '#aaa', fontSize: 15, marginTop: 20, fontFamily: 'Inter_400Regular' },
   bubble: { maxWidth: '80%', padding: 10, borderRadius: 16, marginVertical: 2 },
   bubbleMe: { backgroundColor: BRAND_COLORS.PRIMARY, alignSelf: 'flex-end', borderBottomRightRadius: 4 },

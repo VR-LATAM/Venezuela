@@ -381,7 +381,7 @@ export const adminController = {
         price_per_minute:            z.number().positive().optional(),
         min_fare:                    z.number().positive().optional(),
         surge_multiplier:            z.number().min(1).max(5).optional(),
-        platform_commission_percent: z.number().min(5).max(30).optional(),
+        platform_commission_percent: z.number().min(0).max(30).optional(),
         motorcycle_multiplier:       z.number().min(0.1).max(5).optional(),
         suv_multiplier:              z.number().min(1).max(5).optional(),
         hourly_2h_price:             z.number().positive().optional(),

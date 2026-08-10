@@ -83,15 +83,10 @@ export default function RideScreen() {
   const [chatOpen, setChatOpen]         = useState(false);
   const [chatMessage, setChatMessage]   = useState('');
   const [messages, setMessages]         = useState<{ text: string; fromMe: boolean; time: string }[]>([]);
+  const [unreadCount, setUnreadCount]   = useState(0);
   const rideStartTime = useRef<Date>(new Date());
   const flatListRef   = useRef<FlatList>(null);
 
-  const QUICK_MESSAGES = [
-    "Ya voy para allá",
-    "Estoy en el lobby",
-    "Por favor ven a la entrada",
-    "Llego en 2 minutos",
-  ];
 
   const nearbyAlertShown  = useRef(false);
   const [isRecording, setIsRecording]     = useState(false);
@@ -176,7 +171,7 @@ export default function RideScreen() {
       const d = data as { message: string };
       const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       setMessages(prev => [...prev, { text: d.message, fromMe: false, time }]);
-      setChatOpen(true);
+      setUnreadCount(prev => prev + 1);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     });
 
@@ -536,11 +531,15 @@ export default function RideScreen() {
 
           <TouchableOpacity
             style={styles.actionBtn}
-            onPress={() => setChatOpen(true)}
+            onPress={() => { setChatOpen(true); setUnreadCount(0); }}
           >
             <Text style={styles.actionEmoji}>💬</Text>
             <Text style={styles.actionLabel}>Chat</Text>
-
+            {unreadCount > 0 && (
+              <View style={styles.unreadBadge}>
+                <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+              </View>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -582,13 +581,15 @@ export default function RideScreen() {
       </View>
 
       {/* ── MODAL DE CHAT ── */}
-      <Modal visible={chatOpen} animationType="slide" transparent onRequestClose={() => setChatOpen(false)}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-          <View style={styles.chatOverlay}>
-            <View style={styles.chatSheet}>
+      <Modal visible={chatOpen} animationType="slide" transparent onRequestClose={() => { setChatOpen(false); setUnreadCount(0); }}>
+        <View style={styles.chatOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.chatSheet}
+          >
               <View style={styles.chatHeader}>
                 <Text style={styles.chatTitle}>Chat con el conductor</Text>
-                <TouchableOpacity onPress={() => setChatOpen(false)}>
+                <TouchableOpacity onPress={() => { setChatOpen(false); setUnreadCount(0); }}>
                   <Text style={styles.chatClose}>✕</Text>
                 </TouchableOpacity>
               </View>
@@ -612,13 +613,6 @@ export default function RideScreen() {
                 )}
               />
 
-              <View style={styles.quickMessages}>
-                {QUICK_MESSAGES.map(msg => (
-                  <TouchableOpacity key={msg} style={styles.quickBtn} onPress={() => sendMessage(msg)}>
-                    <Text style={styles.quickBtnText}>{msg}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
 
               <View style={styles.chatInputRow}>
                 <TextInput
@@ -638,9 +632,8 @@ export default function RideScreen() {
                   <Text style={styles.chatSendText}>Enviar</Text>
                 </TouchableOpacity>
               </View>
-            </View>
-          </View>
-        </KeyboardAvoidingView>
+          </KeyboardAvoidingView>
+        </View>
       </Modal>
     </View>
   );
@@ -737,7 +730,7 @@ const styles = StyleSheet.create({
 
   bottomPanel: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 19,
     left: 0,
     right: 0,
     backgroundColor: '#fff',
@@ -801,6 +794,14 @@ const styles = StyleSheet.create({
   recordingActive:  { backgroundColor: BRAND_COLORS.ALERT + '20' },
   actionEmoji: { fontSize: 24, marginBottom: 4 },
   actionLabel: { fontSize: 13, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
+  unreadBadge: {
+    position: 'absolute', top: 6, right: 6,
+    backgroundColor: BRAND_COLORS.ALERT,
+    borderRadius: 10, minWidth: 18, height: 18,
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 4,
+  },
+  unreadBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
 
   // Chat
   chatOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
@@ -808,19 +809,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    maxHeight: '75%',
+    maxHeight: '80%',
+    minHeight: 300,
   },
   chatHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 20,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
-  chatTitle: { fontSize: 18, fontWeight: '600', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_600SemiBold' },
+  chatTitle: { fontSize: 17, fontWeight: '600', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_600SemiBold' },
   chatClose: { fontSize: 20, color: '#888', padding: 4 },
-  chatMessages: { maxHeight: 200 },
+  chatMessages: { flex: 1 },
   chatEmpty: { textAlign: 'center', color: '#aaa', fontSize: 15, marginTop: 20, fontFamily: 'Inter_400Regular' },
   bubble: {
     maxWidth: '80%',
@@ -834,7 +836,6 @@ const styles = StyleSheet.create({
   bubbleTextMe: { color: '#fff' },
   bubbleTextThem: { color: BRAND_COLORS.TEXT },
   bubbleTime: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2, textAlign: 'right', fontFamily: 'Inter_400Regular' },
-  quickMessages: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, padding: 12 },
   quickBtn: {
     backgroundColor: BRAND_COLORS.PRIMARY + '15',
     borderRadius: 20,

@@ -12,14 +12,17 @@ import {
 import * as Haptics from 'expo-haptics';
 import { rideMobileService } from '../../services/rideService';
 
+import { ViewStyle } from 'react-native';
+
 interface Props {
   rideId?: string;
   lat?: number;
   lng?: number;
   address?: string;
+  style?: ViewStyle;
 }
 
-export function SOSButton({ rideId, lat, lng, address }: Props) {
+export function SOSButton({ rideId, lat, lng, address, style }: Props) {
   const [activating, setActivating]  = useState(false);
   const [activated, setActivated]    = useState(false);
   const scaleAnim = useRef(new Animated.Value(1)).current;
@@ -64,7 +67,7 @@ export function SOSButton({ rideId, lat, lng, address }: Props) {
   const progressWidth = progressAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
 
   return (
-    <Animated.View style={[styles.wrapper, { transform: [{ scale: scaleAnim }] }]}>
+    <Animated.View style={[styles.wrapper, style, { transform: [{ scale: scaleAnim }] }]}>
       <TouchableOpacity
         style={[styles.btn, activated && styles.btnActivated]}
         onPressIn={handlePressIn}
@@ -76,7 +79,7 @@ export function SOSButton({ rideId, lat, lng, address }: Props) {
         )}
         <Text style={styles.icon}>{activated ? '🚨' : 'SOS'}</Text>
         <Text style={styles.label}>
-          {activated ? 'Ayuda en camino' : activating ? 'Mantén…' : 'Mantén para SOS'}
+          {activated ? 'En camino' : activating ? 'Espera…' : 'Mantén 2s'}
         </Text>
       </TouchableOpacity>
     </Animated.View>
@@ -84,10 +87,10 @@ export function SOSButton({ rideId, lat, lng, address }: Props) {
 }
 
 const styles = StyleSheet.create({
-  wrapper:       { borderRadius: 16, overflow: 'hidden' },
-  btn:           { backgroundColor: '#DC2626', borderRadius: 16, paddingHorizontal: 20, paddingVertical: 14, alignItems: 'center', justifyContent: 'center', minWidth: 100, overflow: 'hidden' },
+  wrapper:       { borderRadius: 10, overflow: 'hidden', flex: 1 },
+  btn:           { backgroundColor: '#DC2626', flex: 1, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
   btnActivated:  { backgroundColor: '#7F1D1D' },
   progress:      { position: 'absolute', left: 0, top: 0, bottom: 0, backgroundColor: 'rgba(255,255,255,0.3)' },
-  icon:          { fontSize: 20, fontWeight: '900', color: '#fff', marginBottom: 2 },
-  label:         { fontSize: 10, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
+  icon:          { fontSize: 14, fontWeight: '900', color: '#fff' },
+  label:         { fontSize: 9, color: 'rgba(255,255,255,0.85)', fontWeight: '600' },
 });

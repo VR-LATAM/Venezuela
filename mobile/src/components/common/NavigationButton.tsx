@@ -6,7 +6,7 @@
 
 import React from 'react';
 import {
-  TouchableOpacity, Text, StyleSheet, Linking, Alert, Platform,
+  TouchableOpacity, Text, StyleSheet, Linking, Alert, Platform, ViewStyle,
 } from 'react-native';
 
 interface Props {
@@ -14,13 +14,14 @@ interface Props {
   lng?: number | null;
   address?: string;
   label?: string;
+  style?: ViewStyle;
 }
 
 function isValidCoord(v: unknown): v is number {
   return typeof v === 'number' && isFinite(v);
 }
 
-export function NavigationButton({ lat, lng, address, label = 'Navigate' }: Props) {
+export function NavigationButton({ lat, lng, address, label = 'Navigate', style }: Props) {
   const hasCoords = isValidCoord(lat) && isValidCoord(lng);
 
   const openWaze = async () => {
@@ -67,15 +68,13 @@ export function NavigationButton({ lat, lng, address, label = 'Navigate' }: Prop
   };
 
   return (
-    <TouchableOpacity style={styles.btn} onPress={handlePress} activeOpacity={0.8}>
-      <Text style={styles.icon}>🗺️</Text>
+    <TouchableOpacity style={[styles.btn, style]} onPress={handlePress} activeOpacity={0.8}>
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
-  btn:   { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A2E', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
-  icon:  { fontSize: 18 },
-  label: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  btn:   { alignItems: 'center', justifyContent: 'center', backgroundColor: '#1A1A2E', borderRadius: 10, paddingHorizontal: 8 },
+  label: { color: '#fff', fontWeight: '700', fontSize: 11 },
 });

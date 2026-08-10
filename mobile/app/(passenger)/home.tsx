@@ -8,7 +8,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
   SafeAreaView, Alert, ActivityIndicator, Modal, Image,
-  Animated, Platform, Dimensions, StatusBar, Keyboard,
+  Animated, Platform, Dimensions, StatusBar, Keyboard, KeyboardAvoidingView,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
@@ -53,10 +53,16 @@ const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string; categor
   { key: 'sedan',      label: 'Sedán',       emoji: '🚗', category: 'transport' },
   { key: 'suv',        label: 'SUV',         emoji: '🚙', category: 'transport' },
   { key: 'encomienda', label: 'Encomienda',  emoji: '📦', category: 'delivery'  },
-  { key: 'pickup',     label: 'Pick-Up',     emoji: '🛻', category: 'delivery'  },
-  { key: 'plataforma', label: 'Plataforma',  emoji: '🚛', category: 'delivery'  },
+  { key: 'carga',      label: 'Carga',       emoji: '🏗️', category: 'delivery'  },
   { key: 'scheduled',  label: 'Programado',  emoji: '🗓️', category: 'schedule'  },
 ];
+
+const CARGA_SUB_OPTIONS = [
+  { key: 'pickup'    as ServiceType, emoji: '🛻', label: 'Pick-Up',   vehicle: null       },
+  { key: 'plataforma'as ServiceType, emoji: '🚛', label: 'Plataforma', vehicle: null      },
+  { key: 'carga'     as ServiceType, emoji: '🛻', label: 'F-350',     vehicle: '350'      },
+  { key: 'carga'     as ServiceType, emoji: '🚚', label: 'NPR 400+',  vehicle: 'npr'      },
+] as const;
 
 const PACKAGE_SIZES: { key: 'small' | 'medium' | 'large'; label: string; desc: string }[] = [
   { key: 'small',  label: 'Pequeño',  desc: 'Documentos, farmacia, paquetes < 5 kg'    },
@@ -128,6 +134,26 @@ export default function PassengerHomeScreen() {
   const [pkgSize, setPkgSize]               = useState<'small' | 'medium' | 'large'>('small');
   const [pkgRecipient, setPkgRecipient]     = useState('');
   const [pkgPhone, setPkgPhone]             = useState('');
+  const [deliveryVehicle, setDeliveryVehicle] = useState<'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma'>('motorcycle');
+
+  // Carga (Pick-Up, Plataforma, F-350, NPR)
+  const [cargaVehicle, setCargaVehicle]         = useState<'350' | 'npr'>('350');
+  const [offeredPrice, setOfferedPrice]         = useState<number>(0);
+  const [cargaDescription, setCargaDescription] = useState('');
+  const [cargaSenderName, setCargaSenderName]   = useState('');
+  const [cargaSenderPhone, setCargaSenderPhone] = useState('');
+  const [cargaRecipient, setCargaRecipient]     = useState('');
+  const [cargaPhone, setCargaPhone]             = useState('');
+
+  // Contra-oferta recibida del conductor
+  const [counterOfferData, setCounterOfferData] = useState<{
+    rideId: string; counterPrice: number; counterReason: string; driverName: string;
+  } | null>(null);
+
+  // Dirección de recogida personalizada (para delivery/carga)
+  const [customPickupAddr, setCustomPickupAddr]   = useState('');
+  const [customPickupCoords, setCustomPickupCoords] = useState<Coords | null>(null);
+  const [isGeocodingPickup, setIsGeocodingPickup] = useState(false);
 
   // Tip modal (post-ride)
   const [tipModalVisible, setTipModalVisible] = useState(false);
@@ -208,12 +234,16 @@ export default function PassengerHomeScreen() {
           return;
         }
         if (ride.status === 'driver_assigned' || ride.status === 'driver_arriving') {
-          // Socket event llegó tarde → state ya fue seteado por el listener; no hacer nada
-          // Si no llegó, sincronizar (el socket listener pondrá el driver info cuando llegue)
           if (searchStatus === 'searching') {
             console.log('[Poll] Conductor asignado detectado via polling');
             setCurrentRide(ride);
             setSearchStatus('driver_assigned');
+            // Cargar datos del conductor para mostrar el panel
+            if (ride.driver_id) {
+              rideMobileService.getDriverPublicProfile(ride.driver_id)
+                .then(driver => setAssignedDriver(driver))
+                .catch(() => { /* sin datos — muestra placeholder */ });
+            }
           }
         }
       } catch {
@@ -385,6 +415,11 @@ export default function PassengerHomeScreen() {
         Alert.alert('Viaje cancelado', 'El conductor canceló. Buscaremos otro conductor.');
         resetPassengerState();
       }),
+      socketService.on('passenger:counter_offer', (data: unknown) => {
+        const d = data as { rideId: string; counterPrice: number; counterReason: string; driverName: string };
+        setCounterOfferData(d);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      }),
     ];
     socketUnsubsRef.current = unsubs;
   };
@@ -529,16 +564,18 @@ export default function PassengerHomeScreen() {
       setEstimateError(null);
 
       try {
-        const services: ServiceType[] = ['motorcycle', 'sedan', 'suv', 'scheduled'];
+        const services: ServiceType[] = ['motorcycle', 'sedan', 'suv', 'scheduled', 'encomienda', 'pickup', 'plataforma', 'carga'];
         const results = await Promise.allSettled(
           services.map(svc =>
             rideMobileService.estimateFare({
-              pickupLat:            userLocation.latitude,
-              pickupLng:            userLocation.longitude,
-              dropoffLat:           dropoffCoords.latitude,
-              dropoffLng:           dropoffCoords.longitude,
-              serviceType:          svc,
-              stateCode:            user?.state_code ?? 'DC',
+              pickupLat:       userLocation.latitude,
+              pickupLng:       userLocation.longitude,
+              dropoffLat:      dropoffCoords.latitude,
+              dropoffLng:      dropoffCoords.longitude,
+              serviceType:     svc,
+              stateCode:       user?.state_code ?? 'DC',
+              deliveryVehicle: svc === 'encomienda' ? deliveryVehicle : undefined,
+              cargaVehicle:    svc === 'carga' ? cargaVehicle : undefined,
             })
           )
         );
@@ -577,6 +614,61 @@ export default function PassengerHomeScreen() {
     const est = allEstimates[selectedService];
     if (est) setFareEstimate(est);
   }, [selectedService, allEstimates]);
+
+  // Re-estimar encomienda cuando cambia el vehículo elegido
+  useEffect(() => {
+    if (selectedService !== 'encomienda' || !userLocation || !dropoffCoords) return;
+    void (async () => {
+      try {
+        const est = await rideMobileService.estimateFare({
+          pickupLat:      userLocation.latitude,
+          pickupLng:      userLocation.longitude,
+          dropoffLat:     dropoffCoords.latitude,
+          dropoffLng:     dropoffCoords.longitude,
+          serviceType:    'encomienda',
+          stateCode:      user?.state_code ?? 'DC',
+          deliveryVehicle,
+        });
+        setAllEstimates(prev => ({ ...prev, encomienda: est }));
+        setFareEstimate(est);
+      } catch { /* mantener estimado anterior */ }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [deliveryVehicle]);
+
+  // Re-estimar carga cuando cambia el tipo de vehículo
+  useEffect(() => {
+    if (selectedService !== 'carga' || !userLocation || !dropoffCoords) return;
+    void (async () => {
+      try {
+        const est = await rideMobileService.estimateFare({
+          pickupLat:   userLocation.latitude,
+          pickupLng:   userLocation.longitude,
+          dropoffLat:  dropoffCoords.latitude,
+          dropoffLng:  dropoffCoords.longitude,
+          serviceType: 'carga',
+          stateCode:   user?.state_code ?? 'DC',
+          cargaVehicle,
+        });
+        setAllEstimates(prev => ({ ...prev, carga: est }));
+        setFareEstimate(est);
+        setOfferedPrice(Math.ceil(est.total));
+      } catch { /* mantener estimado anterior */ }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cargaVehicle]);
+
+  // Inicializar offeredPrice cuando se obtiene estimado del servicio de carga activo
+  useEffect(() => {
+    const est = allEstimates[selectedService];
+    if (
+      (selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma') &&
+      est && offeredPrice === 0
+    ) {
+      setOfferedPrice(Math.ceil(est.total));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allEstimates, selectedService]);
 
   // ─────────────────────────────────────
   // Ajustar mapa para mostrar ruta completa
@@ -620,23 +712,32 @@ export default function PassengerHomeScreen() {
     }
 
     setSearchStatus('requesting');
-    console.log('[REQUEST] Pickup coords:', userLocation.latitude, userLocation.longitude, '| service:', selectedService);
+    const isCargaCategory = selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma';
+    const isDelivery      = selectedService === 'encomienda' || isCargaCategory;
+    const isCargaHeavy    = selectedService === 'carga';
+    const finalPickupLat  = (isDelivery && customPickupCoords) ? customPickupCoords.latitude  : userLocation.latitude;
+    const finalPickupLng  = (isDelivery && customPickupCoords) ? customPickupCoords.longitude : userLocation.longitude;
+    const finalPickupAddr = (isDelivery && customPickupAddr.trim()) ? customPickupAddr.trim() : pickupAddress;
+    console.log('[REQUEST] Pickup coords:', finalPickupLat, finalPickupLng, '| service:', selectedService);
     try {
-      const isDelivery = selectedService === 'encomienda';
       const ride = await rideMobileService.requestRide({
-        pickupAddress,
-        pickupLat:            userLocation.latitude,
-        pickupLng:            userLocation.longitude,
+        pickupAddress:        finalPickupAddr,
+        pickupLat:            finalPickupLat,
+        pickupLng:            finalPickupLng,
         dropoffAddress:       dropoffAddress.trim(),
         dropoffLat:           dropoffCoords.latitude,
         dropoffLng:           dropoffCoords.longitude,
         serviceType:          selectedService,
         stateCode:            user?.state_code ?? 'DC',
         promoCode:            promoApplied ? promoCode : undefined,
-        packageDescription:   isDelivery ? pkgDescription.trim() || undefined : undefined,
-        packageSize:          isDelivery ? pkgSize : undefined,
-        recipientName:        isDelivery ? pkgRecipient.trim() || undefined : undefined,
-        recipientPhone:       isDelivery ? pkgPhone.trim() || undefined : undefined,
+        packageDescription:   selectedService === 'encomienda' ? pkgDescription.trim() || undefined : isCargaCategory ? cargaDescription.trim() || undefined : undefined,
+        senderName:           isCargaCategory ? cargaSenderName.trim() || undefined : undefined,
+        senderPhone:          isCargaCategory ? cargaSenderPhone.trim() || undefined : undefined,
+        recipientName:        selectedService === 'encomienda' ? pkgRecipient.trim() || undefined  : isCargaCategory ? cargaRecipient.trim() || undefined  : undefined,
+        recipientPhone:       selectedService === 'encomienda' ? pkgPhone.trim() || undefined      : isCargaCategory ? cargaPhone.trim() || undefined      : undefined,
+        deliveryVehicle:      selectedService === 'encomienda' ? deliveryVehicle : undefined,
+        cargaVehicle:         isCargaHeavy ? cargaVehicle : undefined,
+        offeredPrice:         isCargaCategory ? offeredPrice : undefined,
       });
       setCurrentRide(ride);
       setSearchStatus('searching');
@@ -706,9 +807,12 @@ export default function PassengerHomeScreen() {
     if (selectedService === 'scheduled') return 'Programar un viaje →';
     const svcOpt = SERVICE_OPTIONS.find(s => s.key === selectedService);
     const est = allEstimates[selectedService];
-    const name = svcOpt ? `${svcOpt.emoji} ${svcOpt.label}` : '';
+    const name = svcOpt ? svcOpt.label : '';
     if (selectedService === 'encomienda') {
       return est ? `Enviar Encomienda  ·  $${(est.total ?? 0).toFixed(2)}` : `Enviar Encomienda`;
+    }
+    if (selectedService === 'carga') {
+      return offeredPrice > 0 ? `Solicitar Carga  ·  $${offeredPrice.toFixed(2)}` : `Solicitar Carga`;
     }
     if (selectedService === 'pickup' || selectedService === 'plataforma') {
       return est ? `Solicitar ${svcOpt?.label}  ·  $${(est.total ?? 0).toFixed(2)}` : `Solicitar ${svcOpt?.label}`;
@@ -717,8 +821,11 @@ export default function PassengerHomeScreen() {
     return 'Solicitar viaje';
   };
 
+  const deliveryServices: ServiceType[] = ['encomienda', 'pickup', 'plataforma', 'carga'];
   const canRequest = !!userLocation && !!dropoffCoords &&
-    (selectedService === 'scheduled' || !!allEstimates[selectedService]);
+    (selectedService === 'scheduled' ||
+     deliveryServices.includes(selectedService) ||
+     !!allEstimates[selectedService]);
 
   const isActiveRide = ['searching', 'driver_assigned', 'driver_arrived', 'in_progress']
     .includes(searchStatus);
@@ -922,7 +1029,16 @@ export default function PassengerHomeScreen() {
           <>
             {!isSearchingDest && (
               /* ── MODO NORMAL ── */
-              <View style={styles.idlePane}>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+              >
+              <ScrollView
+                style={styles.idlePane}
+                contentContainerStyle={{ paddingBottom: 8 }}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
                 {/* Pickup */}
                 <View style={styles.locationRow}>
                   <View style={[styles.dot, { backgroundColor: BRAND_COLORS.ACCENT }]} />
@@ -1003,92 +1119,181 @@ export default function PassengerHomeScreen() {
                     )}
                     <View style={styles.serviceGrid}>
                       {SERVICE_OPTIONS.map(svc => {
-                        const est      = allEstimates[svc.key];
-                        const isActive = selectedService === svc.key;
+                        const isCargaCategory = svc.key === 'carga';
+                        const isActive = isCargaCategory
+                          ? (selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma')
+                          : selectedService === svc.key;
                         const isSched  = svc.key === 'scheduled';
+                        const est      = allEstimates[svc.key];
                         return (
                           <TouchableOpacity
                             key={svc.key}
                             style={[styles.serviceCard, isActive && styles.serviceCardActive]}
                             onPress={() => {
-                              setSelectedService(svc.key);
+                              if (isCargaCategory) {
+                                if (!isActive) setSelectedService('pickup');
+                              } else {
+                                setSelectedService(svc.key);
+                              }
                               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                             }}
                             activeOpacity={0.75}
                           >
-                            <Text style={styles.serviceCardEmoji}>{svc.emoji}</Text>
-                            <Text style={[styles.serviceCardLabel, isActive && styles.textWhite]}>
-                              {svc.label}
-                            </Text>
-                            {isSched ? (
-                              <Text style={[styles.serviceCardBook, isActive && styles.textWhite]}>
-                                Reservar →
+                            <View style={styles.serviceCardRow}>
+                              <Text style={[styles.serviceCardLabel, isActive && styles.textWhite]}>
+                                {svc.label}
                               </Text>
-                            ) : isLoadingEstimates ? (
-                              <ActivityIndicator
-                                size="small"
-                                color={isActive ? '#fff' : BRAND_COLORS.PRIMARY}
-                                style={{ marginTop: 2 }}
-                              />
-                            ) : est ? (
-                              <>
+                              {isSched ? (
+                                <Text style={[styles.serviceCardBook, isActive && styles.textWhite]}>
+                                  Reservar →
+                                </Text>
+                              ) : isLoadingEstimates ? (
+                                <ActivityIndicator
+                                  size="small"
+                                  color={isActive ? '#fff' : BRAND_COLORS.PRIMARY}
+                                />
+                              ) : est ? (
                                 <Text style={[styles.serviceCardPrice, isActive && styles.textWhite]}>
                                   ${(est.total ?? 0).toFixed(2)}
                                 </Text>
-                                <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
-                                  {est.duration_minutes ?? 0} min · {((est.distance_miles ?? 0) * 1.609).toFixed(1)} km
-                                </Text>
-                                {est.surge_multiplier > 1 && (
-                                  <Text style={styles.surgeTag}>⚡ Alta demanda</Text>
-                                )}
-                              </>
-                            ) : (
-                              <Text style={[styles.serviceCardPrice, { color: '#bbb' }]}>—</Text>
+                              ) : (
+                                <Text style={[styles.serviceCardPrice, { color: '#bbb' }]}>—</Text>
+                              )}
+                            </View>
+                            {est?.surge_multiplier > 1 && (
+                              <Text style={styles.surgeTag}>⚡ Alta demanda</Text>
+                            )}
+                            {est && !isSched && (
+                              <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
+                                {est.duration_minutes ?? 0} min · {((est.distance_miles ?? 0) * 1.609).toFixed(1)} km
+                              </Text>
                             )}
                           </TouchableOpacity>
                         );
                       })}
                     </View>
 
+                    {/* Sub-opciones de Carga */}
+                    {(selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma') && (
+                      <View style={styles.cargaSubRow}>
+                        {CARGA_SUB_OPTIONS.map((sub, idx) => {
+                          const isSubActive =
+                            sub.key !== 'carga'
+                              ? selectedService === sub.key
+                              : selectedService === 'carga' && cargaVehicle === sub.vehicle;
+                          return (
+                            <TouchableOpacity
+                              key={idx}
+                              style={[styles.cargaSubBtn, isSubActive && styles.cargaSubBtnActive]}
+                              onPress={() => {
+                                setSelectedService(sub.key);
+                                if (sub.vehicle) setCargaVehicle(sub.vehicle as '350' | 'npr');
+                                setOfferedPrice(0);
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              }}
+                            >
+                              <Text style={styles.cargaSubEmoji}>{sub.emoji}</Text>
+                              <Text style={[styles.cargaSubLabel, isSubActive && styles.cargaSubLabelActive]}>
+                                {sub.label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    )}
+
                   </>
                 ) : (
                   /* Chips sin destino */
                   <View style={styles.chipRow}>
-                    {SERVICE_OPTIONS.map(svc => (
-                      <TouchableOpacity
-                        key={svc.key}
-                        style={[styles.chip, selectedService === svc.key && styles.chipActive]}
-                        onPress={() => {
-                          setSelectedService(svc.key);
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        }}
-                      >
-                        <Text style={[styles.chipLabel, selectedService === svc.key && { color: '#fff' }]}>
-                          {svc.emoji} {svc.label}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
+                    {SERVICE_OPTIONS.map(svc => {
+                      const isCargaCategory = svc.key === 'carga';
+                      const isActive = isCargaCategory
+                        ? (selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma')
+                        : selectedService === svc.key;
+                      return (
+                        <TouchableOpacity
+                          key={svc.key}
+                          style={[styles.chip, isActive && styles.chipActive]}
+                          onPress={() => {
+                            if (isCargaCategory && !isActive) setSelectedService('pickup');
+                            else if (!isCargaCategory) setSelectedService(svc.key);
+                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          }}
+                        >
+                          <Text style={[styles.chipLabel, isActive && { color: '#fff' }]}>
+                            {svc.label}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
                   </View>
                 )}
 
                 {/* Formulario de encomienda */}
                 {selectedService === 'encomienda' && dropoffCoords && (
                   <View style={styles.encomiendaForm}>
-                    <Text style={styles.encomiendaTitle}>📦 Datos del paquete</Text>
+                    <Text style={styles.encomiendaTitle}>📦 Datos del envío</Text>
 
-                    <Text style={styles.encomiendaSectionLabel}>Tamaño del paquete</Text>
+                    {/* Dirección de recogida personalizada */}
+                    <Text style={styles.encomiendaSectionLabel}>Dirección de recogida</Text>
+                    <View style={styles.customPickupRow}>
+                      <TextInput
+                        style={[styles.encomiendaInput, { flex: 1, marginBottom: 0 }]}
+                        value={customPickupAddr}
+                        onChangeText={t => { setCustomPickupAddr(t); setCustomPickupCoords(null); }}
+                        placeholder="Escribe la dirección de recogida"
+                        placeholderTextColor="#94A3B8"
+                        maxLength={200}
+                      />
+                      <TouchableOpacity
+                        style={styles.customPickupGeoBtn}
+                        onPress={async () => {
+                          const addr = customPickupAddr.trim();
+                          if (!addr) return;
+                          setIsGeocodingPickup(true);
+                          try {
+                            const coords = await rideMobileService.geocodeAddress(addr);
+                            if (coords) setCustomPickupCoords({ latitude: coords.lat, longitude: coords.lng });
+                            else Alert.alert('No encontrada', 'Verifica la dirección e intenta de nuevo.');
+                          } finally { setIsGeocodingPickup(false); }
+                        }}
+                        disabled={isGeocodingPickup}
+                      >
+                        {isGeocodingPickup
+                          ? <ActivityIndicator size="small" color="#fff" />
+                          : <Text style={styles.customPickupGeoBtnText}>📍</Text>
+                        }
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.customPickupResetBtn}
+                        onPress={() => { setCustomPickupAddr(pickupAddress); setCustomPickupCoords(null); }}
+                      >
+                        <Text style={styles.customPickupResetBtnText}>↺</Text>
+                      </TouchableOpacity>
+                    </View>
+                    {customPickupCoords && (
+                      <Text style={styles.customPickupConfirm}>✓ Recogida confirmada</Text>
+                    )}
+
+                    <Text style={styles.encomiendaSectionLabel}>Vehículo para el envío</Text>
                     <View style={styles.encomiendaSizeRow}>
-                      {PACKAGE_SIZES.map(sz => (
+                      {([
+                        { key: 'motorcycle', emoji: '🏍️', label: 'Moto',  desc: 'Paquetes pequeños' },
+                        { key: 'sedan',      emoji: '🚗', label: 'Sedán', desc: 'Cajas medianas'    },
+                        { key: 'suv',        emoji: '🚙', label: 'SUV',   desc: 'Objetos grandes'   },
+                      ] as const).map(v => (
                         <TouchableOpacity
-                          key={sz.key}
-                          style={[styles.encomiendaSizeBtn, pkgSize === sz.key && styles.encomiendaSizeBtnActive]}
-                          onPress={() => { setPkgSize(sz.key); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                          key={v.key}
+                          style={[styles.encomiendaVehicleBtn, deliveryVehicle === v.key && styles.encomiendaVehicleBtnActive]}
+                          onPress={() => { setDeliveryVehicle(v.key); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
                         >
-                          <Text style={[styles.encomiendaSizeBtnLabel, pkgSize === sz.key && styles.encomiendaSizeBtnLabelActive]}>
-                            {sz.label}
+                          <Text style={styles.encomiendaVehicleEmoji}>{v.emoji}</Text>
+                          <Text style={[styles.encomiendaVehicleLabel, deliveryVehicle === v.key && styles.encomiendaVehicleLabelActive]}>
+                            {v.label}
                           </Text>
-                          <Text style={[styles.encomiendaSizeBtnDesc, pkgSize === sz.key && styles.encomiendaSizeBtnDescActive]}>
-                            {sz.desc}
+                          <Text style={[styles.encomiendaVehicleDesc, deliveryVehicle === v.key && styles.encomiendaVehicleDescActive]}>
+                            {v.desc}
                           </Text>
                         </TouchableOpacity>
                       ))}
@@ -1115,6 +1320,133 @@ export default function PassengerHomeScreen() {
                       value={pkgPhone}
                       onChangeText={setPkgPhone}
                       placeholder="Teléfono del destinatario (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="phone-pad"
+                      maxLength={30}
+                    />
+                  </View>
+                )}
+
+                {/* Formulario unificado de Carga (Pick-Up / Plataforma / F-350 / NPR) */}
+                {(selectedService === 'pickup' || selectedService === 'plataforma' || selectedService === 'carga') && dropoffCoords && (
+                  <View style={styles.encomiendaForm}>
+                    <Text style={styles.encomiendaTitle}>🚚 Datos del servicio de carga</Text>
+
+                    {/* Dirección de recogida personalizada */}
+                    <Text style={styles.encomiendaSectionLabel}>Dirección de recogida</Text>
+                    <View style={styles.customPickupRow}>
+                      <TextInput
+                        style={[styles.encomiendaInput, { flex: 1, marginBottom: 0 }]}
+                        value={customPickupAddr}
+                        onChangeText={t => { setCustomPickupAddr(t); setCustomPickupCoords(null); }}
+                        placeholder="Escribe la dirección de recogida"
+                        placeholderTextColor="#94A3B8"
+                        maxLength={200}
+                      />
+                      <TouchableOpacity
+                        style={styles.customPickupGeoBtn}
+                        onPress={async () => {
+                          const addr = customPickupAddr.trim();
+                          if (!addr) return;
+                          setIsGeocodingPickup(true);
+                          try {
+                            const coords = await rideMobileService.geocodeAddress(addr);
+                            if (coords) setCustomPickupCoords({ latitude: coords.lat, longitude: coords.lng });
+                            else Alert.alert('No encontrada', 'Verifica la dirección e intenta de nuevo.');
+                          } finally { setIsGeocodingPickup(false); }
+                        }}
+                        disabled={isGeocodingPickup}
+                      >
+                        {isGeocodingPickup
+                          ? <ActivityIndicator size="small" color="#fff" />
+                          : <Text style={styles.customPickupGeoBtnText}>📍</Text>
+                        }
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.customPickupResetBtn}
+                        onPress={() => { setCustomPickupAddr(pickupAddress); setCustomPickupCoords(null); }}
+                      >
+                        <Text style={styles.customPickupResetBtnText}>↺</Text>
+                      </TouchableOpacity>
+                    </View>
+                    {customPickupCoords && (
+                      <Text style={styles.customPickupConfirm}>✓ Dirección de recogida confirmada</Text>
+                    )}
+
+                    {/* Tipo de carga */}
+                    <Text style={styles.encomiendaSectionLabel}>Tipo de carga</Text>
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={cargaDescription}
+                      onChangeText={setCargaDescription}
+                      placeholder="¿Qué se va a transportar? (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      maxLength={300}
+                    />
+
+                    {/* Precio ofrecido */}
+                    <Text style={styles.encomiendaSectionLabel}>Precio ofrecido</Text>
+                    <View style={styles.priceAdjustRow}>
+                      <TouchableOpacity
+                        style={styles.priceAdjustBtn}
+                        onPress={() => setOfferedPrice(p => Math.max(1, p - 1))}
+                      >
+                        <Text style={styles.priceAdjustBtnText}>−$1</Text>
+                      </TouchableOpacity>
+                      <View style={styles.priceAdjustCenter}>
+                        <Text style={styles.priceAdjustAmount}>${offeredPrice.toFixed(2)}</Text>
+                        {allEstimates[selectedService] && (
+                          <Text style={styles.priceAdjustRef}>
+                            Base: ${(allEstimates[selectedService]!.total ?? 0).toFixed(2)}
+                          </Text>
+                        )}
+                      </View>
+                      <TouchableOpacity
+                        style={styles.priceAdjustBtn}
+                        onPress={() => setOfferedPrice(p => p + 1)}
+                      >
+                        <Text style={styles.priceAdjustBtnText}>+$1</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <Text style={styles.cargaNoteText}>
+                      El conductor puede aceptar, rechazar o proponer un precio diferente.
+                    </Text>
+
+                    {/* Datos del remitente */}
+                    <Text style={styles.encomiendaSectionLabel}>Quien entrega</Text>
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={cargaSenderName}
+                      onChangeText={setCargaSenderName}
+                      placeholder="Nombre de quien entrega (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      maxLength={100}
+                    />
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={cargaSenderPhone}
+                      onChangeText={setCargaSenderPhone}
+                      placeholder="Teléfono de quien entrega (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="phone-pad"
+                      maxLength={30}
+                    />
+
+                    {/* Datos del destinatario */}
+                    <Text style={styles.encomiendaSectionLabel}>Quien recibe</Text>
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={cargaRecipient}
+                      onChangeText={setCargaRecipient}
+                      placeholder="Nombre de quien recibe (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      maxLength={100}
+                    />
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={cargaPhone}
+                      onChangeText={setCargaPhone}
+                      placeholder="Teléfono de quien recibe (opcional)"
                       placeholderTextColor="#94A3B8"
                       keyboardType="phone-pad"
                       maxLength={30}
@@ -1185,7 +1517,8 @@ export default function PassengerHomeScreen() {
                     <Text style={styles.requestBtnText}>{requestLabel()}</Text>
                   )}
                 </TouchableOpacity>
-              </View>
+              </ScrollView>
+              </KeyboardAvoidingView>
             )}
           </>
         )}
@@ -1206,6 +1539,14 @@ export default function PassengerHomeScreen() {
             </Animated.View>
             <Text style={styles.statusTitle}>Buscando conductores...</Text>
             <Text style={styles.statusSub}>Buscando en un radio de {searchRadiusKm.toFixed(1)} km</Text>
+          </View>
+        )}
+
+        {/* ── DRIVER_ASSIGNED (cargando datos del conductor) ── */}
+        {searchStatus === 'driver_assigned' && !assignedDriver && (
+          <View style={styles.driverPanel}>
+            <Text style={styles.statusTitle}>Conductor asignado</Text>
+            <Text style={styles.statusSub}>Cargando información del conductor...</Text>
           </View>
         )}
 
@@ -1423,6 +1764,69 @@ export default function PassengerHomeScreen() {
       </Modal>
 
       <InfoModal page={menuSubPage} onClose={() => setMenuSubPage(null)} />
+
+      {/* Modal de contra-oferta del conductor (solo carga) */}
+      <Modal
+        visible={!!counterOfferData}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setCounterOfferData(null)}
+      >
+        {counterOfferData && (
+          <View style={styles.counterOfferOverlay}>
+            <View style={styles.counterOfferSheet}>
+              <Text style={styles.counterOfferTitle}>💬 Contra-oferta del conductor</Text>
+              <Text style={styles.counterOfferDriver}>{counterOfferData.driverName}</Text>
+
+              <View style={styles.counterOfferPriceRow}>
+                <View style={styles.counterOfferPriceBox}>
+                  <Text style={styles.counterOfferPriceLabel}>Tu precio</Text>
+                  <Text style={styles.counterOfferPriceValue}>${offeredPrice.toFixed(2)}</Text>
+                </View>
+                <Text style={styles.counterOfferArrow}>→</Text>
+                <View style={[styles.counterOfferPriceBox, styles.counterOfferPriceBoxAccent]}>
+                  <Text style={styles.counterOfferPriceLabel}>Propuesta</Text>
+                  <Text style={[styles.counterOfferPriceValue, styles.counterOfferPriceValueAccent]}>
+                    ${counterOfferData.counterPrice.toFixed(2)}
+                  </Text>
+                </View>
+              </View>
+
+              {counterOfferData.counterReason ? (
+                <View style={styles.counterOfferReasonBox}>
+                  <Text style={styles.counterOfferReasonLabel}>Motivo del conductor:</Text>
+                  <Text style={styles.counterOfferReasonText}>{counterOfferData.counterReason}</Text>
+                </View>
+              ) : null}
+
+              <View style={styles.counterOfferActions}>
+                <TouchableOpacity
+                  style={styles.counterOfferRejectBtn}
+                  onPress={async () => {
+                    try {
+                      await rideMobileService.respondCounter(counterOfferData.rideId, false);
+                    } catch { /* ignorar */ }
+                    setCounterOfferData(null);
+                  }}
+                >
+                  <Text style={styles.counterOfferRejectBtnText}>✕ Rechazar</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.counterOfferAcceptBtn}
+                  onPress={async () => {
+                    try {
+                      await rideMobileService.respondCounter(counterOfferData.rideId, true);
+                    } catch { /* ignorar */ }
+                    setCounterOfferData(null);
+                  }}
+                >
+                  <Text style={styles.counterOfferAcceptBtnText}>✓ Aceptar ${counterOfferData.counterPrice.toFixed(2)}</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+      </Modal>
     </View>
   );
 }
@@ -1504,6 +1908,7 @@ const styles = StyleSheet.create({
   // Panel inferior
   bottomPanel: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
+    maxHeight: SCREEN_HEIGHT * 0.72,
     backgroundColor: '#fff',
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 16, elevation: 12,
@@ -1575,7 +1980,7 @@ const styles = StyleSheet.create({
   },
 
   // ── Modo normal ──
-  idlePane:  { padding: 12 },
+  idlePane:  { padding: 12, flexGrow: 1 },
   dot:           { width: 10, height: 10, borderRadius: 5, flexShrink: 0 },
   locationRow: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
@@ -1589,18 +1994,28 @@ const styles = StyleSheet.create({
   searchGlass:     { fontSize: 16 },
 
   // Grid servicios
-  serviceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginVertical: 10 },
-  serviceCardEmoji: { fontSize: 20, marginBottom: 2 },
+  serviceGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginVertical: 8 },
+  cargaSubRow: { flexDirection: 'row', gap: 6, marginBottom: 8 },
+  cargaSubBtn: {
+    flex: 1, alignItems: 'center', paddingVertical: 8,
+    backgroundColor: '#F1F5F9', borderRadius: 10,
+    borderWidth: 2, borderColor: 'transparent',
+  },
+  cargaSubBtnActive: { backgroundColor: '#E8F0FE', borderColor: BRAND_COLORS.PRIMARY },
+  cargaSubEmoji:     { fontSize: 18 },
+  cargaSubLabel:     { fontSize: 11, fontWeight: '600', color: '#555', marginTop: 2, fontFamily: 'Inter_600SemiBold' },
+  cargaSubLabelActive: { color: BRAND_COLORS.PRIMARY },
   serviceCard: {
     width: '47.5%', backgroundColor: '#F8F9FA',
-    borderRadius: 12, padding: 10,
+    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7,
     borderWidth: 2, borderColor: 'transparent',
   },
   serviceCardActive: { backgroundColor: BRAND_COLORS.PRIMARY, borderColor: BRAND_COLORS.PRIMARY },
+  serviceCardRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   serviceCardLabel:  { fontSize: 13, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
-  serviceCardPrice:  { fontSize: 17, fontWeight: '700', color: BRAND_COLORS.TEXT, marginTop: 2, fontFamily: 'Inter_700Bold' },
+  serviceCardPrice:  { fontSize: 14, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
   serviceCardMeta:   { fontSize: 10, color: '#888', marginTop: 1, fontFamily: 'Inter_400Regular' },
-  serviceCardBook:   { fontSize: 12, color: '#666', marginTop: 2, fontFamily: 'Inter_400Regular' },
+  serviceCardBook:   { fontSize: 12, color: '#666', fontFamily: 'Inter_400Regular' },
   textWhite:          { color: '#fff' },
   textWhiteAlpha:     { color: 'rgba(255,255,255,0.75)' },
   surgeTag: {
@@ -1800,4 +2215,91 @@ const styles = StyleSheet.create({
     color: BRAND_COLORS.TEXT, backgroundColor: '#fff',
     marginBottom: 6, fontFamily: 'Inter_400Regular',
   },
+
+  // Selector de vehículo para encomienda
+  encomiendaVehicleBtn: {
+    flex: 1, minWidth: '18%', padding: 6, borderRadius: 8,
+    borderWidth: 1.5, borderColor: '#D97706', backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  encomiendaVehicleBtnActive: { backgroundColor: '#D97706', borderColor: '#D97706' },
+  encomiendaVehicleEmoji:     { fontSize: 18, marginBottom: 2 },
+  encomiendaVehicleLabel:     { fontSize: 11, fontWeight: '700', color: '#D97706', fontFamily: 'Inter_700Bold' },
+  encomiendaVehicleLabelActive: { color: '#fff' },
+  encomiendaVehicleDesc:      { fontSize: 8, color: '#92400E', textAlign: 'center', marginTop: 1, fontFamily: 'Inter_400Regular' },
+  encomiendaVehicleDescActive: { color: 'rgba(255,255,255,0.85)' },
+
+  // Pickup personalizado
+  customPickupRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 6 },
+  customPickupGeoBtn: {
+    width: 36, height: 40, backgroundColor: BRAND_COLORS.PRIMARY,
+    borderRadius: 8, justifyContent: 'center', alignItems: 'center',
+  },
+  customPickupGeoBtnText: { fontSize: 16 },
+  customPickupResetBtn: {
+    width: 36, height: 40, backgroundColor: '#E5E7EB',
+    borderRadius: 8, justifyContent: 'center', alignItems: 'center',
+  },
+  customPickupResetBtnText: { fontSize: 16, color: '#374151' },
+  customPickupConfirm: { fontSize: 11, color: '#16A34A', marginBottom: 4, fontFamily: 'Inter_400Regular' },
+
+  // Ajuste de precio (carga)
+  priceAdjustRow: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#F8FAFC', borderRadius: 12, padding: 12, marginBottom: 6,
+    borderWidth: 1, borderColor: '#E2E8F0',
+  },
+  priceAdjustBtn: {
+    backgroundColor: BRAND_COLORS.PRIMARY + '20', borderRadius: 8,
+    paddingHorizontal: 14, paddingVertical: 10,
+    borderWidth: 1, borderColor: BRAND_COLORS.PRIMARY + '50',
+  },
+  priceAdjustBtnText: { fontSize: 14, fontWeight: '700', color: BRAND_COLORS.PRIMARY, fontFamily: 'Inter_700Bold' },
+  priceAdjustCenter: { alignItems: 'center' },
+  priceAdjustAmount: { fontSize: 28, fontWeight: '800', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
+  priceAdjustRef:    { fontSize: 11, color: '#94A3B8', marginTop: 2, fontFamily: 'Inter_400Regular' },
+  cargaNoteText:     { fontSize: 11, color: '#64748B', marginBottom: 8, fontFamily: 'Inter_400Regular', textAlign: 'center' },
+
+  // Modal de contra-oferta
+  counterOfferOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'flex-end',
+  },
+  counterOfferSheet: {
+    backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    padding: 24, paddingBottom: 40, gap: 16,
+  },
+  counterOfferTitle: { fontSize: 18, fontWeight: '700', color: BRAND_COLORS.TEXT, textAlign: 'center', fontFamily: 'Inter_700Bold' },
+  counterOfferDriver: { fontSize: 14, color: '#666', textAlign: 'center', fontFamily: 'Inter_400Regular' },
+  counterOfferPriceRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12 },
+  counterOfferPriceBox: {
+    flex: 1, alignItems: 'center', backgroundColor: '#F8FAFC',
+    borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#E2E8F0',
+  },
+  counterOfferPriceBoxAccent: {
+    backgroundColor: BRAND_COLORS.ACCENT + '15',
+    borderColor: BRAND_COLORS.ACCENT + '40',
+  },
+  counterOfferPriceLabel: { fontSize: 11, color: '#888', marginBottom: 4, fontFamily: 'Inter_400Regular' },
+  counterOfferPriceValue: { fontSize: 22, fontWeight: '800', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
+  counterOfferPriceValueAccent: { color: BRAND_COLORS.ACCENT },
+  counterOfferArrow: { fontSize: 22, color: '#CBD5E1' },
+  counterOfferReasonBox: {
+    backgroundColor: '#FFF7ED', borderRadius: 10, padding: 12,
+    borderLeftWidth: 4, borderLeftColor: '#F59E0B',
+  },
+  counterOfferReasonLabel: { fontSize: 12, fontWeight: '700', color: '#92400E', marginBottom: 4, fontFamily: 'Inter_700Bold' },
+  counterOfferReasonText: { fontSize: 13, color: '#78350F', fontFamily: 'Inter_400Regular' },
+  counterOfferActions: { flexDirection: 'row', gap: 12 },
+  counterOfferRejectBtn: {
+    flex: 1, height: 54, backgroundColor: '#FEE2E2', borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: '#FCA5A5',
+  },
+  counterOfferRejectBtnText: { fontSize: 15, fontWeight: '700', color: '#DC2626', fontFamily: 'Inter_700Bold' },
+  counterOfferAcceptBtn: {
+    flex: 2, height: 54, backgroundColor: BRAND_COLORS.ACCENT, borderRadius: 14,
+    justifyContent: 'center', alignItems: 'center',
+  },
+  counterOfferAcceptBtnText: { fontSize: 15, fontWeight: '700', color: '#fff', fontFamily: 'Inter_700Bold' },
 });
