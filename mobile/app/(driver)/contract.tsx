@@ -82,7 +82,7 @@ export default function ContractScreen() {
     // Firma: usar la recién dibujada si existe, si no la guardada en BD
     const pathsForPdf = committedPaths.length > 0 ? committedPaths : savedSignature;
     const signatureSvg = pathsForPdf.length > 0
-      ? `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100" style="display:block;margin:0 auto">
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="160" style="display:block;margin:0 auto">
           ${pathsForPdf.map(p => `<path d="${p}" stroke="#1F2937" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
          </svg>`
       : '<p style="color:#aaa;text-align:center;font-size:9pt">Sin firma</p>';
@@ -146,12 +146,12 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
 <table>
   <tr><td><b>Firma del Conductor</b></td><td><b>Firma y Sello VERONA Ride</b></td></tr>
   <tr>
-    <td style="height:110px;padding:8px">
+    <td style="height:180px;padding:8px">
       ${signatureSvg}
       <div style="margin-top:6px;font-size:9pt">${user?.name ?? ''}</div>
       <div style="font-size:8pt;color:#6B7280">${user?.email ?? ''}</div>
     </td>
-    <td style="height:110px">Representante autorizado<br>VERONA RIDE VENEZUELA</td>
+    <td style="height:180px">Representante autorizado<br>VERONA RIDE VENEZUELA</td>
   </tr>
 </table>
 </body></html>`;
