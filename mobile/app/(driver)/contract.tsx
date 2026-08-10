@@ -348,6 +348,12 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
           <Text style={styles.alreadySignedDate}>
             {new Date(contractSignedAt).toLocaleDateString('es-VE', { day: '2-digit', month: 'long', year: 'numeric' })}
           </Text>
+          <TouchableOpacity
+            style={styles.resignBtn}
+            onPress={() => setContractSignedAt(null)}
+          >
+            <Text style={styles.resignBtnText}>Volver a firmar</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -419,4 +425,6 @@ const styles = StyleSheet.create({
   alreadySigned:     { alignItems: 'center', paddingVertical: 24, gap: 6 },
   alreadySignedText: { fontSize: 16, fontWeight: '700', color: '#065F46' },
   alreadySignedDate: { fontSize: 13, color: BRAND.GRAY },
+  resignBtn:         { marginTop: 8, paddingVertical: 8, paddingHorizontal: 20, borderRadius: 10, borderWidth: 1, borderColor: '#CBD5E1' },
+  resignBtnText:     { fontSize: 13, color: BRAND.GRAY },
 });
