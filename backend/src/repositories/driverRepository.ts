@@ -58,6 +58,7 @@ const DRIVER_SELECT = `
     d.music_preference, d.music_artist,
     d.referral_code, d.referred_by_id,
     d.stripe_account_id, d.stripe_account_verified,
+    d.contract_signed_at,
     -- Extraer lat/lng de la geometría PostGIS
     ST_Y(d.current_location::geometry) AS current_latitude,
     ST_X(d.current_location::geometry) AS current_longitude

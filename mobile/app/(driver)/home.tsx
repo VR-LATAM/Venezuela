@@ -1589,6 +1589,7 @@ export default function DriverHomeScreen() {
             </TouchableOpacity>
             {[
               { icon: '📄', label: 'Mis documentos',         route: '/(driver)/documents'       as const },
+              { icon: '📋', label: 'Mi contrato',            route: '/(driver)/contract'        as const },
               { icon: '💳', label: 'Mi membresía',           route: '/(driver)/membership'      as const },
               { icon: '🗂️', label: 'Historial de servicio', route: '/(driver)/service-history' as const },
               { icon: '💰', label: 'Ganancias',             route: '/(driver)/earnings'        as const },
@@ -1769,12 +1770,14 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 24 : 24,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 5 : 5,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    margin: 12,
+    marginTop: 2,
+    marginHorizontal: 12,
+    marginBottom: 12,
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 12,

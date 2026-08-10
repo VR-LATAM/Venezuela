@@ -182,6 +182,7 @@ export default function DriverLayout() {
         <Stack.Screen name="training-module" />
         <Stack.Screen name="training-quiz" />
         <Stack.Screen name="documents" />
+        <Stack.Screen name="contract" />
       </Stack>
 
       {/* Modal de nueva solicitud — visible en cualquier pantalla del driver */}
