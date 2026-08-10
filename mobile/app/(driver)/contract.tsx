@@ -81,11 +81,34 @@ export default function ContractScreen() {
 
     // Firma: usar la recién dibujada si existe, si no la guardada en BD
     const pathsForPdf = committedPaths.length > 0 ? committedPaths : savedSignature;
-    const signatureSvg = pathsForPdf.length > 0
-      ? `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="160" style="display:block;margin:0 auto">
-          ${pathsForPdf.map(p => `<path d="${p}" stroke="#1F2937" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
-         </svg>`
-      : '<p style="color:#aaa;text-align:center;font-size:9pt">Sin firma</p>';
+
+    // Calcular bounding box real de todos los trazos para no cortar la firma
+    const buildSignatureSvg = (paths: string[]) => {
+      if (paths.length === 0) return '<p style="color:#aaa;text-align:center;font-size:9pt">Sin firma</p>';
+      const coords: number[] = [];
+      paths.forEach(p => {
+        const nums = p.match(/-?\d+\.?\d*/g);
+        if (nums) nums.forEach((n, i) => coords.push(parseFloat(n)));
+      });
+      const xs: number[] = [], ys: number[] = [];
+      paths.forEach(p => {
+        const tokens = p.match(/[ML]-?\d+\.?\d*,-?\d+\.?\d*/g) ?? [];
+        tokens.forEach(t => {
+          const [x, y] = t.slice(1).split(',').map(Number);
+          xs.push(x); ys.push(y);
+        });
+      });
+      if (xs.length === 0) return '<p style="color:#aaa;text-align:center;font-size:9pt">Sin firma</p>';
+      const pad = 10;
+      const minX = Math.min(...xs) - pad;
+      const minY = Math.min(...ys) - pad;
+      const w    = Math.max(...xs) - minX + pad;
+      const h    = Math.max(...ys) - minY + pad;
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${minX} ${minY} ${w} ${h}" width="300" height="140" style="display:block;margin:0 auto">
+        ${paths.map(p => `<path d="${p}" stroke="#1F2937" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
+      </svg>`;
+    };
+    const signatureSvg = buildSignatureSvg(pathsForPdf);
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
