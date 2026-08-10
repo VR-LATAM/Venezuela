@@ -17,6 +17,7 @@ export default function ContractScreen() {
   const user = useUser();
 
   const [contractSignedAt, setContractSignedAt] = useState<string | null>(null);
+  const [savedSignature, setSavedSignature]      = useState<string[]>([]);
   const [loadingStatus, setLoadingStatus]        = useState(true);
   const [saving, setSaving]                      = useState(false);
   const [scrollEnabled, setScrollEnabled]        = useState(true);
@@ -30,6 +31,9 @@ export default function ContractScreen() {
     apiClient.get('/driver/profile').then(res => {
       const d = res.data?.data;
       setContractSignedAt(d?.contract_signed_at ?? null);
+      if (d?.contract_signature) {
+        setSavedSignature((d.contract_signature as string).split('|').filter(Boolean));
+      }
     }).catch(() => {}).finally(() => setLoadingStatus(false));
   }, []);
 
@@ -74,6 +78,14 @@ export default function ContractScreen() {
     const signedLine = contractSignedAt
       ? `<p style="color:#065F46;font-weight:bold">✓ Firmado digitalmente el ${new Date(contractSignedAt).toLocaleDateString('es-VE')}</p>`
       : '';
+
+    // Firma: usar la recién dibujada si existe, si no la guardada en BD
+    const pathsForPdf = committedPaths.length > 0 ? committedPaths : savedSignature;
+    const signatureSvg = pathsForPdf.length > 0
+      ? `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="100" style="display:block;margin:0 auto">
+          ${pathsForPdf.map(p => `<path d="${p}" stroke="#1F2937" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`).join('')}
+         </svg>`
+      : '<p style="color:#aaa;text-align:center;font-size:9pt">Sin firma</p>';
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
@@ -134,8 +146,12 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
 <table>
   <tr><td><b>Firma del Conductor</b></td><td><b>Firma y Sello VERONA Ride</b></td></tr>
   <tr>
-    <td style="height:80px">${user?.name ?? ''}<br>${user?.email ?? ''}</td>
-    <td style="height:80px">Representante autorizado<br>VERONA RIDE VENEZUELA</td>
+    <td style="height:110px;padding:8px">
+      ${signatureSvg}
+      <div style="margin-top:6px;font-size:9pt">${user?.name ?? ''}</div>
+      <div style="font-size:8pt;color:#6B7280">${user?.email ?? ''}</div>
+    </td>
+    <td style="height:110px">Representante autorizado<br>VERONA RIDE VENEZUELA</td>
   </tr>
 </table>
 </body></html>`;
@@ -161,8 +177,10 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
     setSaving(true);
     try {
       await driverMobileService.saveContractSignature(signature);
+      setSavedSignature([...committedPaths]);
       setContractSignedAt(new Date().toISOString());
       setCommittedPaths([]);
+      committedRef.current = [];
       Alert.alert('Contrato firmado', 'Tu firma ha sido registrada correctamente.');
     } catch {
       Alert.alert('Error', 'No se pudo guardar la firma. Intenta de nuevo.');
