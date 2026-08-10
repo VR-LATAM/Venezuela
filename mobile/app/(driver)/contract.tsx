@@ -114,7 +114,8 @@ export default function ContractScreen() {
 
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
-  body{font-family:Arial,sans-serif;font-size:11pt;color:#1F2937;padding:30px;line-height:1.5}
+  @page { size: letter; margin: 1cm; }
+  body{font-family:Arial,sans-serif;font-size:11pt;color:#1F2937;margin:0;padding:0;line-height:1.5}
   h1{color:#1E3A8A;font-size:14pt;text-align:center;margin-bottom:4px}
   h2{color:#0D9488;font-size:11pt;text-align:center;margin-top:0}
   h3{color:#1E3A8A;font-size:10pt;margin-top:18px;margin-bottom:4px}
@@ -191,7 +192,12 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
 </body></html>`;
 
     try {
-      const { uri } = await Print.printToFileAsync({ html, base64: false });
+      const { uri } = await Print.printToFileAsync({
+        html,
+        base64: false,
+        width:  612,
+        height: 792,
+      });
       if (await Sharing.isAvailableAsync()) {
         await Sharing.shareAsync(uri, { mimeType: 'application/pdf', dialogTitle: 'Contrato VERONA Ride' });
       } else {
