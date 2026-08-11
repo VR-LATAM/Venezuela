@@ -164,7 +164,7 @@ export const rideService = {
     // Calcular tarifa estimada
     // Para carga: usar el precio ofrecido por el pasajero directamente
     let estimatedFare = 0;
-    let tripDistanceMiles = 0;
+    let tripDistanceKm = 0;
     if (params.serviceType === 'carga' && params.offeredPrice) {
       estimatedFare = params.offeredPrice;
     } else {
@@ -179,7 +179,7 @@ export const rideService = {
           cargaVehicle: params.cargaVehicle,
         });
         estimatedFare     = fareEstimate.total * vipMultiplier;
-        tripDistanceMiles = fareEstimate.distance_miles;
+        tripDistanceKm = fareEstimate.distance_km;
       } catch {
         // Si falla el cálculo continuar sin hold
       }
@@ -308,7 +308,7 @@ export const rideService = {
     searchAndNotifyDrivers(ride.id, {
       lat: params.pickupLat,
       lng: params.pickupLng,
-    }, params.serviceType, params.passengerId, estimatedFare, tripDistanceMiles,
+    }, params.serviceType, params.passengerId, estimatedFare, tripDistanceKm,
       params.serviceType === 'encomienda' ? (params.deliveryVehicle ?? undefined) : undefined)
       .finally(() => clearTimeout(_safetyTimer))
       .catch(async (err) => {
@@ -608,7 +608,7 @@ export const rideService = {
          WHERE id = $1 RETURNING *`,
         [
           rideId,
-          fareEstimate.distance_miles, fareEstimate.duration_minutes,
+          fareEstimate.distance_km, fareEstimate.duration_minutes,
           fareEstimate.base_fare, fareEstimate.distance_fare, fareEstimate.time_fare,
           fareEstimate.surge_multiplier, fareEstimate.service_multiplier,
           fareEstimate.subtotal, platformFee,
@@ -1053,7 +1053,7 @@ async function searchAndNotifyDrivers(
   serviceType: string,
   passengerId: string,
   estimatedFare: number = 0,
-  tripDistanceMiles: number = 0,
+  tripDistanceKm: number = 0,
   deliveryVehicle?: string
 ): Promise<void> {
   const triedDriverIds = new Set<string>();
@@ -1187,7 +1187,7 @@ async function searchAndNotifyDrivers(
         timeoutSeconds:     env.DRIVER_ACCEPT_TIMEOUT_SECONDS,
         estimatedFare,
         estimatedDriverEarnings: estimatedFare,
-        tripDistanceMiles,
+        tripDistanceKm,
         specialNeeds: specialCategories,
         passengerName:      (passengerProfile as any)?.name      ?? null,
         passengerPhotoUrl:  (passengerProfile as any)?.photo_url ?? null,

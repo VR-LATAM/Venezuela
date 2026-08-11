@@ -11,10 +11,10 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import * as Haptics from 'expo-haptics';
 import { Alert } from 'react-native';
 
-const DEVIATION_THRESHOLD_MILES = 0.5; // umbral de desvío
+const DEVIATION_THRESHOLD_KM = 0.8; // umbral de desvío (800m)
 
-function haversineMiles(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 3958.8;
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLng = (lng2 - lng1) * Math.PI / 180;
   const a = Math.sin(dLat / 2) ** 2 +
@@ -38,14 +38,14 @@ export function useRouteDeviation(
   const check = useCallback(() => {
     if (!active || !currentLocation || !dropoffCoords || !pickupCoords) return;
 
-    const distToDropoff = haversineMiles(
+    const distToDropoff = haversineKm(
       currentLocation.lat, currentLocation.lng,
       dropoffCoords.lat, dropoffCoords.lng,
     );
 
     // Establecer baseline al inicio del viaje
     if (baselineDistRef.current === null) {
-      baselineDistRef.current = haversineMiles(
+      baselineDistRef.current = haversineKm(
         pickupCoords.lat, pickupCoords.lng,
         dropoffCoords.lat, dropoffCoords.lng,
       );
@@ -53,7 +53,7 @@ export function useRouteDeviation(
     }
 
     // Si la distancia al destino es mayor que la distancia inicial + umbral → desvío
-    const excess = distToDropoff - (baselineDistRef.current + DEVIATION_THRESHOLD_MILES);
+    const excess = distToDropoff - (baselineDistRef.current + DEVIATION_THRESHOLD_KM);
     if (excess > 0 && !alertedRef.current) {
       alertedRef.current = true;
       setDeviated(true);

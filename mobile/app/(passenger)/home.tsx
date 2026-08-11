@@ -368,16 +368,16 @@ export default function PassengerHomeScreen() {
       socketService.on('passenger:driver_location', (data: unknown) => {
         const d = data as { latitude: number; longitude: number; heading?: number; timestamp: number };
         updateDriverLocation(d);
-        // Calcular ETA aproximado al pickup usando Haversine + 20mph
+        // Calcular ETA aproximado al pickup usando Haversine + 30 km/h
         if (userLocation) {
-          const R = 3958.8;
+          const R = 6371;
           const dLat = (d.latitude - userLocation.latitude) * Math.PI / 180;
           const dLng = (d.longitude - userLocation.longitude) * Math.PI / 180;
           const a = Math.sin(dLat/2)**2 +
             Math.cos(userLocation.latitude * Math.PI/180) * Math.cos(d.latitude * Math.PI/180) *
             Math.sin(dLng/2)**2;
-          const distMiles = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-          const eta = Math.max(1, Math.ceil((distMiles / 20) * 60));
+          const distKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          const eta = Math.max(1, Math.ceil((distKm / 30) * 60));
           setDriverEtaMinutes(eta);
         }
       }),
@@ -1216,7 +1216,7 @@ export default function PassengerHomeScreen() {
                             )}
                             {est && !isSched && (
                               <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
-                                {est.duration_minutes ?? 0} min · {((est.distance_miles ?? 0) * 1.609).toFixed(1)} km
+                                {est.duration_minutes ?? 0} min · {(est.distance_km ?? 0).toFixed(1)} km
                               </Text>
                             )}
                           </TouchableOpacity>

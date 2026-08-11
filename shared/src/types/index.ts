@@ -316,7 +316,7 @@ export interface FareEstimate {
   service_multiplier: number;
   subtotal: number;
   total: number;
-  distance_miles: number;
+  distance_km: number;
   duration_minutes: number;
   driver_eta_minutes?: number;
   // Wait & Return

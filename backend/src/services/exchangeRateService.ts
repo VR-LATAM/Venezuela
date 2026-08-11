@@ -3,15 +3,25 @@ import * as https from 'https';
 import { redis } from '../config/redis';
 import { logger } from '../utils/logger';
 
-const REDIS_KEY = 'ves:bcv_rate';
-const CACHE_TTL = 3600; // 1 hora
-const BCV_URL = 'https://www.bcv.org.ve';
+const REDIS_KEY      = 'ves:bcv_rate';
+const REDIS_KEY_MANUAL = 'ves:manual_rate'; // tasa seteada manualmente por admin
+const CACHE_TTL      = 3600; // 1 hora
+const BCV_URL        = 'https://www.bcv.org.ve';
+// Tasa de respaldo de último recurso — actualizar desde variable de entorno o admin
+const FALLBACK_RATE  = parseFloat(process.env.VES_FALLBACK_RATE ?? '90');
 
 // El BCV tiene certificado con problemas — agente que lo acepta igual
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
 
-// Obtiene el tipo de cambio USD→VES desde Redis o raspando el BCV
+// Obtiene el tipo de cambio USD→VES: manual > Redis > BCV > fallback
 export async function getUSDToVES(): Promise<number> {
+  // 1. Tasa seteada manualmente por admin (prioridad máxima)
+  try {
+    const manual = await redis.get(REDIS_KEY_MANUAL);
+    if (manual) return parseFloat(manual);
+  } catch { /* ignorar error Redis */ }
+
+  // 2. Caché automático de BCV
   try {
     const cached = await redis.get(REDIS_KEY);
     if (cached) return parseFloat(cached);
@@ -19,6 +29,12 @@ export async function getUSDToVES(): Promise<number> {
   } catch {
     return await refreshExchangeRate();
   }
+}
+
+// Setea la tasa manualmente (admin) — se guarda en Redis por 25 horas
+export async function setManualRate(rate: number): Promise<void> {
+  await redis.setex(REDIS_KEY_MANUAL, 25 * 3600, rate.toString());
+  logger.info(`Tasa VES seteada manualmente: 1 USD = ${rate} Bs.`);
 }
 
 // Raspa la página del BCV y extrae la tasa del dólar
@@ -51,10 +67,12 @@ export async function refreshExchangeRate(): Promise<number> {
     // Retorna última tasa conocida en Redis como fallback
     const cached = await redis.get(REDIS_KEY);
     if (cached) {
-      logger.warn(`Usando última tasa conocida en Redis: ${cached} Bs.`);
+      logger.warn(`Usando última tasa BCV en caché: ${cached} Bs.`);
       return parseFloat(cached);
     }
-    throw new Error('No se pudo obtener la tasa BCV y no hay caché disponible');
+    // Último recurso: tasa hardcodeada (configurar con VES_FALLBACK_RATE en Railway)
+    logger.warn(`Sin tasa BCV ni caché — usando fallback: ${FALLBACK_RATE} Bs.`);
+    return FALLBACK_RATE;
   }
 }
 

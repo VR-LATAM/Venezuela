@@ -59,8 +59,8 @@ function maneuverToArrow(maneuver: string): string {
   return '↑';
 }
 
-function haversineDistanceMiles(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3958.8;
+function haversineDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat / 2) ** 2 +
@@ -281,8 +281,8 @@ export default function DriverHomeScreen() {
     const pickupLat = a.pickup_lat ?? a.pickup_location?.latitude;
     const pickupLng = a.pickup_lng ?? a.pickup_location?.longitude;
     if (!pickupLat || !pickupLng) return;
-    const dist = haversineDistanceMiles(driverPos.latitude, driverPos.longitude, pickupLat, pickupLng);
-    if (dist < 0.004) {
+    const dist = haversineDistanceKm(driverPos.latitude, driverPos.longitude, pickupLat, pickupLng);
+    if (dist < 0.006) {
       hasNotifiedPickupArrival.current = true;
       void nokiaToneService.play();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -299,8 +299,8 @@ export default function DriverHomeScreen() {
     const destLat = a.dropoff_lat ?? a.dropoff_location?.latitude;
     const destLng = a.dropoff_lng ?? a.dropoff_location?.longitude;
     if (!destLat || !destLng) return;
-    const dist = haversineDistanceMiles(driverPos.latitude, driverPos.longitude, destLat, destLng);
-    if (dist < 0.004) {
+    const dist = haversineDistanceKm(driverPos.latitude, driverPos.longitude, destLat, destLng);
+    if (dist < 0.006) {
       hasNotifiedArrival.current = true;
       setArrivalBanner(true);
       void nokiaToneService.play();
@@ -570,7 +570,7 @@ export default function DriverHomeScreen() {
       const endLat = steps[idx].end_location?.lat;
       const endLng = steps[idx].end_location?.lng;
       if (!endLat) break;
-      if (haversineDistanceMiles(lat, lng, endLat, endLng) < 0.03) {
+      if (haversineDistanceKm(lat, lng, endLat, endLng) < 0.05) {
         idx++;
       } else break;
     }
@@ -723,7 +723,7 @@ export default function DriverHomeScreen() {
     //   const pickupLat = a.pickup_lat ?? a.pickup_location?.latitude;
     //   const pickupLng = a.pickup_lng ?? a.pickup_location?.longitude;
     //   if (pickupLat && pickupLng) {
-    //     const distMiles = haversineDistanceMiles(driverPos.latitude, driverPos.longitude, pickupLat, pickupLng);
+    //     const distMiles = haversineDistanceKm(driverPos.latitude, driverPos.longitude, pickupLat, pickupLng);
     //     if (distMiles > 0.15) {
     //       Alert.alert(
     //         'Not at pickup yet',

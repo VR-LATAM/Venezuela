@@ -26,7 +26,7 @@ interface IncomingRequest {
   pickupAddress: string;
   dropoffAddress: string;
   distanceFromDriver: number;
-  tripDistanceMiles: number;
+  tripDistanceKm: number;
   serviceType: string;
   timeoutSeconds: number;
   estimatedDriverEarnings: number;
@@ -265,7 +265,7 @@ export default function DriverLayout() {
                     <View style={styles.requestMetaChip}>
                       <Text style={styles.requestMetaEmoji}>🛣️</Text>
                       <Text style={styles.requestMetaText}>
-                        {(incomingRequest.tripDistanceMiles ?? 0).toFixed(1)} km de viaje
+                        {(incomingRequest.tripDistanceKm ?? 0).toFixed(1)} km de viaje
                       </Text>
                     </View>
                     <View style={styles.requestMetaChip}>

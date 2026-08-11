@@ -85,7 +85,7 @@ export async function geocodeAddress(address: string): Promise<{ lat: number; ln
 export async function getDistanceAndDuration(
   pickupLat: number, pickupLng: number,
   dropoffLat: number, dropoffLng: number
-): Promise<{ distanceMiles: number; durationMinutes: number }> {
+): Promise<{ distanceKm: number; durationMinutes: number }> {
   try {
     const response = await axios.get<{
       status: string;
@@ -112,7 +112,7 @@ export async function getDistanceAndDuration(
     const element = response.data.rows[0]?.elements[0];
     if (response.data.status === 'OK' && element?.status === 'OK') {
       return {
-        distanceMiles:   element.distance.value / 1609.34, // metros → millas
+        distanceKm:      element.distance.value / 1000, // metros → km
         durationMinutes: Math.ceil(element.duration.value / 60),
       };
     }
@@ -120,10 +120,10 @@ export async function getDistanceAndDuration(
     logger.warn('Distance Matrix falló, usando Haversine:', err);
   }
 
-  // Fallback: Haversine × 1.2 — velocidad promedio 35 mph (incluye autopistas Houston)
-  const distMiles = haversineMiles(pickupLat, pickupLng, dropoffLat, dropoffLng) * 1.2;
-  const durationMin = Math.ceil((distMiles / 35) * 60);
-  return { distanceMiles: distMiles, durationMinutes: durationMin };
+  // Fallback: Haversine × 1.2 — velocidad promedio 40 km/h (tráfico venezolano)
+  const distKm = haversineKm(pickupLat, pickupLng, dropoffLat, dropoffLng) * 1.2;
+  const durationMin = Math.ceil((distKm / 40) * 60);
+  return { distanceKm: distKm, durationMinutes: durationMin };
 }
 
 // ─────────────────────────────────────
@@ -154,10 +154,10 @@ export async function calculateFareEstimate(params: {
   }
 
   // pg devuelve columnas NUMERIC como strings — convertir siempre a número
-  // price_per_km almacena la tarifa por MILLA (mercado EE.UU.)
-  const baseFare       = +(stateConfig?.base_fare            ?? 1.50);
-  const pricePerMile   = +(stateConfig?.price_per_mile        ?? 0.82);
-  const pricePerMin    = +(stateConfig?.price_per_minute     ?? 0.19);
+  // La columna se llama price_per_mile en BD por historia, pero almacena precio por KM
+  const baseFare     = +(stateConfig?.base_fare        ?? 1.00);
+  const pricePerKm   = +(stateConfig?.price_per_mile   ?? 0.92);
+  const pricePerMin  = +(stateConfig?.price_per_minute ?? 0.05);
   const minFare        = +(stateConfig?.min_fare             ?? 5.00);
   const motorcycleMultiplier = +(stateConfig?.motorcycle_multiplier ?? 0.75);
   const suvMultiplier        = +(stateConfig?.suv_multiplier        ?? 1.30);
@@ -187,9 +187,9 @@ export async function calculateFareEstimate(params: {
   // Surge pricing (hora pico)
   const surgeMultiplier = isSurgeHour() ? +(stateConfig?.surge_multiplier ?? 1.5) : 1.0;
 
-  // Distancia y tiempo real via Google Maps / Haversine (en millas)
+  // Distancia y tiempo real via Google Maps / Haversine (en km)
   logger.info(`calculateFareEstimate: state=${params.stateCode} svc=${params.serviceType} coords=(${params.pickupLat.toFixed(4)},${params.pickupLng.toFixed(4)})→(${params.dropoffLat.toFixed(4)},${params.dropoffLng.toFixed(4)})`);
-  const { distanceMiles, durationMinutes } = await getDistanceAndDuration(
+  const { distanceKm, durationMinutes } = await getDistanceAndDuration(
     params.pickupLat, params.pickupLng,
     params.dropoffLat, params.dropoffLng
   );
@@ -213,7 +213,7 @@ export async function calculateFareEstimate(params: {
       total:                hourlyPrice,
       total_ves:            ves,
       exchange_rate_ves:    rate,
-      distance_miles:       Math.round(distanceMiles * 100) / 100,
+      distance_km:          Math.round(distanceKm * 100) / 100,
       duration_minutes:     durationMinutes,
       driver_eta_minutes:   params.driverEtaMinutes,
       hourly_package_hours: hours,
@@ -222,15 +222,14 @@ export async function calculateFareEstimate(params: {
 
   // Wait & Return — ida + espera estimada + vuelta
   if (params.serviceType === 'wait_and_return') {
-    const waitPerMin      = +(stateConfig?.wait_per_minute_rate ?? 0.30);
-    const estimatedWait   = params.estimatedWaitMinutes ?? 60;
-    const waitFare        = estimatedWait * waitPerMin;
+    const waitPerMin    = +(stateConfig?.wait_per_minute_rate ?? 0.30);
+    const estimatedWait = params.estimatedWaitMinutes ?? 60;
+    const waitFare      = estimatedWait * waitPerMin;
 
-    // Tarifas de ida
-    const safeDistMiles   = isFinite(distanceMiles)   ? distanceMiles   : 0;
-    const safeDurationMin = isFinite(durationMinutes) ? durationMinutes : 0;
+    const safeDistKm      = isFinite(distanceKm)      ? distanceKm      : 0;
+    const safeDurationMin = isFinite(durationMinutes)  ? durationMinutes : 0;
     const oneLegFare = Math.max(
-      (baseFare + safeDistMiles * pricePerMile + safeDurationMin * pricePerMin) * surgeMultiplier,
+      (baseFare + safeDistKm * pricePerKm + safeDurationMin * pricePerMin) * surgeMultiplier,
       minFare
     );
     const total = Math.round((oneLegFare * 2 + waitFare) * 100) / 100;
@@ -239,7 +238,7 @@ export async function calculateFareEstimate(params: {
     return {
       service_type:          params.serviceType,
       base_fare:             Math.round(baseFare * 2 * 100) / 100,
-      distance_fare:         Math.round(safeDistMiles * pricePerMile * 2 * 100) / 100,
+      distance_fare:         Math.round(safeDistKm * pricePerKm * 2 * 100) / 100,
       time_fare:             Math.round(safeDurationMin * pricePerMin * 2 * 100) / 100,
       surge_multiplier:      surgeMultiplier,
       service_multiplier:    1.0,
@@ -247,7 +246,7 @@ export async function calculateFareEstimate(params: {
       total,
       total_ves:             ves,
       exchange_rate_ves:     rate,
-      distance_miles:        Math.round(safeDistMiles * 100) / 100,
+      distance_km:           Math.round(safeDistKm * 100) / 100,
       duration_minutes:      safeDurationMin,
       driver_eta_minutes:    params.driverEtaMinutes,
       wait_fare_estimate:    Math.round(waitFare * 100) / 100,
@@ -256,19 +255,20 @@ export async function calculateFareEstimate(params: {
   }
 
   // Proteger contra NaN
-  const safeDistMiles   = isFinite(distanceMiles)   ? distanceMiles   : 0;
+  const safeDistKm      = isFinite(distanceKm)     ? distanceKm     : 0;
   const safeDurationMin = isFinite(durationMinutes) ? durationMinutes : 0;
 
-  // Mínimo diferenciado: encomienda más barato, plataforma más caro
+  // Mínimo diferenciado por tipo de servicio
   const effectiveMinFare =
-    params.serviceType === 'encomienda' ? Math.min(minFare, 2.00) :
-    params.serviceType === 'pickup'     ? Math.max(minFare, 6.00) :
-    params.serviceType === 'plataforma' ? Math.max(minFare, 10.00) :
-    params.serviceType === 'carga'      ? Math.max(minFare, 15.00) :
+    params.serviceType === 'motorcycle'  ? minFare * motorcycleMultiplier :
+    params.serviceType === 'encomienda'  ? Math.min(minFare, 2.00)        :
+    params.serviceType === 'pickup'      ? Math.max(minFare, 6.00)        :
+    params.serviceType === 'plataforma'  ? Math.max(minFare, 10.00)       :
+    params.serviceType === 'carga'       ? Math.max(minFare, 15.00)       :
     minFare;
 
-  // Tarifa desglosada en millas
-  const distanceFare = safeDistMiles   * pricePerMile;
+  // Tarifa desglosada en km
+  const distanceFare = safeDistKm      * pricePerKm;
   const timeFare     = safeDurationMin * pricePerMin;
   const rawSubtotal  = (baseFare + distanceFare + timeFare) * serviceMultiplier * surgeMultiplier;
   const subtotal     = Math.max(rawSubtotal, effectiveMinFare);
@@ -286,17 +286,17 @@ export async function calculateFareEstimate(params: {
     total,
     total_ves:          ves,
     exchange_rate_ves:  rate,
-    distance_miles:     Math.round(safeDistMiles * 100) / 100,
+    distance_km:        Math.round(safeDistKm * 100) / 100,
     duration_minutes:   safeDurationMin,
     driver_eta_minutes: params.driverEtaMinutes,
   };
 }
 
 // ─────────────────────────────────────
-// Fórmula Haversine — distancia en MILLAS entre dos puntos GPS
+// Fórmula Haversine — distancia en KM entre dos puntos GPS
 // ─────────────────────────────────────
-function haversineMiles(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 3958.8; // Radio de la Tierra en millas
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371; // Radio de la Tierra en km
   const dLat = toRad(lat2 - lat1);
   const dLng = toRad(lng2 - lng1);
   const a =

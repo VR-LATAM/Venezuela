@@ -110,19 +110,19 @@ export default function RideScreen() {
   // Notificación de proximidad del conductor al pickup (sin actualizar routeOrigin)
   useEffect(() => {
     if (!driverLocation) return;
-    // Notificar cuando el conductor está a menos de 0.3 millas del pickup
+    // Notificar cuando el conductor está a menos de 500m del pickup
     if (!nearbyAlertShown.current && currentRide) {
       const pickup = currentRide.pickup_location as { latitude?: number; longitude?: number } | null;
       if (pickup?.latitude && pickup?.longitude) {
-        const R = 3958.8;
+        const R = 6371;
         const dLat = (driverLocation.latitude  - pickup.latitude)  * Math.PI / 180;
         const dLng = (driverLocation.longitude - pickup.longitude) * Math.PI / 180;
         const a = Math.sin(dLat/2)**2 +
           Math.cos(pickup.latitude * Math.PI/180) * Math.cos(driverLocation.latitude * Math.PI/180) *
           Math.sin(dLng/2)**2;
-        const distanceMiles = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        const distanceKm = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
-        if (distanceMiles < 0.3) {
+        if (distanceKm < 0.5) {
           nearbyAlertShown.current = true;
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
           Alert.alert('🚗 Conductor cerca', 'Tu conductor está a menos de 500 m. ¡Prepárate!');

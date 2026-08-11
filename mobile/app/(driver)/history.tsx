@@ -107,7 +107,7 @@ export default function DriverHistoryScreen() {
               <Text style={styles.earningAmt}>+${item.driver_earnings.toFixed(2)}</Text>
             )}
             <Text style={styles.distanceLbl}>
-              {item.distance_km ? `${item.distance_km.toFixed(1)} mi` : '—'}
+              {item.distance_km ? `${item.distance_km.toFixed(1)} km` : '—'}
             </Text>
             <View style={[styles.statusDot,
               { backgroundColor: isCompleted ? '#22C55E' : BRAND_COLORS.ALERT }

@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>V-Ride - Caracteristicas de la App</title>
+<title>VERONA Ride Venezuela — Características de la App</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #F1F5F9; color: #1E293B; line-height: 1.6; }
-header { background: linear-gradient(135deg, #1D4ED8, #0EA5E9); color: #fff; padding: 50px 40px; }
+header { background: linear-gradient(135deg, #1E3A8A, #0D9488); color: #fff; padding: 50px 40px; }
 .logo { font-size: 40px; font-weight: 900; letter-spacing: -2px; }
-.logo span { color: #BAE6FD; }
+.logo span { color: #6EE7D7; }
 .tagline { font-size: 15px; color: rgba(255,255,255,.8); margin-top: 6px; font-style: italic; }
 .empresa { font-size: 13px; color: rgba(255,255,255,.6); margin-top: 4px; }
 .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 20px; }
@@ -35,14 +35,6 @@ tr:hover td { background: #FAFBFC; }
 .ci { font-size: 26px; margin-bottom: 8px; }
 .ct { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
 .cd { font-size: 13px; color: #64748B; line-height: 1.55; }
-.tiers { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 8px; }
-.tier { flex: 1; min-width: 160px; border-radius: 14px; padding: 22px; text-align: center; }
-.t1 { background: #F1F5F9; }
-.t2 { background: #F0F9FF; border: 2px solid #BAE6FD; }
-.t3 { background: #FFFBEB; border: 2px solid #FDE68A; }
-.tpct { font-size: 42px; font-weight: 900; line-height: 1; }
-.tlbl { font-size: 14px; font-weight: 800; margin: 8px 0 4px; }
-.treq { font-size: 12px; color: #64748B; line-height: 1.5; }
 .badges { display: flex; gap: 10px; flex-wrap: wrap; }
 .badge { background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 12px; padding: 14px 16px; text-align: center; min-width: 105px; }
 .bi { font-size: 28px; margin-bottom: 5px; }
@@ -64,7 +56,7 @@ tr:hover td { background: #FAFBFC; }
 .htxt strong { color: #1E293B; }
 .stats { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 6px; }
 .stat { background: #F8FAFC; border: 1.5px solid #E2E8F0; border-radius: 14px; padding: 16px 20px; flex: 1; min-width: 120px; }
-.sv { font-size: 28px; font-weight: 900; color: #1D4ED8; }
+.sv { font-size: 28px; font-weight: 900; color: #1E3A8A; }
 .sl { font-size: 13px; color: #64748B; margin-top: 2px; }
 .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 @media (max-width: 700px) { .cols { grid-template-columns: 1fr; } }
@@ -82,266 +74,234 @@ footer strong { color: #64748B; }
 <body>
 
 <header>
-  <div class="logo">V<span>-</span>RIDE</div>
-  <div class="tagline">Transporte especializado para adultos mayores y personas con movilidad reducida</div>
-  <div class="empresa">ELITE GROUP - Integral Services LLC &middot; Wyoming, EE. UU.</div>
+  <div class="logo">VERONA<span> Ride</span></div>
+  <div class="tagline">Transporte inteligente hecho en Venezuela — conductor recibe el 100%</div>
+  <div class="empresa">VERONA Group Venezuela &middot; Maracaibo, Venezuela</div>
   <div class="tags">
-    <span class="tag">React Native + Expo 54</span>
+    <span class="tag">React Native + Expo SDK 54</span>
     <span class="tag">Node.js + Railway</span>
     <span class="tag">Supabase + PostGIS</span>
-    <span class="tag">Stripe Connect</span>
     <span class="tag">Firebase Auth + FCM</span>
-    <span class="tag">Socket.io</span>
-    <span class="tag">Wyoming — 50 Estados configurados</span>
-    <span class="tag">Military Service</span>
-    <span class="tag">v1.0 &middot; Junio 2026</span>
+    <span class="tag">Socket.io + Redis</span>
+    <span class="tag">24 estados venezolanos</span>
+    <span class="tag">Pago en efectivo — 0% comisión</span>
+    <span class="tag">Tasa BCV en tiempo real</span>
+    <span class="tag">v1.9 &middot; Agosto 2026</span>
   </div>
 </header>
 
 <div class="wrap">
 
+  <!-- DIFERENCIAL PRINCIPAL -->
+  <div class="sec">
+    <div class="h2"><div class="ico" style="background:#DBEAFE">&#127942;</div>Propuesta de Valor — Venezuela</div>
+    <div class="cols">
+      <div>
+        <div class="hl hg">
+          <div class="hico">&#128176;</div>
+          <div class="htxt"><strong>0% de comisión para el conductor.</strong> El conductor recibe el 100% de la tarifa en cada viaje. InDriver, Yummy y similares cobran 15–20%. El conductor gana más con VERONA aunque la tarifa al pasajero sea igual o menor.</div>
+        </div>
+        <div class="hl hb">
+          <div class="hico">&#128178;</div>
+          <div class="htxt"><strong>Precios en USD + Bolívares.</strong> La tarifa se calcula en dólares y se muestra en ambas monedas usando la tasa BCV oficial, actualizada cada hora automáticamente.</div>
+        </div>
+      </div>
+      <div>
+        <div class="hl ho">
+          <div class="hico">&#129527;</div>
+          <div class="htxt"><strong>Membresía semanal en lugar de comisión.</strong> El conductor paga una membresía fija por semana (Moto $15 · Sedán $25 · SUV $35) y todos sus viajes son 100% suyos. Sin porcentaje por carrera.</div>
+        </div>
+        <div class="hl hp">
+          <div class="hico">&#128506;</div>
+          <div class="htxt"><strong>Negociación de precio en servicios de Carga.</strong> El pasajero propone un precio, el conductor puede aceptar, rechazar o contra-ofertar con justificación. Flujo completo en tiempo real.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TIPOS DE SERVICIO -->
   <div class="sec">
     <div class="h2"><div class="ico" style="background:#DBEAFE">&#128663;</div>Tipos de Servicio</div>
     <div class="svcs">
-      <div class="svc" style="background:#F0F9FF"><div class="se">&#128663;</div><div class="sn">Standard</div><div class="sm">x1.0 &mdash; Tarifa base</div></div>
-      <div class="svc" style="background:#F0FFF4"><div class="se">&#128656;</div><div class="sn">Family</div><div class="sm">x1.5 &mdash; Vehiculo amplio</div></div>
-      <div class="svc" style="background:#FFFBEB"><div class="se">&#128665;</div><div class="sn">Executive</div><div class="sm">x1.8 &mdash; Premium</div></div>
-      <div class="svc" style="background:#FDF4FF"><div class="se">&#9855;</div><div class="sn">Accessible</div><div class="sm">x1.4 &mdash; Equipado ADA</div></div>
-      <div class="svc" style="background:#FFF7ED"><div class="se">&#128197;</div><div class="sn">Scheduled</div><div class="sm">x1.0 &mdash; Reserva anticipada</div></div>
-      <div class="svc" style="background:#F0FFF4"><div class="se">&#9201;</div><div class="sn">Hourly</div><div class="sm">Precio fijo &mdash; paquetes 2h / 4h / 8h</div></div>
-      <div class="svc" style="background:#EFF6FF"><div class="se">&#9203;</div><div class="sn">Wait &amp; Return</div><div class="sm">Ida + espera + regreso &mdash; cobro por minuto real</div></div>
-      <div class="svc" style="background:#F0FFF4"><div class="se">&#127881;</div><div class="sn">Corporate</div><div class="sm">Cuenta empresarial &mdash; facturacion centralizada</div></div>
-      <div class="svc" style="background:#FDF4FF"><div class="se">&#128081;</div><div class="sn">VIP</div><div class="sm">x2.5 &mdash; Servicio de lujo exclusivo</div></div>
-      <div class="svc" style="background:#F0F9FF"><div class="se">&#127881;</div><div class="sn">Military</div><div class="sm">Tarifa especial &mdash; veteranos y servicio activo</div></div>
-    </div>
-  </div>
-
-  <!-- TARIFAS -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#DCFCE7">&#128181;</div>Estructura de Tarifas</div>
-    <div class="stats">
-      <div class="stat"><div class="sv">$1.55</div><div class="sl">Tarifa base (TX)</div></div>
-      <div class="stat"><div class="sv">$1.15</div><div class="sl">Por milla (TX)</div></div>
-      <div class="stat"><div class="sv">$0.24</div><div class="sl">Por minuto (TX)</div></div>
-      <div class="stat"><div class="sv">$6.50</div><div class="sl">Tarifa minima (TX)</div></div>
-    </div>
-    <div class="hl ho" style="margin-top:16px">
-      <div class="hico">&#9889;</div>
-      <div class="htxt"><strong>Surge pricing x1.5</strong> se activa automaticamente en horas pico: <strong>12:00-2:00 PM</strong> y <strong>6:00-9:00 PM</strong>. Configurable por estado desde el admin.</div>
-    </div>
-    <div class="hl hb">
-      <div class="hico">&#128179;</div>
-      <div class="htxt"><strong>Ganancia neta de la plataforma en un viaje de $20:</strong> aprox. $2.92 (14.6% efectivo despues de fees de Stripe). El conductor recibe aprox. $16.20 (81.0%). Margen neto real despues de publicidad y operaciones: ~10.5%.</div>
-    </div>
-    <div class="hl hg">
-      <div class="hico">&#128506;</div>
-      <div class="htxt">Tarifas calculadas con <strong>Google Maps Distance Matrix API</strong>. Fallback con formula Haversine x1.2 a 35 mph promedio. Todas las distancias en <strong>millas</strong>.</div>
-    </div>
-    <div style="margin-top:20px">
-      <h3>Tarifas Wait &amp; Return — Espera del conductor</h3>
-      <div class="stats" style="margin-top:10px">
-        <div class="stat"><div class="sv" style="font-size:22px">$0.33<span style="font-size:14px">/min</span></div><div class="sl">Wyoming &mdash; $20/hr</div></div>
-        <div class="stat"><div class="sv" style="font-size:22px">$0.38<span style="font-size:14px">/min</span></div><div class="sl">California &mdash; $23/hr</div></div>
-      </div>
-      <div class="hl hb" style="margin-top:12px">
-        <div class="hico">&#128203;</div>
-        <div class="htxt">El costo de espera se cobra por el <strong>tiempo real</strong> que el conductor espera en la cita, no por el estimado. El conductor y el pasajero ven el timer en vivo con el costo acumulado.</div>
-      </div>
-    </div>
-    <div style="margin-top:20px">
-      <h3>Paquetes Hourly Ride</h3>
-      <div class="stats" style="margin-top:10px">
-        <div class="stat"><div class="sv">2h</div><div class="sl">WY $66 &nbsp;·&nbsp; CA $70</div></div>
-        <div class="stat"><div class="sv">4h</div><div class="sl">WY $119 &nbsp;·&nbsp; CA $125</div></div>
-        <div class="stat"><div class="sv">8h</div><div class="sl">WY $193 &nbsp;·&nbsp; CA $210</div></div>
-      </div>
-      <div class="hl hg" style="margin-top:12px">
-        <div class="hico">&#9201;</div>
-        <div class="htxt">Precio fijo seleccionado antes del viaje. El conductor esta disponible para multiples paradas durante el tiempo contratado (farmacia, banco, medico, supermercado).</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- COMISION PROGRESIVA -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#FEF3C7">&#127942;</div>Comision Progresiva del Conductor</div>
-    <p>Los conductores pagan menos comision a medida que mejoran su desempeno. El contador se reinicia el <strong>1 de enero</strong> de cada ano.</p>
-    <div class="tiers">
-      <div class="tier t1">
-        <div class="tpct" style="color:#475569">19%</div>
-        <div class="tlbl">Standard</div>
-        <div class="treq">Conductor nuevo o calificacion menor a 4.75</div>
-      </div>
-      <div class="tier t2">
-        <div class="tpct" style="color:#0EA5E9">18%</div>
-        <div class="tlbl">Silver</div>
-        <div class="treq">500+ viajes en el ano y calificacion mayor o igual a 4.75</div>
-      </div>
-      <div class="tier t3">
-        <div class="tpct" style="color:#D97706">17%</div>
-        <div class="tlbl">Elite</div>
-        <div class="treq">1500+ viajes en el ano y calificacion mayor o igual a 4.75</div>
-      </div>
-    </div>
-    <div class="hl hr" style="margin-top:16px">
-      <div class="hico">&#9888;</div>
-      <div class="htxt">Si la calificacion cae por debajo de <strong>4.75</strong>, el conductor pierde su nivel de inmediato, sin esperar al 1 de enero.</div>
-    </div>
-  </div>
-
-  <!-- INSIGNIAS -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#EDE9FE">&#127894;</div>Insignias del Conductor</div>
-    <p>Se asignan automaticamente segun el total de viajes completados. Son visibles para los pasajeros.</p>
-    <div class="badges">
-      <div class="badge"><div class="bi">&#127378;</div><div class="bl">New Driver</div><div class="br">0 a 49 viajes</div></div>
-      <div class="badge"><div class="bi">&#9989;</div><div class="bl">Active Driver</div><div class="br">50 a 199 viajes</div></div>
-      <div class="badge"><div class="bi">&#11088;</div><div class="bl">Pro Driver</div><div class="br">200 a 499 viajes</div></div>
-      <div class="badge"><div class="bi">&#127885;</div><div class="bl">Elite Driver</div><div class="br">500 a 999 viajes</div></div>
-      <div class="badge"><div class="bi">&#128081;</div><div class="bl">Top Rated</div><div class="br">1000+ viajes</div></div>
-    </div>
-  </div>
-
-  <!-- DESCUENTOS Y PROMOS -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#DCFCE7">&#127873;</div>Descuentos y Codigos Promocionales</div>
-    <div class="cols">
-      <div>
-        <h3>Descuento Pasajero Frecuente</h3>
-        <div class="hl hg">
-          <div class="hico">&#128293;</div>
-          <div class="htxt"><strong>10% de descuento automatico</strong> para pasajeros con <strong>25 viajes por semana</strong> o <strong>50 viajes por mes</strong>. Sin necesidad de codigo. Badge visible en la pantalla de inicio.</div>
+      <div class="svc" style="background:#F0F9FF"><div class="se">&#128653;</div><div class="sn">Moto</div><div class="sm">x0.75 — Más económico</div></div>
+      <div class="svc" style="background:#F0FFF4"><div class="se">&#128663;</div><div class="sn">Sedán</div><div class="sm">x1.0 — Tarifa base</div></div>
+      <div class="svc" style="background:#FFFBEB"><div class="se">&#128665;</div><div class="sn">SUV</div><div class="sm">x1.30 — Vehículo amplio</div></div>
+      <div class="svc" style="background:#EFF6FF"><div class="se">&#128230;</div><div class="sn">Encomienda</div><div class="sm">Moto / Sedán / SUV — 40% más barato</div></div>
+      <div class="svc" style="background:#FDF4FF">
+        <div class="se">&#127959;&#65039;</div>
+        <div class="sn">Carga</div>
+        <div class="sm" style="font-size:11px">
+          🛻 Pick-Up · 🚛 Plataforma<br>🛻 F-350 · 🚚 NPR 400+<br>Precio negociable
         </div>
       </div>
-      <div>
-        <h3>Codigos Promocionales</h3>
-        <ul class="ck">
-          <li>El admin crea codigos con el porcentaje de descuento que defina</li>
-          <li>Limite de usos total (opcional)</li>
-          <li>Fecha de vencimiento (opcional)</li>
-          <li>Un solo uso por pasajero por codigo</li>
-          <li>El pasajero lo ingresa antes de solicitar el viaje</li>
-          <li>Validacion instantanea contra el API</li>
-        </ul>
-      </div>
+      <div class="svc" style="background:#FFF7ED"><div class="se">&#128197;</div><div class="sn">Programado</div><div class="sm">Reserva con anticipación</div></div>
     </div>
   </div>
 
-  <!-- PAGOS -->
+  <!-- SERVICIO DE CARGA -->
   <div class="sec">
-    <div class="h2"><div class="ico" style="background:#DBEAFE">&#128179;</div>Pagos y Cobros</div>
+    <div class="h2"><div class="ico" style="background:#FDF4FF">&#127959;&#65039;</div>Servicio de Carga — Flujo Completo</div>
+    <p>El servicio de Carga agrupa 4 sub-tipos bajo una sola tarjeta en el menú del pasajero. Todos comparten el mismo formulario completo de entrega.</p>
     <table>
-      <thead><tr><th>Caracteristica</th><th>Detalle</th><th>Estado</th></tr></thead>
+      <thead><tr><th>Sub-tipo</th><th>Multiplicador</th><th>Uso típico</th></tr></thead>
       <tbody>
-        <tr><td><strong>Stripe Connect</strong></td><td>Cobro automatico a la tarjeta del pasajero al finalizar el viaje</td><td><span class="pill po">Modo prueba</span></td></tr>
-        <tr><td><strong>Pre-autorizacion (hold)</strong></td><td>Se bloquea el monto estimado +15% al solicitar el viaje como garantia de pago</td><td><span class="pill pg">Activo</span></td></tr>
-        <tr><td><strong>Pago semanal automatico</strong></td><td>Cada lunes 00:05 AM, saldo minimo $10. La plataforma absorbe el fee de Stripe (0.25% + $0.25)</td><td><span class="pill pg">Activo</span></td></tr>
-        <tr><td><strong>Propinas post-viaje</strong></td><td>10%, 15%, 20% o monto personalizado. Va 100% al conductor.</td><td><span class="pill pg">Activo</span></td></tr>
-        <tr><td><strong>Fee de cancelacion</strong></td><td>$3.00 si el pasajero cancela despues de 2 minutos o cuando el conductor ya llego al punto de recogida</td><td><span class="pill pg">Activo</span></td></tr>
-        <tr><td><strong>Recibo PDF por email</strong></td><td>Se envia automaticamente al pasajero al completar cada viaje (PDF adjunto + resumen HTML)</td><td><span class="pill pg">Activo</span></td></tr>
-        <tr><td><strong>Multiples metodos de pago</strong></td><td>El pasajero guarda varias tarjetas y elige cual usar en cada viaje</td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>🛻 Pick-Up</strong></td><td>×1.20</td><td>Mudanzas ligeras, materiales de construcción, compras grandes</td></tr>
+        <tr><td><strong>🚛 Plataforma</strong></td><td>×1.60</td><td>Vehículos varados, cargas industriales planas</td></tr>
+        <tr><td><strong>🛻 F-350 / Platabanda</strong></td><td>×2.0 (base negociación)</td><td>Carga pesada, voluminosa — precio negociable</td></tr>
+        <tr><td><strong>🚚 NPR 400+ / Camión</strong></td><td>×2.5 (base negociación)</td><td>Carga industrial pesada — precio negociable</td></tr>
       </tbody>
     </table>
+    <div class="hl hb" style="margin-top:14px">
+      <div class="hico">&#128203;</div>
+      <div class="htxt"><strong>Formulario de entrega unificado</strong> para todos los sub-tipos: dirección de recogida personalizada (con geocodificación), tipo de carga (descripción libre), precio ofrecido (ajuste ±$1), datos de quien entrega (nombre + teléfono), datos de quien recibe (nombre + teléfono).</div>
+    </div>
+    <div class="hl ho" style="margin-top:8px">
+      <div class="hico">&#129309;</div>
+      <div class="htxt"><strong>Negociación F-350 / NPR:</strong> pasajero propone precio → conductor puede Aceptar, Rechazar o enviar Contra-oferta con nuevo precio y motivo → pasajero recibe modal y decide. Todo en tiempo real vía Socket.io.</div>
+    </div>
   </div>
 
-  <!-- CERTIFICACIONES -->
+  <!-- TARIFAS VENEZUELA -->
   <div class="sec">
-    <div class="h2"><div class="ico" style="background:#EDE9FE">&#128203;</div>Sistema de Certificaciones del Conductor</div>
-    <p>Para activar cada tipo de servicio, el conductor debe leer el material del modulo y aprobar un examen. <strong>No puede ponerse en linea sin al menos una certificacion activa.</strong></p>
-    <table>
-      <thead><tr><th>Modulo</th><th>Certifica</th><th>Puntaje minimo</th><th>Para que sirve</th></tr></thead>
+    <div class="h2"><div class="ico" style="background:#DCFCE7">&#128181;</div>Estructura de Tarifas — Venezuela</div>
+    <div class="stats">
+      <div class="stat"><div class="sv">$1.00</div><div class="sl">Tarifa base</div></div>
+      <div class="stat"><div class="sv">$0.40</div><div class="sl">Por kilómetro</div></div>
+      <div class="stat"><div class="sv">$0.10</div><div class="sl">Por minuto</div></div>
+      <div class="stat"><div class="sv">$2.50</div><div class="sl">Tarifa mínima</div></div>
+      <div class="stat"><div class="sv">×1.3</div><div class="sl">Surge hora pico</div></div>
+      <div class="stat" style="border-color:#15803D"><div class="sv" style="color:#15803D">0%</div><div class="sl">Comisión plataforma</div></div>
+    </div>
+    <div class="hl hg" style="margin-top:16px">
+      <div class="hico">&#128506;</div>
+      <div class="htxt">Distancias calculadas en <strong>kilómetros</strong>. Tarifa calculada con Google Maps Distance Matrix API. Fallback Haversine si la API no responde. Se muestra en <strong>USD y Bolívares</strong> (tasa BCV actualizada cada hora).</div>
+    </div>
+    <div style="margin-top:20px">
+      <h3>Multiplicadores por tipo de servicio</h3>
+      <table style="margin-top:10px">
+        <thead><tr><th>Servicio</th><th>Multiplicador</th><th>Ejemplo viaje 6 km / 15 min</th></tr></thead>
+        <tbody>
+          <tr><td>Moto</td><td>×0.75</td><td>~$3.68</td></tr>
+          <tr><td>Sedán</td><td>×1.0</td><td>~$4.90</td></tr>
+          <tr><td>SUV</td><td>×1.30</td><td>~$6.37</td></tr>
+          <tr><td>Pick-Up</td><td>×1.20</td><td>~$5.88</td></tr>
+          <tr><td>Plataforma</td><td>×1.60</td><td>~$7.84</td></tr>
+          <tr><td>Encomienda (moto)</td><td>×0.45</td><td>~$2.21</td></tr>
+          <tr><td>Encomienda (sedán)</td><td>×0.60</td><td>~$2.94</td></tr>
+          <tr><td>Encomienda (SUV)</td><td>×0.78</td><td>~$3.82</td></tr>
+          <tr><td>Carga F-350</td><td>×2.0</td><td>Precio negociable (referencia ~$9.80)</td></tr>
+          <tr><td>Carga NPR 400+</td><td>×2.5</td><td>Precio negociable (referencia ~$12.25)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="hl ho" style="margin-top:14px">
+      <div class="hico">&#128203;</div>
+      <div class="htxt"><strong>Tarifas propuestas (pendiente de aplicar):</strong> Base $1.25 · $0.50/km · $0.13/min · mínimo $3.50. Con 0% de comisión, subir ~25% las tarifas sigue siendo más económico para el pasajero que la competencia (que cobra 20% de comisión), y el conductor gana significativamente más.</div>
+    </div>
+  </div>
+
+  <!-- COMISION -->
+  <div class="sec">
+    <div class="h2"><div class="ico" style="background:#DCFCE7">&#128176;</div>Modelo de Ingresos Venezuela — 0% Comisión</div>
+    <div class="hl hg">
+      <div class="hico">&#10003;</div>
+      <div class="htxt"><strong>El conductor recibe el 100% de cada tarifa.</strong> No hay comisión por viaje. El modelo de ingresos de la plataforma es la membresía semanal fija, no un porcentaje de las ganancias del conductor.</div>
+    </div>
+    <div style="margin-top:16px">
+      <h3>Ventaja competitiva real</h3>
+      <table style="margin-top:10px">
+        <thead><tr><th></th><th>Competencia (20% comisión)</th><th>VERONA Ride (0%)</th></tr></thead>
+        <tbody>
+          <tr><td>Pasajero paga</td><td>$6.10</td><td>$4.90 — <strong>20% más barato</strong></td></tr>
+          <tr><td>Conductor recibe</td><td>$4.88</td><td><strong>$4.90 — gana más</strong></td></tr>
+          <tr><td>Plataforma</td><td>$1.22/viaje</td><td>Membresía semanal fija</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MEMBRESIA -->
+  <div class="sec">
+    <div class="h2"><div class="ico" style="background:#FEF3C7">&#128179;</div>Membresía Semanal del Conductor</div>
+    <p>El conductor paga una membresía fija semanal (viernes a jueves) en lugar de comisión por viaje. Todos sus viajes son 100% suyos.</p>
+    <div class="badges">
+      <div class="badge"><div class="bi">&#128653;</div><div class="bl">Moto</div><div class="br">$15.00 / semana</div></div>
+      <div class="badge"><div class="bi">&#128663;</div><div class="bl">Sedán</div><div class="br">$25.00 / semana</div></div>
+      <div class="badge"><div class="bi">&#128665;</div><div class="bl">SUV</div><div class="br">$35.00 / semana</div></div>
+    </div>
+    <table style="margin-top:16px">
+      <thead><tr><th>Estado</th><th>Significado</th></tr></thead>
       <tbody>
-        <tr><td style="font-family:monospace;color:#1D4ED8;font-weight:700">VRN-TRN-026</td><td>Categorias Especiales de Pasajeros (Foundation)</td><td><span class="pill pb">8 / 10</span></td><td>Prerequisito. Desbloquea todos los demas modulos.</td></tr>
-        <tr><td style="font-family:monospace;color:#1D4ED8;font-weight:700">VRN-TRN-027-STD</td><td>Servicio Standard</td><td><span class="pill pb">8 / 10</span></td><td>Viajes Standard</td></tr>
-        <tr><td style="font-family:monospace;color:#1D4ED8;font-weight:700">VRN-TRN-027-EXE</td><td>Servicio Executive</td><td><span class="pill pp">9 / 10</span></td><td>Viajes Executive</td></tr>
-        <tr><td style="font-family:monospace;color:#1D4ED8;font-weight:700">VRN-TRN-027-ACC</td><td>Servicio Accessible</td><td><span class="pill pp">9 / 10</span></td><td>Viajes Accessible</td></tr>
-        <tr><td style="font-family:monospace;color:#1D4ED8;font-weight:700">VRN-TRN-027-SCH</td><td>Servicio Scheduled</td><td><span class="pill pb">8 / 10</span></td><td>Viajes programados</td></tr>
-        <tr><td style="font-family:monospace;color:#1D4ED8;font-weight:700">VRN-TRN-031</td><td>Military Service — Transporte a Veteranos</td><td><span class="pill pb">8 / 10</span></td><td>Viajes con descuento a veteranos y servicio activo</td></tr>
+        <tr><td><span class="pill po">pending_payment</span></td><td>Conductor inició el proceso, pendiente confirmación de pago</td></tr>
+        <tr><td><span class="pill pb">pending_approval</span></td><td>Pago enviado, esperando verificación del admin</td></tr>
+        <tr><td><span class="pill pg">active</span></td><td>Membresía vigente — conductor puede conectarse</td></tr>
+        <tr><td><span class="pill pr">expired</span></td><td>Semana vencida — debe renovar para seguir operando</td></tr>
+        <tr><td><span class="pill pr">rejected</span></td><td>Admin rechazó el pago (comprobante inválido)</td></tr>
+      </tbody>
+    </table>
+    <div class="hl ho" style="margin-top:12px">
+      <div class="hico">&#128203;</div>
+      <div class="htxt">Ciclo: <strong>viernes → jueves</strong>. Cron automático verifica expiración cada hora. Admin aprueba o rechaza el comprobante desde el panel. Próxima mejora: integración directa con Zelle / Pago Móvil / Binance para aprobación automática.</div>
+    </div>
+  </div>
+
+  <!-- REGISTRO CONDUCTOR -->
+  <div class="sec">
+    <div class="h2"><div class="ico" style="background:#EDE9FE">&#128203;</div>Registro del Conductor — Venezuela</div>
+    <p>Flujo de 8 pasos con documentación venezolana obligatoria. No puede conectarse sin completarlo y ser aprobado por el admin.</p>
+    <table>
+      <thead><tr><th>Paso</th><th>Datos requeridos</th></tr></thead>
+      <tbody>
+        <tr><td><strong>1. Identidad</strong></td><td>Nombre, foto de perfil, Cédula venezolana (V- / E-), foto del frente de la cédula, estado donde opera</td></tr>
+        <tr><td><strong>2. Licencia</strong></td><td>Número, fecha de vencimiento, foto de frente y dorso</td></tr>
+        <tr><td><strong>3. Tipo de vehículo</strong></td><td>Moto / Sedán / SUV — determina la membresía y los tipos de servicio disponibles</td></tr>
+        <tr><td><strong>4. Datos del vehículo</strong></td><td>Marca, modelo, año, color, número de placa</td></tr>
+        <tr><td><strong>5. Seguro</strong></td><td>Póliza de seguro (PDF o foto), fecha de vencimiento</td></tr>
+        <tr><td><strong>6. Fotos del vehículo</strong></td><td>Frente, trasera, laterales, interior (9 fotos)</td></tr>
+        <tr><td><strong>7. Certificaciones</strong></td><td>Primeros auxilios, manejo defensivo, otros módulos de capacitación</td></tr>
+        <tr><td><strong>8. Revisión</strong></td><td>Resumen de todo y envío para aprobación del admin</td></tr>
       </tbody>
     </table>
     <div class="hl hb" style="margin-top:12px">
-      <div class="hico">&#127881;</div>
-      <div class="htxt">El modulo <strong>VRN-TRN-031</strong> cubre: protocolo de respeto a veteranos, entendimiento de discapacidades de combate, comunicacion con personal de servicio activo, procedimientos con instalaciones militares y manejo de equipamiento especial. <strong>10 preguntas</strong>, puntaje minimo 8/10.</div>
-    </div>
-  </div>
-
-  <!-- SEGURIDAD -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#FEE2E2">&#128737;</div>Seguridad y Emergencias</div>
-    <div class="grid">
-      <div class="card">
-        <div class="ci">&#128680;</div>
-        <div class="ct">Boton SOS - Pasajero y Conductor</div>
-        <div class="cd">Mantener presionado 2 segundos para activar (evita activaciones accidentales). Alerta al admin via Socket.io y FCM push con coordenadas GPS e ID del viaje. Vibracion haptic.</div>
-      </div>
-      <div class="card">
-        <div class="ci">&#128506;</div>
-        <div class="ct">Alerta de Desvio de Ruta</div>
-        <div class="cd">Si el conductor se desvía mas de 0.5 millas del destino durante el viaje, el pasajero recibe alerta automatica con indicacion de usar el SOS si se siente inseguro.</div>
-      </div>
-      <div class="card">
-        <div class="ci">&#9889;</div>
-        <div class="ct">Monitoreo de Velocidad</div>
-        <div class="cd">Seguimiento GPS de velocidad en tiempo real durante el viaje. Alerta al conductor si supera 75 mph. Cooldown de 30 segundos entre alertas.</div>
-      </div>
-      <div class="card">
-        <div class="ci">&#127897;</div>
-        <div class="ct">Grabacion de Audio del Viaje</div>
-        <div class="cd">El pasajero puede grabar el viaje completo. El audio se almacena localmente en el dispositivo. Nunca se sube a ningun servidor.</div>
-      </div>
-      <div class="card">
-        <div class="ci">&#128248;</div>
-        <div class="ct">Verificacion de Foto del Pasajero</div>
-        <div class="cd">Obligatoria antes del primer viaje. Almacenada en Firebase Storage con URL firmada de 10 anos de vigencia.</div>
-      </div>
-      <div class="card">
-        <div class="ci">&#128279;</div>
-        <div class="ct">Seguimiento en Vivo Compartible</div>
-        <div class="cd">El pasajero genera un link publico de seguimiento valido 2 horas. Un familiar puede ver la ubicacion del conductor sin tener la app instalada.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ACCESIBILIDAD -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#F0FFF4">&#9855;</div>Accesibilidad</div>
-    <p>El pasajero guarda un <strong>perfil de accesibilidad permanente</strong> que se comparte automaticamente con el conductor antes de cada viaje, permitiendole prepararse adecuadamente.</p>
-    <div class="acc">
-      <div class="ai">&#9855; Silla de ruedas</div>
-      <div class="ai">&#129455; Andador / Rollator</div>
-      <div class="ai">&#129454; Baston blanco</div>
-      <div class="ai">&#128021; Animal de servicio</div>
-      <div class="ai">&#129787; Equipo de oxigeno</div>
-      <div class="ai">&#128066; Hipoacusia</div>
-      <div class="ai">&#128065; Discapacidad visual</div>
-      <div class="ai">&#129504; Apoyo cognitivo</div>
-      <div class="ai">&#8987; Tiempo extra de abordaje</div>
-    </div>
-    <div class="hl hb" style="margin-top:14px">
       <div class="hico">&#128203;</div>
-      <div class="htxt">El pasajero puede agregar <strong>notas adicionales en texto libre</strong> para el conductor. Ejemplo: "Por favor espere 2 minutos extra mientras me bajo del vehiculo".</div>
+      <div class="htxt">El conductor puede <strong>cambiar el tipo de vehículo</strong> después del registro desde el menú principal (ej. actualizar de Sedán a SUV). El cambio actualiza la membresía correspondiente.</div>
     </div>
+  </div>
+
+  <!-- PAGOS VENEZUELA -->
+  <div class="sec">
+    <div class="h2"><div class="ico" style="background:#DBEAFE">&#128179;</div>Pagos — Venezuela (Efectivo)</div>
+    <table>
+      <thead><tr><th>Característica</th><th>Detalle</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Pago en efectivo</strong></td><td>El pasajero paga directamente al conductor en efectivo (USD, Bs., Zelle, etc.) al finalizar el viaje</td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Sin Stripe</strong></td><td>No hay cobro digital en Venezuela. La app marca el viaje como pagado al completarlo</td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Precio en USD + VES</strong></td><td>Tarifa mostrada en dólares y bolívares usando tasa BCV oficial actualizada cada hora</td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Fee de cancelación</strong></td><td>Si el pasajero cancela después de 2 minutos de conductor asignado: Moto / Sedán / SUV / Encomienda → <strong>25%</strong> de la tarifa estimada · Pick-Up / Plataforma / F-350 / NPR → <strong>35%</strong> de la tarifa estimada</td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Recibo PDF</strong></td><td>Enviado automáticamente al pasajero por email al completar el viaje</td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Pago membresía</strong></td><td>Conductor envía comprobante (Zelle/Pago Móvil), admin aprueba manualmente</td><td><span class="pill po">Manual</span></td></tr>
+      </tbody>
+    </table>
   </div>
 
   <!-- FUNCIONALIDADES DEL VIAJE -->
   <div class="sec">
     <div class="h2"><div class="ico" style="background:#FEF3C7">&#128506;</div>Funcionalidades del Viaje</div>
     <table>
-      <thead><tr><th>Caracteristica</th><th>Detalle</th></tr></thead>
+      <thead><tr><th>Característica</th><th>Detalle</th></tr></thead>
       <tbody>
-        <tr><td><strong>Multi-parada</strong></td><td>El pasajero puede agregar hasta 5 paradas intermedias en un mismo viaje</td></tr>
-        <tr><td><strong>Estimacion de tarifa en tiempo real</strong></td><td>Se calcula antes de confirmar el viaje con distancia y duracion reales (Google Maps API)</td></tr>
-        <tr><td><strong>Busqueda nacional sin geofencing</strong></td><td>El radio de busqueda se expande automaticamente: 10 &gt; 20 &gt; 40 &gt; 80 &gt; 150 km hasta encontrar conductor disponible</td></tr>
-        <tr><td><strong>ETA en tiempo real</strong></td><td>Minutos y millas actualizados constantemente durante el viaje via MapViewDirections</td></tr>
-        <tr><td><strong>Notificacion conductor cerca</strong></td><td>El pasajero es notificado cuando el conductor esta a menos de 0.3 millas (formula Haversine)</td></tr>
-        <tr><td><strong>Navegacion integrada</strong></td><td>El conductor abre Waze o Google Maps con el destino con un solo toque</td></tr>
-        <tr><td><strong>Chat en tiempo real</strong></td><td>Socket.io entre pasajero y conductor con mensajes rapidos predefinidos. El boton de llamada redirige al chat.</td></tr>
-        <tr><td><strong>Viajes programados</strong></td><td>El pasajero reserva un viaje con fecha y hora especifica con dias de anticipacion</td></tr>
-        <tr><td><strong>Wait &amp; Return</strong></td><td>Conductor lleva al pasajero a su cita, espera y lo regresa. Timer en tiempo real con costo acumulado visible para ambos. Tarifa = ida + espera (minuto real) + vuelta.</td></tr>
-        <tr><td><strong>Hourly Ride</strong></td><td>Conductor disponible por 2h, 4h u 8h para multiples paradas. Precio fijo desde la reserva. Ideal para diligencias del dia.</td></tr>
-        <tr><td><strong>No-show del conductor</strong></td><td>Boton aparece despues de 5 minutos esperando. Cancela sin cargo al pasajero y notifica al soporte.</td></tr>
-        <tr><td><strong>Calificaciones mutuas</strong></td><td>Pasajero califica al conductor y viceversa (1 a 5 estrellas mas comentario). Afecta el nivel de comision.</td></tr>
+        <tr><td><strong>Estimación de tarifa en tiempo real</strong></td><td>Calculada antes de confirmar con Google Maps API (distancia + duración reales). Muestra USD y Bs.</td></tr>
+        <tr><td><strong>Búsqueda nacional sin geofencing</strong></td><td>Radio dinámico: 10 → 20 → 40 → 80 → 150 km hasta encontrar conductor disponible</td></tr>
+        <tr><td><strong>GPS en tiempo real</strong></td><td>Conductor emite ubicación cada 4 segundos via Socket.io. Pasajero ve movimiento en vivo</td></tr>
+        <tr><td><strong>ETA actualizado</strong></td><td>Minutos y kilómetros actualizados constantemente via MapViewDirections</td></tr>
+        <tr><td><strong>Notificación conductor cerca</strong></td><td>Pasajero es notificado cuando el conductor está a menos de 500 metros (fórmula Haversine)</td></tr>
+        <tr><td><strong>Navegación integrada</strong></td><td>Conductor abre Waze o Google Maps con el destino con un solo toque</td></tr>
+        <tr><td><strong>Navegación giro a giro</strong></td><td>Banner superior con flecha de dirección (↑←→↰↱↺), instrucción de texto, distancia al giro y ETA total</td></tr>
+        <tr><td><strong>Chat en tiempo real</strong></td><td>Socket.io entre pasajero y conductor durante el viaje con mensajes rápidos predefinidos</td></tr>
+        <tr><td><strong>Viajes programados</strong></td><td>Pasajero reserva con fecha y hora específica. Recordatorio FCM 30 minutos antes</td></tr>
+        <tr><td><strong>Cancelación conductor</strong></td><td>Conductor puede cancelar el viaje si el pasajero no aparece o hay algún problema</td></tr>
+        <tr><td><strong>Calificaciones mutuas</strong></td><td>Pasajero y conductor se califican (1 a 5 estrellas + comentario) al finalizar el viaje</td></tr>
+        <tr><td><strong>Dirección de recogida personalizada</strong></td><td>En servicios de delivery, la recogida puede ser diferente a la ubicación GPS del remitente</td></tr>
       </tbody>
     </table>
   </div>
@@ -353,44 +313,46 @@ footer strong { color: #64748B; }
       <div>
         <h3>Conveniencia</h3>
         <ul class="ck">
-          <li>Destinos favoritos guardados (Casa, Clinica, Farmacia...)</li>
+          <li>Mapa híbrido satelital por defecto con toggle 🛰️/🗺️</li>
+          <li>Autocompletado de direcciones con sesgo de ubicación (radio 50 km)</li>
+          <li>Selección de servicio en grid visual con precio estimado en USD y Bs.</li>
+          <li>Servicios de Carga agrupados con sub-selector expandible</li>
+          <li>Formulario completo de entrega (remitente, destinatario, tipo de carga)</li>
+          <li>Destinos favoritos guardados (Casa, Clínica, Trabajo...)</li>
           <li>Conductores favoritos con notas personales</li>
-          <li>Codigo promocional al solicitar el viaje</li>
-          <li>Descuento automatico por frecuencia de uso</li>
-          <li>Propina post-viaje (10, 15, 20% o personalizado)</li>
+          <li>Código promocional al solicitar el viaje</li>
+          <li>Descuento automático por frecuencia (25 viajes/semana o 50/mes)</li>
           <li>Perfil de accesibilidad guardado permanentemente</li>
-          <li>Historial completo de viajes</li>
-          <li>Gestion de metodos de pago</li>
+          <li>Historial completo de viajes con recibos PDF</li>
           <li>Dashboard de gastos</li>
-          <li><strong>Wait &amp; Return</strong> — selecciona tiempo estimado de espera (30min a 3hr) y ve el costo antes de confirmar</li>
-          <li><strong>Hourly Ride</strong> — selecciona paquete 2h / 4h / 8h con precio fijo visible antes de reservar</li>
-          <li>Notificacion con pitido cuando el conductor llega a recogerlo</li>
-          <li>Notificacion con pitido al llegar al destino</li>
-          <li>Ruta de mapa estable durante el desplazamiento (no desaparece)</li>
-          <li>Sigue viendo al conductor en el mapa aunque este reciba una llamada</li>
-          <li>Botones de zoom en el mapa (ampliar, alejar, centrar, encuadrar ruta)</li>
-          <li>Mapa centrado en el icono del pasajero con zoom optimo (latitudeDelta 0.01)</li>
-          <li>Autocompletado de direcciones con sesgo de ubicacion (radio 50 km alrededor del pasajero)</li>
-          <li><strong>Mensajes de agradecimiento preescritos</strong> — selecciona hasta 5 de 10 opciones para dejar al conductor al finalizar el viaje</li>
-          <li><strong>Mapa hibrido satelital por defecto</strong> — se ve como Google Maps satellite con calles, edificios y nombres visibles. Boton toggle 🛰️/🗺️ para cambiar a mapa basico.</li>
-          <li><strong>Mapa muestra solo al pasajero</strong> — el marcador del conductor no aparece en la pantalla de viaje del pasajero. Solo se ve la posicion propia y la ruta al destino.</li>
-          <li><strong>Nombre del pasajero en el header</strong> — la pantalla de inicio muestra el primer nombre del pasajero en lugar de "Verona Ride".</li>
-          <li><strong>Logo VeronaRide en header</strong> — el cuadro de avatar muestra el logo de la empresa en lugar de la letra "V".</li>
-          <li><strong>Zoom por defecto 19</strong> — vision mas amplia (equivale a ~50 metros). Anteriormente era 20 (~25 metros).</li>
+          <li>Nombre del pasajero visible en el header</li>
+          <li>Notificación con pitido al llegar el conductor y al arribar al destino</li>
         </ul>
       </div>
       <div>
         <h3>Seguridad y Control</h3>
         <ul class="ck">
-          <li>Boton SOS (mantener 2 segundos) durante el viaje</li>
-          <li>Alerta automatica si el conductor se desvía de la ruta</li>
-          <li>Link de seguimiento en vivo para familiares</li>
-          <li>Grabacion de audio local del viaje</li>
-          <li>Sistema de disputas post-viaje con 8 categorias</li>
-          <li>Recibo PDF enviado automaticamente por email</li>
-          <li>Inicio de sesion con Google, Apple o Email</li>
-          <li>Recuperacion de contrasena</li>
+          <li>Botón SOS (mantener 2 segundos) durante el viaje</li>
+          <li>Alerta automática si el conductor se desvía de la ruta</li>
+          <li>Link de seguimiento en vivo compartible (válido 2 horas, sin app)</li>
+          <li>Grabación de audio local del viaje (nunca se sube a servidores)</li>
+          <li>Contacto de emergencia notificado por email con GPS al activar SOS</li>
+          <li>Sistema de disputas post-viaje</li>
+          <li>Recibo PDF enviado automáticamente por email</li>
+          <li>Inicio de sesión con Google, Apple o Email + contraseña</li>
+          <li>Modo offline parcial — muestra último estado conocido sin internet</li>
         </ul>
+        <h3 style="margin-top:16px">Perfil de Accesibilidad</h3>
+        <div class="acc" style="margin-top:8px">
+          <div class="ai">♿ Silla de ruedas</div>
+          <div class="ai">🦽 Andador</div>
+          <div class="ai">🦯 Bastón blanco</div>
+          <div class="ai">🐕 Animal de servicio</div>
+          <div class="ai">🫁 Equipo de oxígeno</div>
+          <div class="ai">🦻 Hipoacusia</div>
+          <div class="ai">👁️ Discapacidad visual</div>
+          <div class="ai">🧠 Apoyo cognitivo</div>
+        </div>
       </div>
     </div>
   </div>
@@ -400,406 +362,284 @@ footer strong { color: #64748B; }
     <div class="h2"><div class="ico" style="background:#DCFCE7">&#129333;</div>Funcionalidades del Conductor</div>
     <div class="cols">
       <div>
-        <h3>Ingresos y Desempeno</h3>
+        <h3>Ingresos y Desempeño</h3>
         <ul class="ck">
-          <li>Comision progresiva (19% a 18% a 17%)</li>
-          <li>Insignia por nivel de experiencia (5 niveles)</li>
-          <li>Pago semanal automatico cada lunes</li>
-          <li>Grafica de ganancias de los ultimos 7 dias</li>
+          <li><strong>0% comisión</strong> — el conductor recibe el 100% de cada carrera</li>
+          <li>Membresía semanal fija según tipo de vehículo</li>
+          <li>Ganancias en tiempo real — pantalla de estadísticas día/semana/mes</li>
           <li>Meta de ganancias diaria configurable</li>
-          <li>Tasa de aceptacion con semaforo de colores</li>
-          <li>Programa de referidos con codigo unico</li>
-          <li>Heatmap de demanda en el mapa</li>
+          <li>Tasa de aceptación con semáforo de colores</li>
+          <li>Programa de referidos con código único ($600 por conductor referido)</li>
+          <li>Historial de viajes y servicios completados</li>
+          <li>Reporte de ganancias descargable</li>
+          <li>Insignias por nivel de experiencia (5 niveles)</li>
         </ul>
       </div>
       <div>
-        <h3>Seguridad y Herramientas</h3>
+        <h3>Herramientas de Trabajo</h3>
         <ul class="ck">
-          <li>Boton SOS (mantener 2 segundos) durante el viaje</li>
-          <li>Alerta de velocidad si supera 75 mph</li>
-          <li>Navegacion integrada (Waze o Google Maps)</li>
-          <li>Alertas de vencimiento de licencia e insurance</li>
-          <li>Sistema de certificaciones por modulo (5 modulos)</li>
-          <li>Historial de viajes y servicios</li>
-          <li>Panel de documentos (licencia, vehiculo, seguro)</li>
-          <li>Icono del vehiculo en el mapa con el color real del auto registrado</li>
-          <li>Panel inferior colapsable durante el viaje para ver mas del mapa</li>
-          <li>Notificacion (pitido + haptic) al llegar a menos de 21 pies del pickup</li>
-          <li>Notificacion (pitido + haptic) al llegar a menos de 21 pies del destino</li>
-          <li><strong>Wait &amp; Return</strong> — boton "Start Waiting", timer en vivo con costo acumulado, boton "Passenger is Back"</li>
-          <li>Solicitud de servicio suena cada 5 segundos hasta aceptar o rechazar</li>
-          <li>Ubicacion activa en segundo plano (llamada telefonica, otra app, pantalla bloqueada)</li>
+          <li>Toggle online/offline desde el mapa principal</li>
+          <li>Solicitud con tono Nokia (suena cada 5s hasta aceptar/rechazar)</li>
+          <li>Countdown de 30 segundos para aceptar cada solicitud</li>
+          <li>Navegación integrada (Waze o Google Maps) con un toque</li>
+          <li>Navegación giro a giro en el mapa (sin salir de la app)</li>
+          <li>Mapa híbrido satelital por defecto con toggle</li>
           <li>Botones de zoom en el mapa (ampliar, alejar, centrar, encuadrar ruta)</li>
-          <li>Permanece en linea automaticamente despues de cada viaje (sin ciclo offline/online manual)</li>
-          <li><strong>Mensajes de agradecimiento preescritos</strong> — selecciona hasta 5 de 10 opciones para dejar al pasajero al finalizar el viaje</li>
-          <li><strong>Navegacion giro a giro (turn-by-turn)</strong> — banner en la parte superior del mapa que muestra: flecha de direccion (↑ ← → ↰ ↱ ↺), instruccion de texto, distancia hasta el proximo giro y ETA total al destino. Se actualiza automaticamente con cada posicion GPS.</li>
-          <li><strong>Mapa hibrido satelital por defecto</strong> — vista satelital con calles, edificios y nombres superpuestos. Boton toggle 🛰️/🗺️ para cambiar a mapa basico. Evita confusion de entradas en estacionamientos y accesos.</li>
-          <li><strong>Recuperacion automatica de app</strong> — si la app cierra por llamada telefonica o cambio de app, al reabrir recupera el estado del viaje desde la base de datos y reinicia el GPS automaticamente. No pierde posicion.</li>
-          <li><strong>Logo VeronaRide en header</strong> — el cuadro de avatar del conductor muestra el logo de la empresa.</li>
-          <li><strong>Zoom por defecto 19</strong> — vision mas amplia para el conductor. Anteriormente era 20.</li>
+          <li>Ubicación activa en segundo plano (llamada, otra app, pantalla bloqueada)</li>
+          <li>Botón SOS (mantener 2 segundos) durante el viaje</li>
+          <li>Alerta de velocidad excesiva</li>
+          <li>Alertas de vencimiento de licencia y seguro</li>
+          <li>Icono del vehículo en el mapa con el color real del auto registrado</li>
+          <li>Permanece en línea automáticamente después de cada viaje</li>
+          <li>Recuperación automática si la app se cierra durante un viaje</li>
+          <li>Panel de documentos (cédula, licencia, vehículo, seguro, certificaciones)</li>
+          <li>Sistema de certificaciones por módulo de capacitación</li>
         </ul>
       </div>
     </div>
   </div>
 
+  <!-- SEGURIDAD -->
+  <div class="sec">
+    <div class="h2"><div class="ico" style="background:#CCFBF1">&#128737;</div>Seguridad y Emergencias</div>
+    <div class="grid">
+      <div class="card">
+        <div class="ci">&#128680;</div>
+        <div class="ct">Botón SOS — Pasajero y Conductor</div>
+        <div class="cd">Mantener presionado 2 segundos para activar (evita activaciones accidentales). Alerta al admin vía Socket.io y FCM con coordenadas GPS e ID del viaje. Vibración háptica.</div>
+      </div>
+      <div class="card">
+        <div class="ci">&#128506;</div>
+        <div class="ct">Alerta de Desvío de Ruta</div>
+        <div class="cd">Si el conductor se desvía más del 20% de la ruta original, el pasajero recibe alerta automática con indicación de usar el SOS si se siente inseguro.</div>
+      </div>
+      <div class="card">
+        <div class="ci">&#9889;</div>
+        <div class="ct">Monitoreo de Velocidad</div>
+        <div class="cd">Seguimiento GPS de velocidad en tiempo real durante el viaje. Alerta al conductor si supera el límite configurado. Cooldown de 30 segundos entre alertas.</div>
+      </div>
+      <div class="card">
+        <div class="ci">&#127897;</div>
+        <div class="ct">Grabación de Audio del Viaje</div>
+        <div class="cd">El pasajero puede grabar el viaje completo. El audio se almacena localmente en el dispositivo. Nunca se sube a ningún servidor.</div>
+      </div>
+      <div class="card">
+        <div class="ci">&#128248;</div>
+        <div class="ct">Verificación de Foto del Pasajero</div>
+        <div class="cd">Obligatoria antes del primer viaje. El conductor ve la foto antes de confirmar la recogida. Almacenada en Supabase Storage con URL firmada.</div>
+      </div>
+      <div class="card">
+        <div class="ci">&#128279;</div>
+        <div class="ct">Seguimiento en Vivo Compartible</div>
+        <div class="cd">El pasajero genera un link público de seguimiento válido 2 horas. Un familiar puede ver la ubicación del conductor sin tener la app instalada.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CERTIFICACIONES -->
+  <div class="sec">
+    <div class="h2"><div class="ico" style="background:#EDE9FE">&#128203;</div>Sistema de Certificaciones — Venezuela</div>
+    <p>Para conectarse, el conductor debe aprobar al menos un módulo de capacitación. Los módulos son específicos para Venezuela.</p>
+    <table>
+      <thead><tr><th>Módulo</th><th>Tipo vehículo</th><th>Puntaje mínimo</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Fundamentos del Servicio VERONA Venezuela</strong> (VE-VERONA-001)</td><td>Todos</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Servicio al Cliente Venezuela</strong> (VE-ATENCION-001)</td><td>Todos</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Protocolos de Seguridad y Emergencias</strong> (VRN-TRN-023)</td><td>Todos</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>LOPCD — Personas con Discapacidad</strong> (VRN-TRN-024)</td><td>Todos</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Normativa de Tránsito Venezuela</strong> (VRN-TRN-025)</td><td>Todos</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Moto Taxi — Ley venezolana</strong> (VE-MOTO-001)</td><td>Moto</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Sedán — Servicio de Calidad</strong> (VE-SEDAN-001)</td><td>Sedán</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>SUV — Servicio de Calidad</strong> (VE-SUV-001)</td><td>SUV</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Delivery y Encomienda</strong> (VE-ENCOMIENDA-001)</td><td>Todos</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+        <tr><td><strong>Servicio de Carga</strong> (VE-CARGA-001)</td><td>Pick-Up / Plataforma / F-350 / NPR</td><td><span class="pill pb">10 / 10</span></td><td><span class="pill pg">Activo</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- ADMIN -->
   <div class="sec">
-    <div class="h2"><div class="ico" style="background:#FEE2E2">&#9881;</div>Panel de Administracion</div>
+    <div class="h2"><div class="ico" style="background:#DBEAFE">&#9881;</div>Panel de Administración</div>
     <table>
-      <thead><tr><th>Area</th><th>Capacidades</th></tr></thead>
+      <thead><tr><th>Área</th><th>Capacidades</th></tr></thead>
       <tbody>
-        <tr><td><strong>Dashboard en produccion</strong></td><td>Panel live desplegado en Vercel. Login con email y contrasena. Auto-deploy en cada git push a master.</td></tr>
-        <tr><td><strong>Conductores</strong></td><td>Revisar, aprobar, rechazar, suspender y reactivar cuentas. Ver documentos y progreso de entrenamiento.</td></tr>
-        <tr><td><strong>Viajes</strong></td><td>Ver todos los viajes con estados, pagos, rutas e historial de disputas.</td></tr>
-        <tr><td><strong>Tarifas</strong></td><td>Configurar tarifa base, precio por milla, precio por minuto y multiplicador de surge por estado de EE. UU.</td></tr>
-        <tr><td><strong>Codigos promo</strong></td><td>Crear codigos con porcentaje de descuento, limite de usos y fecha de vencimiento. Activar o desactivar.</td></tr>
-        <tr><td><strong>Disputas</strong></td><td>Ver disputas abiertas con datos del pasajero y conductor. Resolver con nota escrita de resolucion.</td></tr>
-        <tr><td><strong>Alertas SOS</strong></td><td>Recibir notificaciones SOS en tiempo real de conductores y pasajeros. Resolver o marcar como falsa alarma.</td></tr>
-        <tr><td><strong>Analitica</strong></td><td>Heatmap de demanda de viajes, estado del surge pricing, KPIs de ingresos, viajes y conductores activos.</td></tr>
-        <tr><td><strong>Finanzas</strong></td><td>Resumen de ingresos de la plataforma, comisiones cobradas e historial de pagos a conductores.</td></tr>
-        <tr><td><strong>Pasajeros</strong></td><td>Listar todos los pasajeros, ver perfiles e historial de viajes.</td></tr>
-        <tr><td><strong>Estados activos</strong></td><td>Wyoming activo como mercado de lanzamiento. Los <strong>50 estados</strong> ya tienen tarifas configuradas (migraciones 028+029). Cada estado se activa desde el admin sin nuevo deploy.</td></tr>
+        <tr><td><strong>Dashboard</strong></td><td>KPIs en vivo: viajes activos, conductores online, ingresos del día, alertas SOS pendientes</td></tr>
+        <tr><td><strong>Conductores</strong></td><td>Revisar, aprobar, rechazar, suspender y reactivar cuentas. Ver documentos y progreso de certificaciones</td></tr>
+        <tr><td><strong>Membresías</strong></td><td>Aprobar o rechazar comprobantes de pago de membresía semanal. Ver historial por conductor</td></tr>
+        <tr><td><strong>Viajes</strong></td><td>Ver todos los viajes con estados, montos, rutas e historial</td></tr>
+        <tr><td><strong>Tarifas</strong></td><td>Configurar tarifa base, precio por km, por minuto, mínimo y surge por estado venezolano. Comisión configurable (actualmente 0%)</td></tr>
+        <tr><td><strong>Códigos promo</strong></td><td>Crear códigos con porcentaje de descuento, límite de usos y fecha de vencimiento</td></tr>
+        <tr><td><strong>Disputas</strong></td><td>Ver disputas abiertas con datos del pasajero y conductor. Resolver con nota escrita</td></tr>
+        <tr><td><strong>Alertas SOS</strong></td><td>Feed auto-refresh 30s. Ver en mapa con coordenadas. Resolver o marcar falsa alarma</td></tr>
+        <tr><td><strong>Analítica</strong></td><td>KPIs nacionales, viajes por estado venezolano, ingresos por período</td></tr>
+        <tr><td><strong>Tasa de cambio</strong></td><td>Ver tasa BCV actual, histórico de variaciones</td></tr>
+        <tr><td><strong>2FA</strong></td><td>Autenticación de dos factores TOTP (Google Authenticator) para todos los admins</td></tr>
+        <tr><td><strong>Estados activos</strong></td><td>Los 24 estados venezolanos configurados. Se activan / desactivan desde el panel sin nuevo deploy</td></tr>
       </tbody>
     </table>
   </div>
 
   <!-- INFRAESTRUCTURA -->
   <div class="sec">
-    <div class="h2"><div class="ico" style="background:#F1F5F9">&#128274;</div>Autenticacion e Infraestructura</div>
+    <div class="h2"><div class="ico" style="background:#F1F5F9">&#128274;</div>Infraestructura y Tecnología</div>
     <div class="cols">
       <div>
-        <h3>Autenticacion (Firebase)</h3>
+        <h3>Stack Tecnológico</h3>
         <ul class="ck">
-          <li>Email y contrasena</li>
-          <li>Google Sign-In (OAuth 2.0)</li>
-          <li>Apple Sign-In (solo iOS)</li>
-          <li>Recuperacion de contrasena por email</li>
-          <li>Roles diferenciados: pasajero, conductor, admin</li>
+          <li><strong>Backend:</strong> Node.js 20 + Express + TypeScript 5.3 · Railway</li>
+          <li><strong>Base de datos:</strong> PostgreSQL 15 + PostGIS 3 (Supabase)</li>
+          <li><strong>Tiempo real:</strong> Socket.io 4.7 con Redis Pub/Sub (escalable)</li>
+          <li><strong>Caché:</strong> Redis 7 (Railway) — GPS 10s TTL, tarifas 1h</li>
+          <li><strong>Auth:</strong> Firebase Auth (email/Google/Apple) + JWT custom 2h + Refresh 30 días</li>
+          <li><strong>Push:</strong> Firebase Cloud Messaging (FCM)</li>
+          <li><strong>Storage:</strong> Supabase Storage (documentos, fotos — URLs firmadas)</li>
+          <li><strong>Mapas:</strong> Google Maps Platform (distancias, geocodificación, rutas)</li>
+          <li><strong>Tasa BCV:</strong> Fetch automático cada hora via API</li>
+          <li><strong>Mobile:</strong> React Native 0.81.5 + Expo SDK 54</li>
+          <li><strong>Dashboard:</strong> Next.js 16 + TailwindCSS · Vercel</li>
         </ul>
       </div>
       <div>
-        <h3>Servicios en Produccion</h3>
+        <h3>Seguridad</h3>
         <ul class="ck">
-          <li>Railway: backend con auto-deploy en git push</li>
-          <li>Supabase: PostgreSQL, PostGIS y Storage (33 migraciones aplicadas)</li>
-          <li>Firebase Auth y FCM (Storage migrado a Supabase)</li>
-          <li>Google Maps API: mapas, rutas, geocodificacion</li>
-          <li>Socket.io: comunicacion en tiempo real con auth callback dinamico (token fresco en cada reconexion)</li>
-          <li>Sentry: monitoreo de errores JS</li>
-          <li>EAS Build: compilacion APK en la nube</li>
-          <li>Vercel: admin dashboard en produccion con auto-deploy</li>
-          <li>Redis: cache de sesiones y account lockout</li>
+          <li>HTTPS enforced (Railway + Vercel) + HSTS 1 año</li>
+          <li>AES-256-GCM para columnas PII en base de datos</li>
+          <li>JWT Bearer token + Refresh rotation</li>
+          <li>RBAC: pasajero / conductor / admin</li>
+          <li>Row Level Security (RLS) en Supabase</li>
+          <li>Rate limiting: 100 req/min general, 5 intentos fallidos login</li>
+          <li>Winston logging con redacción automática de PII (emails, GPS, teléfonos)</li>
+          <li>Helm CSP, X-Frame-Options, X-Content-Type</li>
+          <li>Admin 2FA TOTP (Google Authenticator)</li>
+          <li>GDPR data export — endpoint portabilidad de datos</li>
+        </ul>
+        <h3 style="margin-top:16px">Deploy</h3>
+        <ul class="ck">
+          <li>Backend: Railway (auto-deploy en git push)</li>
+          <li>Dashboard: Vercel (auto-deploy en git push)</li>
+          <li>Mobile: Expo EAS Build (APK Android + iOS)</li>
+          <li>BD: Supabase (backups automáticos diarios, 30 días)</li>
+          <li>38+ migraciones SQL aplicadas</li>
         </ul>
       </div>
     </div>
   </div>
 
-  <!-- SEGURIDAD BACKEND — JUNIO 14, 2026 -->
+  <!-- SESIONES AGOSTO 2026 -->
   <div class="sec">
-    <div class="h2"><div class="ico" style="background:#FEE2E2">&#128274;</div>Seguridad Backend — Junio 14, 2026</div>
-    <div class="cols">
-      <div>
-        <h3>Privacidad y Cumplimiento</h3>
-        <ul class="ck">
-          <li><strong>GDPR data export</strong> — endpoint <code>GET /api/v1/passenger/export-data</code> devuelve todos los datos personales del pasajero en JSON. Cumple GDPR Art. 20 (portabilidad de datos).</li>
-          <li><strong>Log sanitization</strong> — Winston PII scrubber elimina automaticamente emails, numeros de telefono, tokens y coordenadas GPS exactas de todos los logs en Railway antes de escribirlos.</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Proteccion de Cuentas</h3>
-        <ul class="ck">
-          <li><strong>AES-256 cache mobile</strong> — los datos cacheados localmente en el dispositivo (perfil, historial reciente) se cifran con AES-256 antes de guardarse en SecureStore.</li>
-          <li><strong>Account lockout con Redis</strong> — despues de 5 intentos fallidos de login en 15 minutos, la cuenta queda bloqueada. Desbloqueo automatico tras 30 minutos o manual por el admin.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+    <div class="h2"><div class="ico" style="background:#F0FFF4">&#128640;</div>Desarrollo Venezuela — Julio / Agosto 2026</div>
 
-  <!-- NUEVAS FEATURES JUNIO 2026 -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#DCFCE7">&#10024;</div>Nuevas Caracteristicas — Junio 2026</div>
-    <div class="cols">
+    <h3>Fork Venezuela (Julio 2026)</h3>
+    <div class="cols" style="margin-top:10px">
       <div>
-        <h3>Pasajero</h3>
         <ul class="ck">
-          <li>Contacto de emergencia — notificado por email con GPS al activar SOS</li>
-          <li>Historial de recibos descargables en PDF</li>
-          <li>Notas del conductor visibles en cada recibo</li>
-          <li>Modo offline parcial — muestra ultimo estado conocido sin internet</li>
+          <li>App 100% en español hardcodeado (sin i18n dinámico)</li>
+          <li>Distancias en kilómetros (no millas)</li>
+          <li>Fechas en formato DD/MM/AAAA</li>
+          <li>24 estados venezolanos configurados</li>
+          <li>Cédula venezolana (V- / E-) en registro de conductor</li>
+          <li>Membresía semanal Venezuela desplegada</li>
+          <li>Tasa de cambio BCV automática (USD ↔ Bs.)</li>
+          <li>0% comisión en todos los servicios</li>
+          <li>Pago en efectivo — sin Stripe</li>
         </ul>
       </div>
       <div>
-        <h3>Conductor</h3>
         <ul class="ck">
-          <li>Reporte de impuestos 1099 — grafica mensual, aviso IRS, threshold $600</li>
-          <li>Notas post-viaje para el pasajero (ej. "Deje su baston en el asiento")</li>
-        </ul>
-      </div>
-    </div>
-    <div class="cols" style="margin-top:14px">
-      <div>
-        <h3>Notificaciones Push Completas</h3>
-        <ul class="ck">
-          <li>Propina recibida</li>
-          <li>Disputa resuelta</li>
-          <li>Recordatorio de viaje programado (30 min antes)</li>
-          <li>Vencimiento de documentos (30d, 7d, 1d)</li>
-          <li>Pago confirmado</li>
-          <li>Codigo promo aplicado</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Panel Admin</h3>
-        <ul class="ck">
-          <li>Pagina de Disputas — resolver con nota escrita + notificacion FCM</li>
-          <li>Pagina de Codigos Promo — crear, activar/desactivar</li>
-          <li>Pagina de Alertas SOS — auto-refresh 30s, ver en mapa, resolver</li>
+          <li>Servicios de delivery: Encomienda / Pick-Up / Plataforma</li>
+          <li>Dashboard Venezuela: mapa VE, sin referencias USA</li>
+          <li>Fix completo del ciclo de viaje (constraint payment_status resuelto)</li>
+          <li>Foto de perfil con fetch nativo + Supabase bucket</li>
+          <li>Cancelación del conductor implementada</li>
+          <li>Selector de tipo de vehículo en registro y menú del conductor</li>
+          <li>Seed de usuarios de prueba para Venezuela</li>
         </ul>
       </div>
     </div>
-  </div>
 
-  <!-- BLOQUE 4 -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#ECFDF5">&#128736;</div>Bloque 4 — Suscripciones, Clinicas y Operaciones Avanzadas</div>
-    <div class="cols">
+    <h3 style="margin-top:20px">Servicio de Carga — Agosto 2026</h3>
+    <div class="cols" style="margin-top:10px">
       <div>
-        <h3>Pasajero</h3>
         <ul class="ck">
-          <li>Suscripcion mensual $29.99 — 15% descuento en todos los viajes</li>
-          <li>Viajes recurrentes — configura citas fijas (dialisis, terapia, trabajo)</li>
-          <li>Lista de espera — notificacion cuando hay conductor disponible en tu zona</li>
-          <li>Calificacion detallada — puntualidad, manejo, amabilidad, limpieza</li>
+          <li>Carga como categoría con 4 sub-tipos: Pick-Up, Plataforma, F-350, NPR 400+</li>
+          <li>Sub-fila visual expandible bajo la tarjeta "Carga"</li>
+          <li>Precio negociable: pasajero propone → conductor acepta / rechaza / contra-oferta</li>
+          <li>Ajuste de precio ±$1 con precio base como referencia</li>
+          <li>Todos los sub-tipos tienen precio negociable</li>
         </ul>
       </div>
       <div>
-        <h3>Conductor</h3>
         <ul class="ck">
-          <li>Sistema de racha — bonus por dias consecutivos activo</li>
-          <li>Reporte de incidentes durante el viaje (8 tipos)</li>
-        </ul>
-      </div>
-    </div>
-    <div class="cols" style="margin-top:14px">
-      <div>
-        <h3>Transporte Medico (Clinicas)</h3>
-        <ul class="ck">
-          <li>Cuentas de clinicas/hospitales con API Key propia</li>
-          <li>Solicitudes de transporte para pacientes (ICD-10, servicio accesible)</li>
-          <li>Facturas medicas (Medicare/Medicaid/Seguro privado)</li>
-          <li>Historial de solicitudes por clinica</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Admin</h3>
-        <ul class="ck">
-          <li>Panel de incidentes — resolver y documentar con notas</li>
-          <li>Gestion de clinicas — crear cuenta, ver solicitudes pendientes</li>
-          <li>Vincular solicitud medica a viaje creado</li>
+          <li>Formulario unificado: dirección de recogida, tipo de carga, precio, remitente, destinatario</li>
+          <li>Campos nuevos en BD: sender_name, sender_phone (migración 010)</li>
+          <li>Dirección de recogida geocodificable independiente del GPS</li>
+          <li>Datos del remitente y destinatario guardados en la BD y visibles para el conductor</li>
         </ul>
       </div>
     </div>
-  </div>
 
-  <!-- SESION JUNIO 12-13, 2026 -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#F0FFF4">&#128640;</div>Mejoras y Correcciones — Junio 12-13, 2026</div>
-    <div class="cols">
-      <div>
-        <h3>Conductor</h3>
-        <ul class="ck">
-          <li><strong>Ruta de mapa estable</strong> — ruta deja de desaparecer durante el desplazamiento. Google Directions API ahora se llama solo cada 20 segundos (antes cada 4 s). <code>MapViewDirections</code> ya no se destruye en cada ping GPS.</li>
-          <li><strong>Ubicacion en segundo plano</strong> — el conductor sigue emitiendo su ubicacion aunque reciba una llamada, cambie de app o bloquee la pantalla. Implementado con <code>expo-task-manager</code> + endpoint HTTP <code>POST /api/v1/driver/location</code>.</li>
-          <li><strong>Nokia tone continuo</strong> — el pitido de solicitud de servicio suena cada 5 segundos hasta que el conductor acepta o rechaza. Antes sonaba solo una vez.</li>
-          <li><strong>Sin ciclo offline/online despues de cada viaje</strong> — ya no es necesario salir y volver a entrar en linea para recibir nuevas solicitudes. Fix en el reconector del socket.</li>
-          <li><strong>Botones de zoom en el mapa</strong> — columna vertical derecha: + (ampliar), - (alejar), centrar en posicion, encuadrar ruta completa. El zoom queda "pegado" a lo que el conductor elija.</li>
-          <li><strong>Todos los tipos de servicio disponibles</strong> — family, executive, accessible, wait_and_return, hourly ahora encuentran conductores certificados correctamente (antes siempre devolvian "no drivers available").</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Pasajero</h3>
-        <ul class="ck">
-          <li><strong>Icono del conductor no desaparece</strong> — cuando el conductor recibe una llamada o minimiza la app, el pasajero sigue viendo su posicion en el mapa gracias a la ubicacion en segundo plano.</li>
-          <li><strong>Ruta de mapa estable</strong> — mismo fix que en pantalla del conductor. La ruta no desaparece durante el movimiento.</li>
-          <li><strong>Botones de zoom en el mapa</strong> — mismos 4 botones: ampliar, alejar, centrar, encuadrar ruta.</li>
-          <li><strong>Zoom por defecto 19</strong> — vision mas amplia (~50 metros de radio). Actualizado en la sesion de Junio 25-26.</li>
-        </ul>
-        <h3 style="margin-top:16px">Backend</h3>
-        <ul class="ck">
-          <li>Nuevo endpoint <code>POST /api/v1/driver/location</code> para actualizaciones HTTP desde background task</li>
-          <li>Consulta <code>findNearby</code> corregida: filtra por array <code>d.services</code> del conductor (sin dependencias de tablas externas)</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- WAIT & RETURN Y HOURLY — JUNIO 2026 -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#EFF6FF">&#9203;</div>Nuevos Servicios sin Licencia Especial — Junio 11, 2026</div>
-    <div class="hl hb">
-      <div class="hico">&#9878;</div>
-      <div class="htxt"><strong>Investigacion legal confirmada:</strong> Wait &amp; Return y Hourly Ride no requieren certificacion medica ni licencia especial en ningun estado de EE.UU. El conductor opera como conductor privado que espera o esta disponible por horas. Sin asistencia fisica al paciente.</div>
-    </div>
-    <div class="cols" style="margin-top:16px">
-      <div>
-        <h3>&#9203; Wait &amp; Return — Ida + Espera + Vuelta</h3>
-        <ul class="ck">
-          <li>Conductor lleva al pasajero a su cita medica u otro destino</li>
-          <li>Espera fuera del local mientras dure la cita</li>
-          <li>Regresa al pasajero a su domicilio o a otro destino</li>
-          <li>Tarifa de espera: WY $0.33/min (cobro por tiempo real). Los 50 estados configurables desde el admin.</li>
-          <li>El pasajero selecciona tiempo estimado antes del viaje (30min a 3hr)</li>
-          <li>La estimacion de costo se muestra antes de confirmar</li>
-          <li>El costo final usa el tiempo real de espera, no el estimado</li>
-          <li>Timer en vivo visible para el conductor y el pasajero</li>
-        </ul>
-      </div>
-      <div>
-        <h3>&#9201; Hourly Ride — Conductor por Horas</h3>
-        <ul class="ck">
-          <li>Conductor disponible para multiples paradas durante el tiempo contratado</li>
-          <li>Ideal para: farmacia + banco + medico + supermercado en un mismo dia</li>
-          <li>Paquetes: 2 horas, 4 horas u 8 horas</li>
-          <li>Wyoming: 2h=$66 &middot; 4h=$119 &middot; 8h=$193</li>
-          <li>Precio fijo desde el momento de la reserva</li>
-          <li>Los 50 estados tienen tarifas configuradas. Se activan uno a uno desde el admin.</li>
-        </ul>
-      </div>
-    </div>
-    <div class="hl ho" style="margin-top:14px">
-      <div class="hico">&#128203;</div>
-      <div class="htxt"><strong>Fase 2 identificada:</strong> Para conductores que asistan fisicamente con sillas de ruedas (empujar, subir al vehiculo), se requerira <strong>Passenger Assistance Training (PAT)</strong>. Esto abre la puerta a contratos con Medicaid/Medicare. Se implementara como perfil especial de conductor (WAV + PAT).</div>
-    </div>
-  </div>
-
-  <!-- SESION JUNIO 19-26, 2026 -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#F0FFF4">&#128640;</div>Mejoras y Correcciones — Junio 19-26, 2026</div>
-    <div class="cols">
-      <div>
-        <h3>Nuevos Tipos de Pasajero y Servicio</h3>
-        <ul class="ck">
-          <li><strong>Pasajero Corporativo</strong> — cuenta empresarial con facturacion centralizada. Migración 027.</li>
-          <li><strong>Pasajero VIP</strong> — servicio de lujo con tarifa x2.5. Migración 027.</li>
-          <li><strong>Military Service</strong> — tipo de servicio con tarifa especial para veteranos y personal de servicio activo. Enum, constraint y modulo de certificacion. Migración 030.</li>
-          <li><strong>Tarifas premium en los 50 estados</strong> — configuradas tarifas de surge, base, por milla y por minuto para los 50 estados + DC. Migraciones 028 y 029.</li>
-        </ul>
-        <h3 style="margin-top:16px">Mapa y Navegacion</h3>
-        <ul class="ck">
-          <li><strong>Mapa hibrido satelital</strong> — los tres mapas (conductor, pasajero inicio, pasajero viaje) ahora cargan en modo satelital+calles por defecto. Calidad visual equivalente a Google Maps satelital.</li>
-          <li><strong>Toggle de tipo de mapa</strong> — boton flotante 🛰️/🗺️ en los tres mapas para cambiar entre hibrido y estandar sin reiniciar la app.</li>
-          <li><strong>Navegacion giro a giro</strong> — banner en mapa del conductor con flecha (↑←→↰↱↺), instruccion de texto (HTML limpio), distancia al proximo giro y ETA. Usa <code>MapViewDirections onReady</code> para capturar los pasos y <code>haversineDistanceMiles</code> para avanzar el paso actual.</li>
-          <li><strong>Zoom ajustado a 19</strong> — vision 2x mas amplia que el zoom 20 anterior. Aplica a conductor y pasajero.</li>
-        </ul>
-      </div>
-      <div>
-        <h3>GPS y Estabilidad</h3>
-        <ul class="ck">
-          <li><strong>GPS del pasajero corregido</strong> — el mapa del pasajero ahora sigue la posicion propia, no la del conductor. El marcador del conductor fue eliminado de la pantalla de viaje del pasajero.</li>
-          <li><strong>Ruta actualizada desde posicion del pasajero</strong> — cada 20 segundos la ruta se recalcula desde la posicion real del pasajero hacia el destino (no desde el origen original).</li>
-          <li><strong>Recuperacion de app tras colapso</strong> — AppState listener detecta cuando la app vuelve al frente. Reconecta el socket y reinicia el GPS automaticamente. Si hay un viaje activo en la BD, lo restaura sin que el conductor tenga que hacer nada.</li>
-          <li><strong>Test real exitoso a 10 millas</strong> — prueba completa conductor + pasajero en dispositivos fisicos. El viaje completo funcionó de inicio a fin.</li>
-          <li><strong>Polling para ride_completed</strong> — mecanismo alternativo via HTTP cada 30s por si falla el evento socket al completar viaje. Garantiza que el pasajero vea la pantalla de completado.</li>
-        </ul>
-        <h3 style="margin-top:16px">UI y Codigo</h3>
-        <ul class="ck">
-          <li><strong>Nombre del pasajero en header</strong> — pantalla de inicio del pasajero muestra el primer nombre en lugar de "Verona Ride".</li>
-          <li><strong>Logo en avatar de header</strong> — conductor y pasajero muestran el logo PNG de VeronaRide en el cuadro del header (reemplaza la "V" azul).</li>
-          <li><strong>Seguridad TNC auditada</strong> — migración 026: tabla <code>tnc_insurance_requirements</code> para requisitos de seguro por estado. Cumple con regulaciones TNC a nivel nacional.</li>
-          <li><strong>Cabecera de autor en todos los archivos</strong> — los 172 archivos .ts/.tsx del backend y mobile tienen las dos lineas: <code>// Diseñado por: Edward Labrador</code> y <code>// Para: ELITE GROUP - Integral Services LLC</code>.</li>
-          <li><strong>Google Maps SDK habilitado en APK</strong> — Maps SDK for Android activado en Google Cloud Console y agregado a las restricciones de la API key. El mapa funciona en APK de produccion.</li>
-          <li><strong>README bilingüe</strong> — documentacion del proyecto en Inglés y Español con selector de idioma.</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-
-  <!-- SESION JUNIO 30, 2026 -->
-  <div class="sec">
-    <div class="h2"><div class="ico" style="background:#F0FFF4">&#128640;</div>Ajustes de Precio y Comision — Junio 30, 2026</div>
-    <div class="cols">
-      <div>
-        <h3>Tarifas por Estado</h3>
-        <ul class="ck">
-          <li><strong>Texas (031):</strong> base_fare $1.75 → $1.55. executive_multiplier 1.80 → 1.70. Posiciona TX entre $1.00 y $1.75 sobre Uber.</li>
-          <li><strong>New York (032):</strong> tarifas ajustadas al alza segun costo de vida (indice ~125). Base $3.75, por milla $1.95, por minuto $0.40. VR queda $2.65 sobre Uber NY.</li>
-          <li><strong>Wyoming (032):</strong> tarifas reducidas — estaban 31% sobre Uber. Ahora $1.95 sobre Uber (indice costo de vida ~93). Base $1.70, por milla $1.15, por minuto $0.22.</li>
-          <li><strong>Analisis nacional completado:</strong> promedio VeronaRide vs Uber en los 50 estados = <strong>+$2.21</strong> en viaje de referencia de 10 millas / 20 minutos.</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Comision de Plataforma (033)</h3>
-        <ul class="ck">
-          <li><strong>Standard: 15% → 19%</strong> — margen neto sube de ~6.5% a ~10.5% despues de Stripe, publicidad y operaciones.</li>
-          <li><strong>Silver: 14% → 18%</strong> — 500+ viajes/ano y rating ≥ 4.75.</li>
-          <li><strong>Elite: 13% → 17%</strong> — 1500+ viajes/ano y rating ≥ 4.75.</li>
-          <li>Conductores siguen ganando <strong>81% del fare</strong> (vs 70-75% con Uber/Lyft). La ventaja competitiva se mantiene.</li>
-        </ul>
-        <h3 style="margin-top:16px">UI Mobile</h3>
-        <ul class="ck">
-          <li><strong>Boton satelital bajado 3mm</strong> — toggle 🛰️/🗺️ en pantalla del pasajero movido de top:100 a top:119 para no quedar detras de la barra del header.</li>
-        </ul>
+    <h3 style="margin-top:20px">Limpieza Comisión 0% — Agosto 2026</h3>
+    <div class="hl hg" style="margin-top:10px">
+      <div class="hico">&#10003;</div>
+      <div class="htxt">
+        <strong>Limpieza total del concepto de comisión:</strong> getDriverCommissionInfo siempre devuelve rate=0 · Tiers silver/elite eliminados · Fallback en driverController corregido a 0 · Admin panel permite 0% · Migración 011 actualiza los 24 estados venezolanos a platform_commission_percent=0.
       </div>
     </div>
   </div>
 
   <!-- PUNTUACION -->
   <div class="sec">
-    <div class="h2"><div class="ico" style="background:#FEF3C7">&#127942;</div>Evaluacion de la App</div>
+    <div class="h2"><div class="ico" style="background:#CCFBF1">&#127942;</div>Evaluación de la App — Venezuela</div>
     <div class="stats">
-      <div class="stat" style="border-color:#1D4ED8">
-        <div class="sv" style="font-size:40px">~980</div>
-        <div class="sl">Puntuacion actual / 1000</div>
+      <div class="stat" style="border-color:#1E3A8A">
+        <div class="sv" style="font-size:40px">725</div>
+        <div class="sl">Puntuación actual / 1000</div>
       </div>
       <div class="stat">
-        <div class="sv">80+</div>
-        <div class="sl">Features implementadas</div>
-      </div>
-      <div class="stat">
-        <div class="sv">33</div>
+        <div class="sv">38+</div>
         <div class="sl">Migraciones de base de datos</div>
       </div>
       <div class="stat">
-        <div class="sv">7</div>
-        <div class="sl">Builds de APK exitosos</div>
+        <div class="sv">41</div>
+        <div class="sl">Pantallas en la app móvil</div>
+      </div>
+      <div class="stat">
+        <div class="sv">25+</div>
+        <div class="sl">Endpoints REST</div>
       </div>
     </div>
     <div class="hl hg" style="margin-top:16px">
       <div class="hico">&#128203;</div>
       <div class="htxt">
-        <strong>Junio 12-13:</strong> Background location (+3), fix ruta mapa (+1), fix offline/online (+1), zoom buttons (+1). <strong>Junio 14:</strong> GDPR export (+3), log sanitization (+2), AES cache (+2), account lockout (+2), admin Vercel (+3). <strong>Junio 17:</strong> Fix despacho definitivo (+5), autocomplete (+2), mensajes agradecimiento (+3). <strong>Junio 19-20:</strong> Pasajero Corporativo + VIP (+3), Google Maps APK fix (+2), chat conductor (+1). <strong>Junio 23-24:</strong> Test real 10 millas (+5), fix GPS pasajero (+2), Military Service (+3), tarifas 50 estados (+3). <strong>Junio 25-26:</strong> Mapa satelital hibrido (+2), toggle mapa (+1), navegacion giro a giro (+4), recuperacion app crash (+3), logo+nombre header (+1). <strong>Junio 30:</strong> Analisis tarifas 50 estados vs Uber (+1), comision optimizada 19/18/17% (+1). Total acumulado: ~980/1000.
+        <strong>Lo que sube la nota:</strong> Ciclo de viaje completo en tiempo real (+80) · Arquitectura TypeScript strict 3 capas (+60) · Seguridad JWT+RLS+AES-256 (+50) · Adaptaciones Venezuela completas (+50) · Membresía semanal funcionando (+30) · Servicios de Carga con negociación (+30) · Panel admin funcional (+40) · GPS background + recovery (+30) · 0% comisión limpio (+20).
       </div>
     </div>
-    <div class="hl hb" style="margin-top:10px">
+    <div class="hl ho" style="margin-top:10px">
       <div class="hico">&#128203;</div>
       <div class="htxt">
-        <strong>Como llegar a 1000:</strong> Stripe live (+30), Google Play publicado (+20),
-        pruebas con usuarios reales (+15), registro TNC Texas (+10),
-        verificacion de antecedentes automatica (+10), iOS App Store (+5), cuentas corporativas (+5).
+        <strong>Lo que baja la nota:</strong> Sin tests unitarios/integración (-80) · Rate limiter en memoria no en Redis (-40) · Sin observabilidad backend Sentry/Datadog (-60) · Membresía sin integración de pago real (-40) · Portal clínicas incompleto (-30) · Sin CI/CD con tests automáticos (-25).
       </div>
     </div>
   </div>
 
   <!-- ROADMAP -->
   <div class="sec">
-    <div class="h2"><div class="ico" style="background:#FEF3C7">&#128679;</div>Pendientes y Roadmap</div>
+    <div class="h2"><div class="ico" style="background:#FEF3C7">&#128679;</div>Pendientes y Roadmap — Venezuela</div>
     <table>
-      <thead><tr><th>Prioridad</th><th>Caracteristica</th><th>Notas</th></tr></thead>
+      <thead><tr><th>Prioridad</th><th>Característica</th><th>Notas</th></tr></thead>
       <tbody>
-        <tr><td><span class="pill pr">Urgente</span></td><td><strong>Stripe modo real</strong></td><td>Activar con datos bancarios reales. Actualmente en modo prueba.</td></tr>
-        <tr><td><span class="pill pr">Urgente</span></td><td><strong>Publicar en Google Play</strong></td><td>Pago unico de $25. El APK ya esta listo.</td></tr>
-        <tr><td><span class="pill pr">Urgente</span></td><td><strong>Rotar credenciales expuestas</strong></td><td>Supabase password, JWT secrets, Admin password</td></tr>
-        <tr><td><span class="pill po">Alta</span></td><td><strong>Probar APK en telefono fisico</strong></td><td>Viaje completo de principio a fin con usuarios reales</td></tr>
-        <tr><td><span class="pill po">Alta</span></td><td><strong>Programa de referidos para pasajeros</strong></td><td>Los conductores ya lo tienen. Los pasajeros aun no.</td></tr>
-        <tr><td><span class="pill pb">Media</span></td><td><strong>EAS Update (OTA)</strong></td><td>Configurar en julio para actualizaciones automaticas sin nuevo build</td></tr>
-        <tr><td><span class="pill pb">Media</span></td><td><strong>Registro TNC Wyoming</strong></td><td>Tramite legal con el estado de Wyoming para operar legalmente como TNC</td></tr>
-        <tr><td><span class="pill pb">Media</span></td><td><strong>Verificacion de antecedentes</strong></td><td>Integracion con Checkr o Sterling API</td></tr>
-        <tr><td><span class="pill pb">Media</span></td><td><strong>Viajes compartidos</strong></td><td>Algoritmo de emparejamiento complejo. Diferido.</td></tr>
-        <tr><td><span class="pill pgr">Baja</span></td><td><strong>Cuentas corporativas</strong></td><td>Requiere nuevo tipo de usuario. Diferido.</td></tr>
-        <tr><td><span class="pill pgr">Baja</span></td><td><strong>App Store iOS</strong></td><td>Apple Developer Program $99 por ano</td></tr>
-        <tr><td><span class="pill pb">Media</span></td><td><strong>2FA admin</strong></td><td>Google Authenticator para el panel de administracion en Vercel.</td></tr>
-        <tr><td><span class="pill pb">Media</span></td><td><strong>CloudFlare WAF</strong></td><td>Firewall de aplicacion web. Requiere dominio propio.</td></tr>
-        <tr><td><span class="pill pgr">Baja</span></td><td><strong>Fork para Venezuela</strong></td><td>Pago Movil, Bolivares. Cuando Wyoming este en operacion real.</td></tr>
+        <tr><td><span class="pill pr">Urgente</span></td><td><strong>Ajustar tarifas Venezuela</strong></td><td>Propuesta: base $1.25 · $0.50/km · $0.13/min · mínimo $3.50</td></tr>
+        <tr><td><span class="pill pr">Urgente</span></td><td><strong>Tests mínimos</strong></td><td>requestRide, completeRide, cancelRide — evita regresiones silenciosas</td></tr>
+        <tr><td><span class="pill po">Alta</span></td><td><strong>Sentry en backend</strong></td><td>Una línea en index.ts — alertas automáticas si el servidor falla en producción</td></tr>
+        <tr><td><span class="pill po">Alta</span></td><td><strong>Integración pago membresía</strong></td><td>Zelle / Pago Móvil / Binance — aprobación automática sin admin manual</td></tr>
+        <tr><td><span class="pill po">Alta</span></td><td><strong>Rate limiter a Redis</strong></td><td>El actual es en memoria — falla si Railway escala a 2+ instancias</td></tr>
+        <tr><td><span class="pill pb">Media</span></td><td><strong>Forzar actualización de app</strong></td><td>Check de versión mínima soportada al abrir la app</td></tr>
+        <tr><td><span class="pill pb">Media</span></td><td><strong>Multi-stop delivery</strong></td><td>Tabla ride_stops existe — falta UI en conductor y lógica de cobro por parada</td></tr>
+        <tr><td><span class="pill pb">Media</span></td><td><strong>Notificaciones con retry</strong></td><td>Si FCM falla, el mensaje se pierde. Bull + Redis para reintento automático</td></tr>
+        <tr><td><span class="pill pb">Media</span></td><td><strong>Publicar en Google Play Venezuela</strong></td><td>APK listo. Pago único de $25 para la cuenta de desarrollador</td></tr>
+        <tr><td><span class="pill pgr">Baja</span></td><td><strong>Invalidación de caché de tarifas</strong></td><td>Si el admin cambia tarifas, el conductor no las ve hasta que Redis expire (1h)</td></tr>
+        <tr><td><span class="pill pgr">Baja</span></td><td><strong>Programa de referidos para pasajeros</strong></td><td>Los conductores ya lo tienen. Los pasajeros aún no.</td></tr>
+        <tr><td><span class="pill pgr">Baja</span></td><td><strong>App Store iOS Venezuela</strong></td><td>Apple Developer Program $99/año</td></tr>
       </tbody>
     </table>
   </div>
@@ -807,10 +647,10 @@ footer strong { color: #64748B; }
 </div>
 
 <footer>
-  Actualizado el <strong>30 de junio de 2026</strong> &nbsp;&middot;&nbsp;
-  ELITE GROUP - Integral Services LLC &nbsp;&middot;&nbsp;
-  <strong>V-Ride</strong> v1.0 &nbsp;&middot;&nbsp; Wyoming, EE. UU. &middot; 50 estados configurados &nbsp;&middot;&nbsp;
-  Puntuacion: <strong>~980 / 1000</strong>
+  Actualizado el <strong>9 de agosto de 2026</strong> &nbsp;&middot;&nbsp;
+  VERONA Group Venezuela &nbsp;&middot;&nbsp;
+  <strong>VERONA Ride</strong> v1.9 &nbsp;&middot;&nbsp; Maracaibo, Venezuela &nbsp;&middot;&nbsp; 24 estados configurados &nbsp;&middot;&nbsp;
+  Puntuación: <strong>725 / 1000</strong>
 </footer>
 
 </body>
