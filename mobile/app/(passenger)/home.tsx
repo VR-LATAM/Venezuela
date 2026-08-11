@@ -350,6 +350,12 @@ export default function PassengerHomeScreen() {
         setSearchStatus('driver_assigned');
         setAssignedDriver(d.driver);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        // Asegurar que currentRide está cargado (puede faltar si la app se reconectó)
+        if (!useRideStore.getState().currentRide) {
+          rideMobileService.getActiveRide()
+            .then(activeRide => { if (activeRide) setCurrentRide(activeRide); })
+            .catch(() => {});
+        }
         // Iniciar timer de espera del conductor
         driverAssignedAt.current = new Date();
         setDriverWaitMinutes(0);
@@ -382,6 +388,23 @@ export default function PassengerHomeScreen() {
         setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 400);
         setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 800);
         if (waitTimerRef.current) { clearInterval(waitTimerRef.current); waitTimerRef.current = null; }
+
+        // Si el evento driver_assigned se perdió (socket reconectando), cargar conductor ahora
+        const state = useRideStore.getState();
+        if (!state.assignedDriver) {
+          rideMobileService.getActiveRide()
+            .then(activeRide => {
+              if (activeRide) {
+                setCurrentRide(activeRide);
+                if (activeRide.driver_id) {
+                  return rideMobileService.getDriverPublicProfile(activeRide.driver_id);
+                }
+              }
+              return undefined;
+            })
+            .then(driverData => { if (driverData) setAssignedDriver(driverData); })
+            .catch(() => {});
+        }
       }),
       socketService.on('passenger:ride_started', () => {
         setSearchStatus('in_progress');
