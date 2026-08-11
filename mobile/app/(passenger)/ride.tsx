@@ -459,10 +459,10 @@ export default function RideScreen() {
       {/* Panel inferior */}
       <View style={styles.bottomPanel}>
         {/* Nombre del pasajero */}
-        {user?.full_name && (
+        {user?.name && (
           <View style={styles.passengerHeader}>
-            <UserAvatar name={user.full_name} photoUrl={user.photo_url ?? undefined} size={36} />
-            <Text style={styles.passengerHeaderName}>{user.full_name}</Text>
+            <UserAvatar name={user.name} photoUrl={user.photo_url ?? undefined} size={36} />
+            <Text style={styles.passengerHeaderName}>{user.name}</Text>
           </View>
         )}
 
