@@ -8,7 +8,7 @@
 import React, { useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  FlatList, Dimensions, Animated,
+  FlatList, Dimensions,
 } from 'react-native';
 import { router } from 'expo-router';
 import { BRAND_COLORS } from '@vride/shared';
@@ -58,12 +58,12 @@ export default function OnboardingScreen() {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
       setCurrentIndex(currentIndex + 1);
     } else {
-      router.replace('/(auth)/');
+      router.replace('/(auth)/' as any);
     }
   };
 
   const skip = () => {
-    router.replace('/(auth)/');
+    router.replace('/(auth)/' as any);
   };
 
   const isLastSlide = currentIndex === slides.length - 1;

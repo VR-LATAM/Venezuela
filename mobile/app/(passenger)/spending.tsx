@@ -7,7 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
-  FlatList, Alert, ActivityIndicator, Platform,
+  FlatList, Alert, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { apiClient } from '../../src/services/apiClient';

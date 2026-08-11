@@ -81,7 +81,7 @@ export default function RootLayout() {
           router.replace('/(auth)/login');
         }
       } else {
-        router.replace('/(auth)/');
+        router.replace('/(auth)/' as any);
       }
     }
   }, [isLoading, fontsReady, isAuthenticated, user, emailVerificationPending, driverWizardActive]);

@@ -7,7 +7,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, TextInput, ScrollView,
-  SafeAreaView, Alert, ActivityIndicator, Modal, Image,
+  SafeAreaView, Alert, ActivityIndicator, Modal, Image, FlatList,
   Animated, Platform, Dimensions, StatusBar, Keyboard, KeyboardAvoidingView,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -64,11 +64,6 @@ const CARGA_SUB_OPTIONS = [
   { key: 'carga'     as ServiceType, emoji: '🚚', label: 'NPR 400+',  vehicle: 'npr'      },
 ] as const;
 
-const PACKAGE_SIZES: { key: 'small' | 'medium' | 'large'; label: string; desc: string }[] = [
-  { key: 'small',  label: 'Pequeño',  desc: 'Documentos, farmacia, paquetes < 5 kg'    },
-  { key: 'medium', label: 'Mediano',  desc: 'Cajas, ropa, mercado hasta 20 kg'         },
-  { key: 'large',  label: 'Grande',   desc: 'Electrodomésticos, mudanza, objetos voluminosos' },
-];
 
 export default function PassengerHomeScreen() {
   const user = useUser();
@@ -76,9 +71,10 @@ export default function PassengerHomeScreen() {
 
   const {
     searchStatus, selectedService, assignedDriver, driverLocation,
-    searchRadiusKm, currentRide,
+    searchRadiusKm, currentRide, pendingThankyouMsg,
     setSelectedService, setFareEstimate, setSearchStatus, setCurrentRide,
     setAssignedDriver, updateDriverLocation, setSearchRadius, setTotalCharged,
+    setPendingThankyou,
     resetPassengerState, cancelCurrentRide, loadActiveRide,
   } = useRideStore();
 
@@ -100,6 +96,13 @@ export default function PassengerHomeScreen() {
   const [panelVisible, setPanelVisible]         = useState(true);
   const [driverWaitMinutes, setDriverWaitMinutes]   = useState(0);
   const [driverEtaMinutes, setDriverEtaMinutes]     = useState<number | null>(null);
+
+  // Chat con el conductor (disponible desde driver_assigned)
+  const [chatOpen, setChatOpen]         = useState(false);
+  const [chatMessage, setChatMessage]   = useState('');
+  const [chatMessages, setChatMessages] = useState<{ text: string; fromMe: boolean; time: string }[]>([]);
+  const [unreadCount, setUnreadCount]   = useState(0);
+  const chatListRef                     = useRef<FlatList | null>(null);
   const [passengerRidesWeek, setPassengerRidesWeek]   = useState(0);
   const [passengerRidesMonth, setPassengerRidesMonth] = useState(0);
   const [isFrequentPassenger, setIsFrequentPassenger] = useState(false);
@@ -121,7 +124,7 @@ export default function PassengerHomeScreen() {
 
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [_keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Promo code
   const [promoCode, setPromoCode]           = useState('');
@@ -131,7 +134,7 @@ export default function PassengerHomeScreen() {
 
   // Encomienda / Delivery
   const [pkgDescription, setPkgDescription] = useState('');
-  const [pkgSize, setPkgSize]               = useState<'small' | 'medium' | 'large'>('small');
+  const [_pkgSize, _setPkgSize]               = useState<'small' | 'medium' | 'large'>('small');
   const [pkgRecipient, setPkgRecipient]     = useState('');
   const [pkgPhone, setPkgPhone]             = useState('');
   const [deliveryVehicle, setDeliveryVehicle] = useState<'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma'>('motorcycle');
@@ -210,6 +213,7 @@ export default function PassengerHomeScreen() {
       const timer = setTimeout(() => router.replace('/(passenger)/ride'), 300);
       return () => clearTimeout(timer);
     }
+    return undefined;
   }, [searchStatus]);
 
   // Polling de respaldo mientras se busca conductor.
@@ -383,8 +387,8 @@ export default function PassengerHomeScreen() {
         setSearchStatus('in_progress');
       }),
       socketService.on('passenger:ride_completed', (data: unknown) => {
-        const d = data as { totalCharged: number; paymentStatus: string; driverName?: string; rideId?: string };
-        setTotalCharged(d.totalCharged);
+        const d = data as { totalCharged: number; totalVes?: number; exchangeRate?: number; paymentStatus: string; driverName?: string; rideId?: string };
+        setTotalCharged(d.totalCharged, d.totalVes);
         setSearchStatus('completed');
         if (d.paymentStatus === 'failed') {
           Alert.alert(
@@ -400,6 +404,13 @@ export default function PassengerHomeScreen() {
           } else {
             router.push('/(passenger)/rating');
           }
+        }
+      }),
+      socketService.on('passenger:driver_thankyou', (data: unknown) => {
+        const d = data as { messages: string };
+        if (d?.messages) {
+          setPendingThankyou(d.messages);
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         }
       }),
       socketService.on('passenger:search_radius', (data: unknown) => {
@@ -420,8 +431,25 @@ export default function PassengerHomeScreen() {
         setCounterOfferData(d);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       }),
+      socketService.on('passenger:driver_message', (data: unknown) => {
+        const d = data as { message: string };
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        setChatMessages(prev => [...prev, { text: d.message, fromMe: false, time }]);
+        setUnreadCount(prev => prev + 1);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }),
     ];
     socketUnsubsRef.current = unsubs;
+  };
+
+  const sendChatMessage = (text: string) => {
+    if (!text.trim() || !currentRide?.id) return;
+    socketService.emit('passenger:message', { rideId: currentRide.id, message: text.trim() });
+    const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    setChatMessages(prev => [...prev, { text: text.trim(), fromMe: true, time }]);
+    setChatMessage('');
+    setTimeout(() => chatListRef.current?.scrollToEnd({ animated: true }), 100);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
   };
 
   // ─────────────────────────────────────
@@ -782,7 +810,7 @@ export default function PassengerHomeScreen() {
   const handleLogout = async () => {
     socketService.disconnect();
     await logout();
-    router.replace('/(auth)/');
+    router.replace('/(auth)/' as any);
   };
 
   const handleProfileMenu = () => setMenuVisible(true);
@@ -1160,7 +1188,7 @@ export default function PassengerHomeScreen() {
                                 <Text style={[styles.serviceCardPrice, { color: '#bbb' }]}>—</Text>
                               )}
                             </View>
-                            {est?.surge_multiplier > 1 && (
+                            {(est?.surge_multiplier ?? 1) > 1 && (
                               <Text style={styles.surgeTag}>⚡ Alta demanda</Text>
                             )}
                             {est && !isSched && (
@@ -1594,6 +1622,33 @@ export default function PassengerHomeScreen() {
                 <Text style={styles.noShowBtnText}>¿El conductor no está? ({driverWaitMinutes} min)</Text>
               </TouchableOpacity>
             )}
+
+            {/* Botones de acción disponibles desde que el conductor acepta */}
+            <View style={styles.rideActionRow}>
+              <TouchableOpacity
+                style={styles.rideActionBtn}
+                onPress={() => { setChatOpen(true); setUnreadCount(0); }}
+              >
+                <Text style={styles.rideActionEmoji}>💬</Text>
+                <Text style={styles.rideActionLabel}>Chat</Text>
+                {unreadCount > 0 && (
+                  <View style={styles.unreadBadge}>
+                    <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.rideActionBtn}
+                onPress={() => Alert.alert(
+                  'Llamar al conductor',
+                  'Por tu privacidad, las llamadas directas no están disponibles. Usa el chat.',
+                  [{ text: 'Cancelar', style: 'cancel' }, { text: 'Abrir chat', onPress: () => setChatOpen(true) }]
+                )}
+              >
+                <Text style={styles.rideActionEmoji}>📞</Text>
+                <Text style={styles.rideActionLabel}>Llamar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -1605,6 +1660,33 @@ export default function PassengerHomeScreen() {
             <Text style={styles.statusSub}>
               {assignedDriver.vehicle_color} {assignedDriver.vehicle_brand} · {assignedDriver.vehicle_plate}
             </Text>
+
+            {/* Botones de acción también visibles cuando el conductor ya llegó */}
+            <View style={styles.rideActionRow}>
+              <TouchableOpacity
+                style={styles.rideActionBtn}
+                onPress={() => { setChatOpen(true); setUnreadCount(0); }}
+              >
+                <Text style={styles.rideActionEmoji}>💬</Text>
+                <Text style={styles.rideActionLabel}>Chat</Text>
+                {unreadCount > 0 && (
+                  <View style={styles.unreadBadge}>
+                    <Text style={styles.unreadBadgeText}>{unreadCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.rideActionBtn}
+                onPress={() => Alert.alert(
+                  'Llamar al conductor',
+                  'Por tu privacidad, las llamadas directas no están disponibles. Usa el chat.',
+                  [{ text: 'Cancelar', style: 'cancel' }, { text: 'Abrir chat', onPress: () => setChatOpen(true) }]
+                )}
+              >
+                <Text style={styles.rideActionEmoji}>📞</Text>
+                <Text style={styles.rideActionLabel}>Llamar</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -1675,6 +1757,77 @@ export default function PassengerHomeScreen() {
             router.push('/(passenger)/rating');
           }}
         />
+      )}
+
+      {/* ── MODAL DE CHAT (disponible desde driver_assigned) ── */}
+      <Modal
+        visible={chatOpen}
+        animationType="slide"
+        transparent
+        onRequestClose={() => { setChatOpen(false); setUnreadCount(0); }}
+      >
+        <View style={styles.chatOverlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.chatSheet}
+          >
+            <View style={styles.chatHeader}>
+              <Text style={styles.chatTitle}>
+                Chat con {assignedDriver?.name ?? 'el conductor'}
+              </Text>
+              <TouchableOpacity onPress={() => { setChatOpen(false); setUnreadCount(0); }}>
+                <Text style={styles.chatClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              ref={chatListRef}
+              data={chatMessages}
+              keyExtractor={(_, i) => String(i)}
+              style={styles.chatMessages}
+              contentContainerStyle={{ padding: 12, gap: 8 }}
+              ListEmptyComponent={
+                <Text style={styles.chatEmpty}>Aún no hay mensajes. ¡Escríbele al conductor!</Text>
+              }
+              renderItem={({ item }) => (
+                <View style={[styles.bubble, item.fromMe ? styles.bubbleMe : styles.bubbleThem]}>
+                  <Text style={[styles.bubbleText, item.fromMe ? styles.bubbleTextMe : styles.bubbleTextThem]}>
+                    {item.text}
+                  </Text>
+                  <Text style={[styles.bubbleTime, item.fromMe ? {} : { color: '#999' }]}>{item.time}</Text>
+                </View>
+              )}
+            />
+            <View style={styles.chatInputRow}>
+              <TextInput
+                style={styles.chatInput}
+                value={chatMessage}
+                onChangeText={setChatMessage}
+                placeholder="Escribe un mensaje..."
+                placeholderTextColor="#aaa"
+                returnKeyType="send"
+                onSubmitEditing={() => sendChatMessage(chatMessage)}
+              />
+              <TouchableOpacity
+                style={[styles.chatSendBtn, !chatMessage.trim() && styles.chatSendDisabled]}
+                onPress={() => sendChatMessage(chatMessage)}
+                disabled={!chatMessage.trim()}
+              >
+                <Text style={styles.chatSendText}>Enviar</Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </Modal>
+
+      {/* Mensaje de agradecimiento del conductor (post-calificación) */}
+      {pendingThankyouMsg && (
+        <View style={styles.thankyouBanner}>
+          <Text style={styles.thankyouTitle}>💌 Tu conductor te agradeció</Text>
+          <Text style={styles.thankyouMsg}>{pendingThankyouMsg}</Text>
+          <TouchableOpacity onPress={() => setPendingThankyou(null)} style={styles.thankyouClose}>
+            <Text style={styles.thankyouCloseText}>Cerrar</Text>
+          </TouchableOpacity>
+        </View>
       )}
 
       {/* Route deviation banner */}
@@ -2158,6 +2311,68 @@ const styles = StyleSheet.create({
   // ── Route deviation ──
   deviationBanner:  { position: 'absolute', top: 100, left: 16, right: 16, backgroundColor: '#DC2626', borderRadius: 12, padding: 14, zIndex: 999 },
   deviationText:    { color: '#fff', fontSize: 14, fontWeight: '700', textAlign: 'center' },
+
+  // ── Botones de acción en panel de conductor en camino ──
+  rideActionRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+  },
+  rideActionBtn: {
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 14,
+    minWidth: 80,
+  },
+  rideActionEmoji: { fontSize: 22, marginBottom: 4 },
+  rideActionLabel: { fontSize: 13, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
+  unreadBadge: {
+    position: 'absolute', top: 6, right: 6,
+    backgroundColor: BRAND_COLORS.ALERT,
+    borderRadius: 10, minWidth: 18, height: 18,
+    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
+  },
+  unreadBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+
+  // ── Chat modal ──
+  chatOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  chatSheet: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '80%', minHeight: 300 },
+  chatHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
+  chatTitle: { fontSize: 17, fontWeight: '600', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_600SemiBold' },
+  chatClose: { fontSize: 20, color: '#888', padding: 4 },
+  chatMessages: { flex: 1 },
+  chatEmpty: { textAlign: 'center', color: '#aaa', fontSize: 15, marginTop: 20, fontFamily: 'Inter_400Regular' },
+  bubble: { maxWidth: '80%', padding: 10, borderRadius: 16, marginVertical: 2 },
+  bubbleMe: { backgroundColor: BRAND_COLORS.PRIMARY, alignSelf: 'flex-end', borderBottomRightRadius: 4 },
+  bubbleThem: { backgroundColor: '#F0F0F0', alignSelf: 'flex-start', borderBottomLeftRadius: 4 },
+  bubbleText: { fontSize: 15, fontFamily: 'Inter_400Regular' },
+  bubbleTextMe: { color: '#fff' },
+  bubbleTextThem: { color: BRAND_COLORS.TEXT },
+  bubbleTime: { fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 2, textAlign: 'right', fontFamily: 'Inter_400Regular' },
+  chatInputRow: { flexDirection: 'row', padding: 12, gap: 10, borderTopWidth: 1, borderTopColor: '#f0f0f0' },
+  chatInput: { flex: 1, height: 44, backgroundColor: '#F8F9FA', borderRadius: 22, paddingHorizontal: 16, fontSize: 16, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_400Regular' },
+  chatSendBtn: { height: 44, paddingHorizontal: 20, backgroundColor: BRAND_COLORS.PRIMARY, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+  chatSendDisabled: { opacity: 0.4 },
+  chatSendText: { color: '#fff', fontWeight: '600', fontSize: 15, fontFamily: 'Inter_600SemiBold' },
+
+  // ── Thank-you banner (conductor → pasajero) ──
+  thankyouBanner: {
+    position: 'absolute', top: 100, left: 16, right: 16,
+    backgroundColor: '#1E293B', borderRadius: 16, padding: 18,
+    zIndex: 998,
+    shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 10, elevation: 12,
+    borderWidth: 1, borderColor: '#F59E0B60',
+  },
+  thankyouTitle: { color: '#F59E0B', fontSize: 15, fontWeight: '700', marginBottom: 8, fontFamily: 'Inter_700Bold' },
+  thankyouMsg:   { color: '#E2E8F0', fontSize: 14, fontFamily: 'Inter_400Regular', lineHeight: 20, marginBottom: 12 },
+  thankyouClose: { alignSelf: 'flex-end', paddingHorizontal: 16, paddingVertical: 6, backgroundColor: '#F59E0B20', borderRadius: 8 },
+  thankyouCloseText: { color: '#F59E0B', fontSize: 13, fontWeight: '600', fontFamily: 'Inter_600SemiBold' },
 
   // ── Menú de perfil ──
   menuOverlay: {

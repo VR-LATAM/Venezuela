@@ -8,7 +8,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView, Modal,
-  TextInput, KeyboardAvoidingView, Platform, ScrollView, ActivityIndicator,
+  TextInput, KeyboardAvoidingView, Platform, ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack, router } from 'expo-router';
@@ -41,6 +41,8 @@ interface IncomingRequest {
   recipientPhone?: string;
   // Carga — precio ofrecido
   offeredPrice?: number;
+  // Penalidad semanal
+  consecutiveRejections?: number;
 }
 
 const SPECIAL_NEEDS_LABELS: Record<string, string> = {
@@ -313,7 +315,7 @@ export default function DriverLayout() {
                   {(incomingRequest.specialNeeds ?? []).length > 0 && (
                     <View style={styles.specialNeedsBox}>
                       <Text style={styles.specialNeedsTitle}>⚠️ Necesidades del pasajero</Text>
-                      {(incomingRequest.specialNeeds ?? []).map(cat => (
+                      {(incomingRequest.specialNeeds ?? []).map((cat: string) => (
                         <Text key={cat} style={styles.specialNeedsItem}>
                           {SPECIAL_NEEDS_LABELS[cat] ?? cat}
                         </Text>
@@ -391,6 +393,31 @@ export default function DriverLayout() {
                     </View>
                   </KeyboardAvoidingView>
                 )}
+
+                {/* Cuadro de puntos de rechazo */}
+                {(() => {
+                  const rechazos = incomingRequest.consecutiveRejections ?? 0;
+                  const puntos   = Math.max(0, 15 - rechazos);
+                  const color    = puntos > 10 ? '#22C55E' : puntos > 5 ? '#F59E0B' : '#EF4444';
+                  return (
+                    <View style={[styles.rejectionBox, { borderColor: color + '80', backgroundColor: color + '15' }]}>
+                      <Text style={[styles.rejectionLabel, { color }]}>
+                        Puntos de rechazo disponibles esta semana
+                      </Text>
+                      <View style={styles.rejectionCountRow}>
+                        <Text style={[styles.rejectionCount, { color }]}>{puntos}</Text>
+                        <Text style={styles.rejectionTotal}> / 15</Text>
+                      </View>
+                      {puntos <= 5 && (
+                        <Text style={[styles.rejectionWarning, { color }]}>
+                          {puntos === 1
+                            ? '¡Solo te queda 1 punto! Si rechazas, serás suspendido esta semana.'
+                            : `Solo te quedan ${puntos} puntos. Al llegar a 0 serás suspendido.`}
+                        </Text>
+                      )}
+                    </View>
+                  );
+                })()}
 
                 {/* Botones */}
                 {!showCounterPanel && (
@@ -519,6 +546,24 @@ const styles = StyleSheet.create({
   fareLabel: { fontSize: 12, color: '#666', marginBottom: 4 },
   fareEarnings: {
     fontSize: 28, fontWeight: '800', color: BRAND_COLORS.TEXT,
+  },
+  rejectionBox: {
+    borderRadius: 12, borderWidth: 1.5, padding: 12, marginBottom: 8, alignItems: 'center',
+  },
+  rejectionLabel: {
+    fontSize: 12, fontWeight: '600', textAlign: 'center', marginBottom: 2,
+  },
+  rejectionCountRow: {
+    flexDirection: 'row', alignItems: 'baseline',
+  },
+  rejectionCount: {
+    fontSize: 34, fontWeight: '800',
+  },
+  rejectionTotal: {
+    fontSize: 18, color: '#888', fontWeight: '600',
+  },
+  rejectionWarning: {
+    fontSize: 11, fontWeight: '600', textAlign: 'center', marginTop: 4,
   },
   requestActions: {
     flexDirection: 'row', gap: 12, paddingBottom: 20,

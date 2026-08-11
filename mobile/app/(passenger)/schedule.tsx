@@ -42,13 +42,6 @@ const STATUS_COLORS: Record<ScheduledRide['status'], string> = {
   completed:   '#888',
 };
 
-// Retorna el mínimo ISO 8601 para el picker (30 min desde ahora)
-function minDateTime(): string {
-  const d = new Date(Date.now() + 31 * 60 * 1000);
-  d.setSeconds(0, 0);
-  return d.toISOString().slice(0, 16);
-}
-
 function formatScheduledAt(iso: string): string {
   return new Date(iso).toLocaleString('es-VE', {
     weekday: 'short', month: 'short', day: 'numeric',
@@ -57,7 +50,7 @@ function formatScheduledAt(iso: string): string {
 }
 
 export default function ScheduleScreen() {
-  const { fareEstimate } = useRideStore();
+  useRideStore();
   const [tab, setTab]                     = useState<Tab>('book');
   const [serviceType, setServiceType]     = useState('standard');
   const [pickupAddress, setPickupAddress] = useState('');

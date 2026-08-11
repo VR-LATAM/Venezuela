@@ -9,7 +9,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
-  FlatList, Alert, ActivityIndicator, Platform,
+  FlatList, Alert, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import { useStripe } from '@stripe/stripe-react-native';

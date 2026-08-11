@@ -18,7 +18,6 @@ import { Audio } from 'expo-av';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import { useRideStore } from '../../src/store/rideStore';
-import { useUser } from '../../src/store/authStore';
 import { socketService } from '../../src/services/socketService';
 import { apiClient } from '../../src/services/apiClient';
 import { rideMobileService } from '../../src/services/rideService';
@@ -31,7 +30,6 @@ import { nokiaToneService } from '../../src/services/nokiaToneService';
 const GOOGLE_MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY ?? '';
 
 export default function RideScreen() {
-  const user = useUser();
   const {
     currentRide, assignedDriver, driverLocation,
     cancelCurrentRide, resetPassengerState, setTotalCharged, updateDriverLocation,

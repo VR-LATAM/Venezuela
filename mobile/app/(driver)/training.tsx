@@ -6,7 +6,7 @@
 
 import React, { useEffect, useCallback } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity,
+  View, Text, StyleSheet, TouchableOpacity,
   SafeAreaView, ActivityIndicator, RefreshControl, ScrollView,
 } from 'react-native';
 import { router } from 'expo-router';

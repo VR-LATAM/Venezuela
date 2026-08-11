@@ -32,7 +32,7 @@ const THANK_YOU_MESSAGES = [
 ];
 
 export default function RatingScreen() {
-  const { currentRide, assignedDriver, totalCharged, resetPassengerState } = useRideStore();
+  const { currentRide, assignedDriver, totalCharged, totalChargedVes, resetPassengerState } = useRideStore();
 
   const [score, setScore]                   = useState(5);
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
@@ -101,9 +101,14 @@ export default function RatingScreen() {
           <Text style={styles.summaryEmoji}>🎉</Text>
           <Text style={styles.summaryTitle}>¡Has llegado!</Text>
           {totalCharged !== null && (
-            <View style={styles.chargedRow}>
-              <Text style={styles.chargedLabel}>Total cobrado</Text>
-              <Text style={styles.chargedAmount}>${totalCharged.toFixed(2)}</Text>
+            <View style={styles.fareCard}>
+              <Text style={styles.fareTitle}>Total del viaje</Text>
+              <Text style={styles.fareUsd}>${totalCharged.toFixed(2)}</Text>
+              {totalChargedVes != null && totalChargedVes > 0 && (
+                <Text style={styles.fareVes}>
+                  Bs. {totalChargedVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Text>
+              )}
             </View>
           )}
         </View>
@@ -220,15 +225,21 @@ const styles = StyleSheet.create({
     fontSize: 26, fontWeight: '700', color: BRAND_COLORS.TEXT,
     marginBottom: 12, fontFamily: 'Inter_700Bold',
   },
-  chargedRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
+  fareCard: {
+    alignItems: 'center',
     backgroundColor: BRAND_COLORS.ACCENT + '10',
-    borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10,
+    borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14,
+    minWidth: 180,
   },
-  chargedLabel:  { fontSize: 15, color: '#666', fontFamily: 'Inter_400Regular' },
-  chargedAmount: {
-    fontSize: 22, fontWeight: '700', color: BRAND_COLORS.ACCENT,
-    fontFamily: 'Inter_700Bold',
+  fareTitle: {
+    fontSize: 13, color: '#888', fontFamily: 'Inter_400Regular', marginBottom: 4,
+  },
+  fareUsd: {
+    fontSize: 28, fontWeight: '700', color: BRAND_COLORS.ACCENT,
+    fontFamily: 'Inter_700Bold', lineHeight: 32,
+  },
+  fareVes: {
+    fontSize: 15, color: '#64748B', fontFamily: 'Inter_400Regular', marginTop: 2,
   },
 
   // Rating

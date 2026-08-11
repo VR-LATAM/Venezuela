@@ -26,6 +26,7 @@ import { FareEstimate, ServiceType, Ride, CANCELLATION } from '@vride/shared';
 import { env } from '../config/env';
 import { clinicRepository } from '../repositories/clinicRepository';
 import { smsService } from './smsService';
+import { membershipRepository, currentPeriodEnd, currentPeriodStart } from '../repositories/membershipRepository';
 
 // ─────────────────────────────────────────────────────────────
 // COMISIÓN PROGRESIVA POR DESEMPEÑO — se calcula desde el 1 de enero del año en curso
@@ -354,10 +355,37 @@ export const rideService = {
     }
 
     if (!accepted) {
-      // Conductor rechazó — limpiar pending e incrementar contador
       await redis.del(`ride:pending:${rideId}`);
-      await rideRepository.incrementDriverRejections(driverId);
-      logger.info(`Conductor ${driverId} rechazó viaje ${rideId}`);
+      const { consecutive_rejections } = await membershipRepository.incrementRejectionCounter(driverId);
+      logger.info(`Conductor ${driverId} rechazó viaje ${rideId} — rechazos esta semana: ${consecutive_rejections}/15`);
+
+      if (consecutive_rejections >= 15) {
+        const membership = await membershipRepository.getCurrentMembership(driverId);
+        let creditDays = 0;
+        let reactivationDate = '';
+
+        if (membership) {
+          const periodEnd = new Date(membership.period_end);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const msDay = 86_400_000;
+          creditDays = Math.max(0, Math.round((periodEnd.getTime() - today.getTime()) / msDay) + 1);
+
+          const daysUntilFriday = ((5 - today.getDay() + 7) % 7) || 7;
+          const nextFriday = new Date(today.getTime() + daysUntilFriday * msDay);
+          const reactivation = new Date(nextFriday.getTime() + (7 - creditDays) * msDay);
+          reactivationDate = reactivation.toISOString().split('T')[0];
+        }
+
+        await membershipRepository.applySuspensionPenalty(driverId, creditDays, reactivationDate);
+        emitToUser(driverId, 'driver:suspended_penalty', {
+          rejections: consecutive_rejections,
+          creditDays,
+          reactivationDate,
+        });
+        logger.warn(`Conductor ${driverId} suspendido por penalidad — 15 rechazos — crédito ${creditDays} días — reactiva ${reactivationDate}`);
+      }
+
       // La búsqueda continuará porque el timeout en searchAndNotifyDrivers detectará el rechazo
       return;
     }
@@ -652,7 +680,9 @@ export const rideService = {
     // Notificar al pasajero con el monto cobrado (socket + push)
     emitToUser(ride.passenger_id, 'passenger:ride_completed', {
       rideId,
-      totalCharged: fareEstimate.total,
+      totalCharged:  fareEstimate.total,
+      totalVes:      fareEstimate.total_ves,
+      exchangeRate:  fareEstimate.exchange_rate_ves,
       driverEarnings,
       paymentStatus,
     });
@@ -698,7 +728,12 @@ export const rideService = {
       }
     })();
 
-    return completedRide;
+    const vesRate = fareEstimate.exchange_rate_ves ?? 0;
+    return {
+      ...completedRide,
+      driver_earnings_ves: vesRate ? Math.round(driverEarnings * vesRate * 100) / 100 : 0,
+      exchange_rate_ves:   vesRate,
+    } as any;
   },
 
   // ─────────────────────────────────────
@@ -997,6 +1032,14 @@ export const rideService = {
     } else {
       await rideRepository.updatePassengerRating(ratedId);
     }
+
+    // Enviar mensajes de agradecimiento a la otra parte si los seleccionó
+    if (params.comment) {
+      const event = params.raterRole === 'passenger'
+        ? 'driver:passenger_thankyou'
+        : 'passenger:driver_thankyou';
+      emitToUser(ratedId, event, { messages: params.comment, rideId: params.rideId });
+    }
   },
 };
 
@@ -1149,6 +1192,7 @@ async function searchAndNotifyDrivers(
         passengerName:      (passengerProfile as any)?.name      ?? null,
         passengerPhotoUrl:  (passengerProfile as any)?.photo_url ?? null,
         passengerRating:    (passengerProfile as any)?.rating_avg ?? null,
+        consecutiveRejections: driverData.consecutive_rejections ?? 0,
         // Encomienda / Delivery
         packageDescription: rideAny2.package_description ?? null,
         packageSize:        rideAny2.package_size        ?? null,

@@ -5,7 +5,7 @@
 // de una licencia de conducir de EE.UU. y devuelve los datos
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, Modal, ActivityIndicator,
 } from 'react-native';

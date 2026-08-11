@@ -32,7 +32,7 @@ const THANK_YOU_MESSAGES = [
 ];
 
 export default function DriverRatingScreen() {
-  const { completedRideId, driverEarnings, resetDriverRatingState } = useRideStore();
+  const { completedRideId, driverEarnings, driverEarningsVes, resetDriverRatingState } = useRideStore();
 
   const [score, setScore]                   = useState(5);
   const [selectedMessages, setSelectedMessages] = useState<string[]>([]);
@@ -101,9 +101,14 @@ export default function DriverRatingScreen() {
           <Text style={styles.summaryEmoji}>💰</Text>
           <Text style={styles.summaryTitle}>¡Viaje completado!</Text>
           {driverEarnings !== null && driverEarnings > 0 && (
-            <View style={styles.earningsRow}>
-              <Text style={styles.earningsLabel}>Tus ganancias</Text>
-              <Text style={styles.earningsAmount}>${driverEarnings.toFixed(2)}</Text>
+            <View style={styles.earningsCard}>
+              <Text style={styles.earningsTitle}>Tus ganancias</Text>
+              <Text style={styles.earningsUsd}>${driverEarnings.toFixed(2)}</Text>
+              {driverEarningsVes != null && driverEarningsVes > 0 && (
+                <Text style={styles.earningsVes}>
+                  Bs. {driverEarningsVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Text>
+              )}
             </View>
           )}
         </View>
@@ -218,15 +223,21 @@ const styles = StyleSheet.create({
     fontSize: 26, fontWeight: '700', color: BRAND_COLORS.TEXT,
     marginBottom: 12, fontFamily: 'Inter_700Bold',
   },
-  earningsRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
+  earningsCard: {
+    alignItems: 'center',
     backgroundColor: BRAND_COLORS.ACCENT + '10',
-    borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10,
+    borderRadius: 14, paddingHorizontal: 28, paddingVertical: 14,
+    minWidth: 180,
   },
-  earningsLabel:  { fontSize: 15, color: '#666', fontFamily: 'Inter_400Regular' },
-  earningsAmount: {
-    fontSize: 22, fontWeight: '700', color: BRAND_COLORS.ACCENT,
-    fontFamily: 'Inter_700Bold',
+  earningsTitle: {
+    fontSize: 13, color: '#888', fontFamily: 'Inter_400Regular', marginBottom: 4,
+  },
+  earningsUsd: {
+    fontSize: 28, fontWeight: '700', color: BRAND_COLORS.ACCENT,
+    fontFamily: 'Inter_700Bold', lineHeight: 32,
+  },
+  earningsVes: {
+    fontSize: 15, color: '#64748B', fontFamily: 'Inter_400Regular', marginTop: 2,
   },
 
   // Rating

@@ -4,7 +4,7 @@
 // Pantalla de lectura de un módulo de entrenamiento
 // ═══════════════════════════════════════════════════════════════
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
   SafeAreaView, ActivityIndicator, Alert, NativeScrollEvent,
@@ -17,12 +17,12 @@ import { useTrainingStore } from '../../src/store/trainingStore';
 
 export default function TrainingModuleScreen() {
   const { moduleId } = useLocalSearchParams<{ moduleId: string }>();
-  const { loadModules, loadStatus } = useTrainingStore();
+  useTrainingStore();
 
   const [module, setModule]         = useState<TrainingModule | null>(null);
   const [loading, setLoading]       = useState(true);
   const [hasScrolled, setHasScrolled] = useState(false);
-  const [startedReading, setStartedReading] = useState(false);
+  const [_startedReading, setStartedReading] = useState(false);
 
   useEffect(() => {
     void loadModule();

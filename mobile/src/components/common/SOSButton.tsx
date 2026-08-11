@@ -7,7 +7,7 @@
 
 import React, { useRef, useState } from 'react';
 import {
-  TouchableOpacity, Text, StyleSheet, Alert, Animated, View,
+  TouchableOpacity, Text, StyleSheet, Alert, Animated,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { rideMobileService } from '../../services/rideService';

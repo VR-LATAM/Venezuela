@@ -50,8 +50,6 @@ export default function ReceiptsScreen() {
 
   const downloadReceipt = async (rideId: string) => {
     try {
-      const token = (await apiClient.get('/auth/token')).data?.token ??
-        apiClient.defaults.headers.common['Authorization']?.toString().replace('Bearer ', '');
       const url = `${API_URL}/api/v1/ride/${rideId}/receipt`;
       await Linking.openURL(url);
     } catch {

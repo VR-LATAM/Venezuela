@@ -15,7 +15,7 @@ const ZOOM_STEP    = 2;
 const ZOOM_MIN     = 10;
 const ZOOM_MAX     = 21;
 
-export function useMapZoom(mapRef: RefObject<MapView>) {
+export function useMapZoom(mapRef: RefObject<MapView | null>) {
   const mapZoomRef = useRef(DEFAULT_ZOOM);
 
   const handleZoomIn = async () => {

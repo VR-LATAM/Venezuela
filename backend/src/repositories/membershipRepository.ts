@@ -194,6 +194,63 @@ export const membershipRepository = {
     return rows;
   },
 
+  /* Penalidad por rechazo: incrementa contador semanal y devuelve el total */
+  async incrementRejectionCounter(driverId: string): Promise<{ consecutive_rejections: number }> {
+    const { rows } = await db.query<{ consecutive_rejections: number }>(
+      `UPDATE drivers
+       SET consecutive_rejections = consecutive_rejections + 1
+       WHERE id = $1
+       RETURNING consecutive_rejections`,
+      [driverId]
+    );
+    return rows[0] ?? { consecutive_rejections: 0 };
+  },
+
+  /* Resetea el contador de rechazos de todos los conductores activos cada semana */
+  async resetWeeklyRejectionCounters(): Promise<void> {
+    await db.query(
+      `UPDATE drivers
+       SET consecutive_rejections = 0
+       WHERE status = 'active'
+         AND membership_status NOT IN ('suspended_penalty')`
+    );
+  },
+
+  /* Suspensión por penalidad: guarda crédito de días y fecha de reactivación */
+  async applySuspensionPenalty(
+    driverId:           string,
+    creditDays:         number,
+    reactivationDate:   string,
+  ): Promise<void> {
+    await db.query(
+      `UPDATE drivers
+       SET membership_status             = 'suspended_penalty',
+           suspension_credit_days        = $2,
+           suspension_reactivation_date  = $3,
+           consecutive_rejections        = 0,
+           is_online                     = false
+       WHERE id = $1`,
+      [driverId, creditDays, reactivationDate]
+    );
+  },
+
+  /* Cron diario: reactiva conductores cuya fecha de reactivación es hoy */
+  async reactivatePenaltySuspended(): Promise<number> {
+    const today = new Date().toISOString().split('T')[0];
+    const periodEnd = currentPeriodEnd(currentPeriodStart()).toISOString().split('T')[0];
+    const { rowCount } = await db.query(
+      `UPDATE drivers
+       SET membership_status             = 'active',
+           membership_expires            = $2,
+           suspension_credit_days        = 0,
+           suspension_reactivation_date  = NULL
+       WHERE membership_status = 'suspended_penalty'
+         AND suspension_reactivation_date <= $1`,
+      [today, periodEnd]
+    );
+    return rowCount ?? 0;
+  },
+
   /* Cron: marcar expiradas y suspender conductores */
   async expireAndSuspend(): Promise<number> {
     const today = new Date().toISOString().split('T')[0];

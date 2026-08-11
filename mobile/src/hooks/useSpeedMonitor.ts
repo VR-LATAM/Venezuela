@@ -8,7 +8,7 @@
 import { useState, useEffect, useRef } from 'react';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
-import { Alert, Platform } from 'react-native';
+import { Alert } from 'react-native';
 
 const SPEED_LIMIT_KMH        = 120;  // Umbral de alerta
 const ALERT_COOLDOWN_MS      = 30000; // No repetir alerta por 30 segundos

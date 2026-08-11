@@ -150,7 +150,7 @@ export default function SpecialNeedsScreen() {
   };
 
   // Mostrar secciones adicionales según las categorías seleccionadas
-  const showMobility   = ['wheelchair', 'elderly', 'pregnant', 'medical'].some(has);
+  const showMobility   = (['wheelchair', 'elderly', 'pregnant', 'medical'] as SpecialNeedsCategory[]).some(has);
   const showVisual     = has('visual_impairment');
   const showHearing    = has('hearing_impairment');
   const showMedical    = has('medical');

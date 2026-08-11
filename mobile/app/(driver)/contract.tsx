@@ -90,7 +90,7 @@ export default function ContractScreen() {
       const coords: number[] = [];
       paths.forEach(p => {
         const nums = p.match(/-?\d+\.?\d*/g);
-        if (nums) nums.forEach((n, i) => coords.push(parseFloat(n)));
+        if (nums) nums.forEach((n) => coords.push(parseFloat(n)));
       });
       const xs: number[] = [], ys: number[] = [];
       paths.forEach(p => {
@@ -393,7 +393,8 @@ function Clause({ title, children }: { title: string; children: React.ReactNode 
   return (
     <View style={styles.clause}>
       <Text style={styles.clauseTitle}>{title}</Text>
-      <Text style={styles.clauseBody}>{children}</Text>
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      <Text style={styles.clauseBody}>{children as any}</Text>
     </View>
   );
 }

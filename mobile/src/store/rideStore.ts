@@ -6,7 +6,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 import { create } from 'zustand';
-import { Ride, FareEstimate, NearbyDriver, ServiceType } from '@vride/shared';
+import { Ride, FareEstimate, ServiceType } from '@vride/shared';
 import { rideMobileService } from '../services/rideService';
 
 // Estado del ciclo de búsqueda/viaje del pasajero
@@ -33,6 +33,7 @@ interface AssignedDriver {
   name: string;
   photo_url?: string;
   rating_avg: number;
+  total_rides?: number;
   vehicle_brand?: string;
   vehicle_model?: string;
   vehicle_color?: string;
@@ -55,6 +56,8 @@ interface IncomingRideRequest {
   serviceType: string;
   distanceFromDriver: number;
   timeoutSeconds: number;
+  consecutiveRejections?: number;
+  [key: string]: any;
 }
 
 interface RideState {
@@ -67,6 +70,8 @@ interface RideState {
   driverLocation: DriverLocation | null;
   searchRadiusKm: number;
   totalCharged: number | null;
+  totalChargedVes: number | null;       // Total cobrado en bolívares (tasa BCV)
+  pendingThankyouMsg: string | null;    // Mensaje de agradecimiento pendiente de mostrar
 
   // ── Estado del conductor ──
   isOnline: boolean;
@@ -74,7 +79,9 @@ interface RideState {
   activeRide: Ride | null;  // Viaje que el conductor tiene en curso
   assignedPassenger: AssignedPassenger | null;  // Pasajero del viaje activo
   completedRideId: string | null;       // Para calificar al pasajero tras completar
-  driverEarnings: number | null;        // Ganancias del viaje completado
+  driverEarnings: number | null;        // Ganancias del viaje completado (USD)
+  driverEarningsVes: number | null;     // Ganancias en bolívares (tasa BCV)
+  exchangeRate: number | null;          // Tasa BCV usada en el viaje
 
   // ── Acciones del pasajero ──
   setSelectedService: (s: ServiceType) => void;
@@ -84,7 +91,8 @@ interface RideState {
   setAssignedDriver: (d: AssignedDriver | null) => void;
   updateDriverLocation: (loc: DriverLocation) => void;
   setSearchRadius: (km: number) => void;
-  setTotalCharged: (amount: number) => void;
+  setTotalCharged: (amount: number, ves?: number) => void;
+  setPendingThankyou: (msg: string | null) => void;
   resetPassengerState: () => void;
 
   // ── Acciones del conductor ──
@@ -92,7 +100,7 @@ interface RideState {
   setIncomingRequest: (req: IncomingRideRequest | null) => void;
   setActiveRide: (r: Ride | null) => void;
   setAssignedPassenger: (p: AssignedPassenger | null) => void;
-  setCompletedRide: (rideId: string, earnings: number) => void;
+  setCompletedRide: (rideId: string, earnings: number, earningsVes?: number, rate?: number) => void;
   resetDriverRatingState: () => void;
 
   // ── Acciones compartidas ──
@@ -108,8 +116,10 @@ export const useRideStore = create<RideState>((set, get) => ({
   selectedService: 'sedan',
   assignedDriver:  null,
   driverLocation:  null,
-  searchRadiusKm:  10,
-  totalCharged:    null,
+  searchRadiusKm:     10,
+  totalCharged:       null,
+  totalChargedVes:    null,
+  pendingThankyouMsg: null,
 
   isOnline:          false,
   incomingRequest:   null,
@@ -117,6 +127,8 @@ export const useRideStore = create<RideState>((set, get) => ({
   assignedPassenger: null,
   completedRideId:   null,
   driverEarnings:    null,
+  driverEarningsVes: null,
+  exchangeRate:      null,
 
   // ── Acciones del pasajero ──
   setSelectedService:  (s) => set({ selectedService: s }),
@@ -126,16 +138,19 @@ export const useRideStore = create<RideState>((set, get) => ({
   setAssignedDriver:   (d) => set({ assignedDriver: d }),
   updateDriverLocation: (loc) => set({ driverLocation: loc }),
   setSearchRadius:     (km) => set({ searchRadiusKm: km }),
-  setTotalCharged:     (amount) => set({ totalCharged: amount }),
+  setTotalCharged:     (amount, ves) => set({ totalCharged: amount, totalChargedVes: ves ?? null }),
+  setPendingThankyou:  (msg) => set({ pendingThankyouMsg: msg }),
 
   resetPassengerState: () => set({
-    searchStatus:   'idle',
-    currentRide:    null,
-    fareEstimate:   null,
-    assignedDriver: null,
-    driverLocation: null,
-    searchRadiusKm: 10,
-    totalCharged:   null,
+    searchStatus:       'idle',
+    currentRide:        null,
+    fareEstimate:       null,
+    assignedDriver:     null,
+    driverLocation:     null,
+    searchRadiusKm:     10,
+    totalCharged:       null,
+    totalChargedVes:    null,
+    pendingThankyouMsg: null,
   }),
 
   // ── Acciones del conductor ──
@@ -143,8 +158,18 @@ export const useRideStore = create<RideState>((set, get) => ({
   setIncomingRequest:   (req)    => set({ incomingRequest: req }),
   setActiveRide:        (r)      => set({ activeRide: r, assignedPassenger: r ? get().assignedPassenger : null }),
   setAssignedPassenger: (p)      => set({ assignedPassenger: p }),
-  setCompletedRide:     (rideId, earnings) => set({ completedRideId: rideId, driverEarnings: earnings }),
-  resetDriverRatingState: () => set({ completedRideId: null, driverEarnings: null }),
+  setCompletedRide:     (rideId, earnings, earningsVes, rate) => set({
+    completedRideId:   rideId,
+    driverEarnings:    earnings,
+    driverEarningsVes: earningsVes ?? null,
+    exchangeRate:      rate ?? null,
+  }),
+  resetDriverRatingState: () => set({
+    completedRideId:   null,
+    driverEarnings:    null,
+    driverEarningsVes: null,
+    exchangeRate:      null,
+  }),
 
   // ── Cancelar viaje activo ──
   cancelCurrentRide: async (reason?: string) => {

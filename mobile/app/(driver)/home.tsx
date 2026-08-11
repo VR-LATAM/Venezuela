@@ -13,7 +13,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
   Alert, ActivityIndicator, ScrollView, RefreshControl,
-  Modal, Animated, Platform, Dimensions, StatusBar,
+  Modal, Animated, Platform, StatusBar,
   FlatList, TextInput, KeyboardAvoidingView, AppState, AppStateStatus, Image, Linking,
 } from 'react-native';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -41,7 +41,6 @@ import { NavigationButton } from '../../src/components/common/NavigationButton';
 import { useSpeedMonitor } from '../../src/hooks/useSpeedMonitor';
 import { useMapZoom } from '../../src/hooks/useMapZoom';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const GOOGLE_MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY ?? '';
 
 function stripHtml(html: string): string {
@@ -110,38 +109,6 @@ const STATUS_CONFIG: Record<DriverStatus, {
 // Estado del viaje activo del conductor
 type ActiveRidePhase = 'picking_up' | 'arrived' | 'in_progress';
 
-interface IncomingRequest {
-  rideId: string;
-  pickupAddress: string;
-  dropoffAddress: string;
-  pickupLat: number;
-  pickupLng: number;
-  serviceType: string;
-  distanceFromDriver: number;
-  timeoutSeconds: number;
-  estimatedFare: number;
-  estimatedDriverEarnings: number;
-  tripDistanceMiles: number;
-  specialNeeds?: string[];
-}
-
-
-function vehicleColorToHex(color?: string | null): string {
-  if (!color) return '#374151';
-  const c = color.toLowerCase().trim();
-  const map: Record<string, string> = {
-    white: '#E0E0E0', black: '#1F2937', silver: '#9CA3AF', gray: '#6B7280',
-    grey: '#6B7280', red: '#DC2626', blue: '#2563EB', navy: '#1E3A8A',
-    green: '#16A34A', yellow: '#CA8A04', gold: '#D97706', orange: '#EA580C',
-    brown: '#92400E', maroon: '#991B1B', purple: '#7C3AED', pink: '#EC4899',
-    beige: '#C9A96E', cream: '#D4B896', tan: '#A8834F', champagne: '#D4AC7F',
-  };
-  for (const [key, hex] of Object.entries(map)) {
-    if (c.includes(key)) return hex;
-  }
-  return '#374151';
-}
-
 export default function DriverHomeScreen() {
   const user                     = useUser();
   const { logout }               = useAuthStore();
@@ -177,12 +144,8 @@ export default function DriverHomeScreen() {
   const [chatMessages, setChatMessages] = useState<{ text: string; fromMe: boolean; time: string }[]>([]);
   const chatListRef = useRef<FlatList>(null);
 
-  // Wait & Return — timer de espera
-  const [waitStartedAt, setWaitStartedAt]         = useState<Date | null>(null);
-  const [waitElapsedSec, setWaitElapsedSec]       = useState(0);
-  const [waitFareAccrued, setWaitFareAccrued]     = useState(0);
-  const waitIntervalRef                            = useRef<ReturnType<typeof setInterval> | null>(null);
-  const WAIT_RATE_PER_SEC                          = 0.30 / 60; // default $0.30/min
+  // Mensaje de agradecimiento del pasajero (post-viaje)
+  const [thankyouMsg, setThankyouMsg] = useState<string | null>(null);
 
   // Speed monitoring — activo solo cuando el viaje está en progreso
   const { speedKmh, isOverLimit } = useSpeedMonitor(activePhase === 'in_progress');
@@ -348,22 +311,6 @@ export default function DriverHomeScreen() {
     }
   }, [driverPos, activePhase]);
 
-  // Wait & Return — correr el timer cuando waitStartedAt está activo
-  useEffect(() => {
-    if (!waitStartedAt) {
-      if (waitIntervalRef.current) { clearInterval(waitIntervalRef.current); waitIntervalRef.current = null; }
-      setWaitElapsedSec(0);
-      setWaitFareAccrued(0);
-      return;
-    }
-    waitIntervalRef.current = setInterval(() => {
-      const secs = Math.floor((Date.now() - waitStartedAt.getTime()) / 1000);
-      setWaitElapsedSec(secs);
-      setWaitFareAccrued(Math.round(secs * WAIT_RATE_PER_SEC * 100) / 100);
-    }, 1000);
-    return () => { if (waitIntervalRef.current) clearInterval(waitIntervalRef.current); };
-  }, [waitStartedAt]);
-
   // Re-emitir estado online + ubicación en cada reconexión.
   // El backend resetea is_online=false ante cualquier desconexión, y PostGIS pierde la posición si
   // el socket se reconecta antes de que watchPositionAsync emita el próximo ciclo de 4s.
@@ -501,6 +448,15 @@ export default function DriverHomeScreen() {
       setChatMessages(prev => [...prev, { text: d.message, fromMe: false, time }]);
       setChatOpen(true);
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    });
+
+    // Mensaje de agradecimiento del pasajero (post-calificación)
+    socketService.on('driver:passenger_thankyou', (data: unknown) => {
+      const d = data as { messages: string };
+      if (d?.messages) {
+        setThankyouMsg(d.messages);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
     });
   };
 
@@ -806,44 +762,6 @@ export default function DriverHomeScreen() {
     }
   };
 
-  const handleStartWait = async () => {
-    if (!activeRide) return;
-    setIsActionLoading(true);
-    try {
-      socketService.emit('driver:start_wait', { rideId: activeRide.id });
-      setWaitStartedAt(new Date());
-      void nokiaToneService.play();
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    } finally {
-      setIsActionLoading(false);
-    }
-  };
-
-  const handleEndWait = () => {
-    Alert.alert(
-      '¿El pasajero regresó?',
-      '¿Finalizar la espera e iniciar el regreso?',
-      [
-        { text: 'Todavía no', style: 'cancel' },
-        {
-          text: 'Sí, iniciar regreso',
-          onPress: async () => {
-            if (!activeRide) return;
-            setIsActionLoading(true);
-            try {
-              socketService.emit('driver:end_wait', { rideId: activeRide.id });
-              setWaitStartedAt(null);
-              void nokiaToneService.play();
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-            } finally {
-              setIsActionLoading(false);
-            }
-          },
-        },
-      ]
-    );
-  };
-
   const handleCompleteRide = () => {
     Alert.alert(
       'Finalizar viaje',
@@ -858,8 +776,10 @@ export default function DriverHomeScreen() {
             try {
               const completed = await rideMobileService.completeRide(activeRide.id);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              const earnings = Number((completed as any).driver_earnings ?? 0);
-              setCompletedRide(activeRide.id, earnings);
+              const earnings    = Number((completed as any).driver_earnings     ?? 0);
+              const earningsVes = Number((completed as any).driver_earnings_ves ?? 0);
+              const rate        = Number((completed as any).exchange_rate_ves   ?? 0);
+              setCompletedRide(activeRide.id, earnings, earningsVes || undefined, rate || undefined);
               const completedRideId = activeRide.id;
               setActiveRide(null);
               setActivePhase(null);
@@ -910,7 +830,7 @@ export default function DriverHomeScreen() {
     }
     socketService.disconnect();
     await logout();
-    router.replace('/(auth)/');
+    router.replace('/(auth)/' as any);
   };
 
   const onRefresh = () => {
@@ -975,16 +895,16 @@ export default function DriverHomeScreen() {
             <Text style={[styles.statusTitle, { color: config.color }]}>{config.title}</Text>
             <Text style={styles.statusDesc}>{config.description}</Text>
 
-            {status === 'rejected' && driver?.rejection_reason && (
+            {status === 'rejected' && (driver as any)?.rejection_reason && (
               <View style={styles.reasonBox}>
                 <Text style={styles.reasonLabel}>Motivo:</Text>
-                <Text style={styles.reasonText}>{driver.rejection_reason}</Text>
+                <Text style={styles.reasonText}>{(driver as any).rejection_reason}</Text>
               </View>
             )}
-            {status === 'suspended' && driver?.suspension_reason && (
+            {status === 'suspended' && (driver as any)?.suspension_reason && (
               <View style={styles.reasonBox}>
                 <Text style={styles.reasonLabel}>Motivo:</Text>
-                <Text style={styles.reasonText}>{driver.suspension_reason}</Text>
+                <Text style={styles.reasonText}>{(driver as any).suspension_reason}</Text>
               </View>
             )}
           </View>
@@ -1172,6 +1092,17 @@ export default function DriverHomeScreen() {
       {arrivalBanner && (
         <View style={styles.arrivalBanner}>
           <Text style={styles.arrivalBannerText}>🏁 ¡Estás llegando al destino!</Text>
+        </View>
+      )}
+
+      {/* ── MENSAJE DE AGRADECIMIENTO DEL PASAJERO ── */}
+      {thankyouMsg && (
+        <View style={styles.thankyouBanner}>
+          <Text style={styles.thankyouTitle}>💌 Tu pasajero te agradeció</Text>
+          <Text style={styles.thankyouMsg}>{thankyouMsg}</Text>
+          <TouchableOpacity onPress={() => setThankyouMsg(null)} style={styles.thankyouClose}>
+            <Text style={styles.thankyouCloseText}>Cerrar</Text>
+          </TouchableOpacity>
         </View>
       )}
 
@@ -2041,6 +1972,50 @@ const styles = StyleSheet.create({
   },
   arrivalBannerText: {
     color: '#fff', fontSize: 16, fontWeight: '700', fontFamily: 'Inter_700Bold',
+  },
+
+  // Thank-you banner
+  thankyouBanner: {
+    position: 'absolute',
+    top: 100,
+    left: 20, right: 20,
+    backgroundColor: '#1E293B',
+    borderRadius: 16,
+    padding: 18,
+    zIndex: 100,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+    elevation: 12,
+    borderWidth: 1,
+    borderColor: BRAND_COLORS.ACCENT + '60',
+  },
+  thankyouTitle: {
+    color: BRAND_COLORS.ACCENT,
+    fontSize: 15,
+    fontWeight: '700',
+    fontFamily: 'Inter_700Bold',
+    marginBottom: 8,
+  },
+  thankyouMsg: {
+    color: '#E2E8F0',
+    fontSize: 14,
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  thankyouClose: {
+    alignSelf: 'flex-end',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    backgroundColor: BRAND_COLORS.ACCENT + '20',
+    borderRadius: 8,
+  },
+  thankyouCloseText: {
+    color: BRAND_COLORS.ACCENT,
+    fontSize: 13,
+    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
 
   // Wait & Return timer

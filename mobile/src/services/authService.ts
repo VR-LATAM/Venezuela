@@ -14,14 +14,20 @@ import {
   sendEmailVerification,
   initializeAuth,
   getAuth,
-  getReactNativePersistence,
 } from 'firebase/auth';
 import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { apiClient } from './apiClient';
 import { User } from '@vride/shared';
 import { initializeApp, getApps, getApp } from 'firebase/app';
-import Constants from 'expo-constants';
+
+/* eslint-disable @typescript-eslint/no-var-requires */
+// getReactNativePersistence is not re-exported from firebase/auth typings
+// but exists at runtime in the react-native bundle
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { getReactNativePersistence } = require('@firebase/auth/dist/rn/index.js') as {
+  getReactNativePersistence: (storage: typeof ReactNativeAsyncStorage) => any;
+};
 
 export function getFirebaseAuth() {
   if (!getApps().length) {

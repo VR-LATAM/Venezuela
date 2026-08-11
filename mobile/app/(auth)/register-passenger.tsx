@@ -338,6 +338,7 @@ export default function RegisterPassengerScreen() {
 
           {false && showScanner && (
             <LicenseScanner
+              visible={showScanner}
               onScanned={handleLicenseScanned}
               onClose={() => setShowScanner(false)}
             />

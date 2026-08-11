@@ -69,7 +69,7 @@ export default function VerifyEmailScreen() {
 
   const handleBack = useCallback(async () => {
     await logout();
-    router.replace('/(auth)/');
+    router.replace('/(auth)/' as any);
   }, [logout]);
 
   return (

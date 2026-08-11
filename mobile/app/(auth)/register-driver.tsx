@@ -919,6 +919,7 @@ export default function RegisterDriverScreen() {
 
               {false && showScanner && (
                 <LicenseScanner
+                  visible={showScanner}
                   onScanned={handleLicenseScanned}
                   onClose={() => setShowScanner(false)}
                 />

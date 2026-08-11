@@ -144,7 +144,6 @@ export default function MembershipScreen() {
   }
 
   const st = STATUS_CONFIG[data?.status ?? 'inactive'];
-  const myPlan = data?.plans.find(p => p.vehicle_type === membership?.vehicle_type);
   const needsPayment = data?.status === 'inactive' || data?.status === 'suspended';
   const canSubmit    = membership?.status === 'pending_payment' || membership?.status === 'rejected';
 
