@@ -138,8 +138,8 @@ export default function RideScreen() {
       updateDriverLocation(d);
     });
 
-    const rideCompleted = (totalCharged: number, paymentStatus: string) => {
-      setTotalCharged(totalCharged);
+    const rideCompleted = (totalCharged: number, paymentStatus: string, totalVes?: number) => {
+      setTotalCharged(totalCharged, totalVes);
       void nokiaToneService.play();
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       setTimeout(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success), 400);
@@ -155,8 +155,8 @@ export default function RideScreen() {
     };
 
     const unsubComplete = socketService.on('passenger:ride_completed', (data: unknown) => {
-      const d = data as { totalCharged: number; paymentStatus: string };
-      rideCompleted(d.totalCharged, d.paymentStatus);
+      const d = data as { totalCharged: number; totalVes?: number; paymentStatus: string };
+      rideCompleted(d.totalCharged, d.paymentStatus, d.totalVes);
     });
 
     const unsubCancelled = socketService.on('passenger:ride_cancelled_by_driver', () => {
