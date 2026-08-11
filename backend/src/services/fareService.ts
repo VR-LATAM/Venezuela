@@ -159,7 +159,7 @@ export async function calculateFareEstimate(params: {
   const pricePerKm   = +(stateConfig?.price_per_mile   ?? 0.92);
   const pricePerMin  = +(stateConfig?.price_per_minute ?? 0.05);
   const minFare        = +(stateConfig?.min_fare             ?? 5.00);
-  const motorcycleMultiplier = +(stateConfig?.motorcycle_multiplier ?? 0.75);
+  const motorcycleMultiplier = +(stateConfig?.motorcycle_multiplier ?? 0.55);
   const suvMultiplier        = +(stateConfig?.suv_multiplier        ?? 1.30);
 
   // Encomienda: pasajero elige vehículo; siempre 40% más barato que transporte de personas
