@@ -18,6 +18,7 @@ import { Audio } from 'expo-av';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
 import { useRideStore } from '../../src/store/rideStore';
+import { useUser } from '../../src/store/authStore';
 import { socketService } from '../../src/services/socketService';
 import { apiClient } from '../../src/services/apiClient';
 import { rideMobileService } from '../../src/services/rideService';
@@ -30,6 +31,7 @@ import { nokiaToneService } from '../../src/services/nokiaToneService';
 const GOOGLE_MAPS_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_KEY ?? '';
 
 export default function RideScreen() {
+  const user = useUser();
   const {
     currentRide, assignedDriver, driverLocation,
     cancelCurrentRide, resetPassengerState, setTotalCharged, updateDriverLocation,
@@ -456,6 +458,14 @@ export default function RideScreen() {
 
       {/* Panel inferior */}
       <View style={styles.bottomPanel}>
+        {/* Nombre del pasajero */}
+        {user?.full_name && (
+          <View style={styles.passengerHeader}>
+            <UserAvatar name={user.full_name} photoUrl={user.photo_url ?? undefined} size={36} />
+            <Text style={styles.passengerHeaderName}>{user.full_name}</Text>
+          </View>
+        )}
+
         {/* Info del conductor */}
         {assignedDriver && (
           <View style={styles.driverRow}>
@@ -724,6 +734,23 @@ const styles = StyleSheet.create({
     borderWidth: 2.5,
     borderColor: BRAND_COLORS.PRIMARY,
     overflow: 'hidden',
+  },
+
+  passengerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 12,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  passengerHeaderName: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1D4ED8',
+    fontFamily: 'Inter_700Bold',
+    flexShrink: 1,
   },
 
   bottomPanel: {

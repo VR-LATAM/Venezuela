@@ -4,7 +4,7 @@
     "slug": "veronaride",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/logo.png",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/logo.png",
@@ -34,7 +34,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/logo.png",
         "backgroundColor": "#1A73E8"
       },
       "package": "com.veronaride.app",

@@ -1275,32 +1275,33 @@ export default function DriverHomeScreen() {
               </View>
             </TouchableOpacity>
 
+            {/* Info del pasajero — siempre visible en viaje activo */}
+            {assignedPassenger && (
+              <View style={styles.passengerRow}>
+                <UserAvatar
+                  name={assignedPassenger.name}
+                  photoUrl={assignedPassenger.photo_url}
+                  size={44}
+                />
+                <View style={styles.passengerInfo}>
+                  <Text style={styles.passengerName}>{assignedPassenger.name}</Text>
+                  <Text style={styles.passengerLabel}>Pasajero</Text>
+                </View>
+                {assignedPassenger.patient_phone && (
+                  <TouchableOpacity
+                    style={styles.callPatientBtn}
+                    onPress={() => Linking.openURL(`tel:${assignedPassenger.patient_phone}`)}
+                  >
+                    <Text style={styles.callPatientIcon}>📞</Text>
+                    <Text style={styles.callPatientText}>Llamar</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            )}
+
             {/* ── Contenido expandible ── */}
             {panelExpanded && (
               <>
-                {/* Info del pasajero */}
-                {assignedPassenger && (
-                  <View style={styles.passengerRow}>
-                    <UserAvatar
-                      name={assignedPassenger.name}
-                      photoUrl={assignedPassenger.photo_url}
-                      size={44}
-                    />
-                    <View style={styles.passengerInfo}>
-                      <Text style={styles.passengerName}>{assignedPassenger.name}</Text>
-                      <Text style={styles.passengerLabel}>Pasajero</Text>
-                    </View>
-                    {assignedPassenger.patient_phone && (
-                      <TouchableOpacity
-                        style={styles.callPatientBtn}
-                        onPress={() => Linking.openURL(`tel:${assignedPassenger.patient_phone}`)}
-                      >
-                        <Text style={styles.callPatientIcon}>📞</Text>
-                        <Text style={styles.callPatientText}>Llamar</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                )}
 
                 {/* Dirección de recogida / destino */}
                 <View style={styles.rideAddresses}>
