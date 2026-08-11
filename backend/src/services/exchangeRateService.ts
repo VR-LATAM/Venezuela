@@ -8,7 +8,7 @@ const REDIS_KEY_MANUAL = 'ves:manual_rate'; // tasa seteada manualmente por admi
 const CACHE_TTL      = 3600; // 1 hora
 const BCV_URL        = 'https://www.bcv.org.ve';
 // Tasa de respaldo de último recurso — actualizar desde variable de entorno o admin
-const FALLBACK_RATE  = parseFloat(process.env.VES_FALLBACK_RATE ?? '90');
+const FALLBACK_RATE  = parseFloat(process.env.VES_FALLBACK_RATE ?? '761');
 
 // El BCV tiene certificado con problemas — agente que lo acepta igual
 const httpsAgent = new https.Agent({ rejectUnauthorized: false });
@@ -49,12 +49,16 @@ export async function refreshExchangeRate(): Promise<number> {
       },
     });
 
-    // Busca el patrón "USD756,70830000" confirmado en la página del BCV
-    const match = html.match(/USD\s*([\d]{1,4}[,\.]\d{2,10})/i);
+    // El BCV estructura el dólar así:
+    //   <div id="dolar" ...>
+    //     ...
+    //     <strong class="strong-tb">761,21670000</strong>
+    // Buscamos el número dentro del bloque id="dolar"
+    const match = html.match(/id="dolar"[\s\S]{0,600}?strong[^>]*>([\d.,]+)<\/strong>/i);
     if (!match) throw new Error('No se encontró la tasa USD en la página del BCV');
     const rateRaw = match[1];
 
-    // El BCV usa coma como separador decimal: "756,70830000" → 756.70830000
+    // El BCV usa coma como separador decimal: "761,21670000" → 761.21670000
     const rateStr = rateRaw.replace(/\./g, '').replace(',', '.');
     const rate = parseFloat(rateStr);
     if (!rate || rate <= 0) throw new Error(`Tasa inválida extraída: ${match[1]}`);
