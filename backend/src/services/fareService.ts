@@ -2,6 +2,7 @@
 // Para: ELITE GROUP - Integral Services LLC
 // ═══════════════════════════════════════════════════════════════
 // Servicio de tarifas — cálculo de precios y geocodificación
+// Fórmula VE: base + km×ppk (sin componente de tiempo)
 // Usa Google Maps Distance Matrix API con fallback Haversine
 // Aplica surge pricing según hora del día y config del estado
 // ═══════════════════════════════════════════════════════════════
