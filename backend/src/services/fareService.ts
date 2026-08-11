@@ -229,7 +229,7 @@ export async function calculateFareEstimate(params: {
     const safeDistKm      = isFinite(distanceKm)      ? distanceKm      : 0;
     const safeDurationMin = isFinite(durationMinutes)  ? durationMinutes : 0;
     const oneLegFare = Math.max(
-      (baseFare + safeDistKm * pricePerKm + safeDurationMin * pricePerMin) * surgeMultiplier,
+      (baseFare + safeDistKm * pricePerKm) * surgeMultiplier,
       minFare
     );
     const total = Math.round((oneLegFare * 2 + waitFare) * 100) / 100;
@@ -267,10 +267,9 @@ export async function calculateFareEstimate(params: {
     params.serviceType === 'carga'       ? Math.max(minFare, 15.00)       :
     minFare;
 
-  // Tarifa desglosada en km
-  const distanceFare = safeDistKm      * pricePerKm;
-  const timeFare     = safeDurationMin * pricePerMin;
-  const rawSubtotal  = (baseFare + distanceFare + timeFare) * serviceMultiplier * surgeMultiplier;
+  // Tarifa solo por distancia (sin componente de tiempo)
+  const distanceFare = safeDistKm * pricePerKm;
+  const rawSubtotal  = (baseFare + distanceFare) * serviceMultiplier * surgeMultiplier;
   const subtotal     = Math.max(rawSubtotal, effectiveMinFare);
   const total        = Math.round(subtotal * 100) / 100;
   const { ves, rate } = await convertToVES(total);
@@ -279,7 +278,7 @@ export async function calculateFareEstimate(params: {
     service_type:       params.serviceType,
     base_fare:          baseFare,
     distance_fare:      Math.round(distanceFare * 100) / 100,
-    time_fare:          Math.round(timeFare * 100) / 100,
+    time_fare:          0,
     surge_multiplier:   surgeMultiplier,
     service_multiplier: serviceMultiplier,
     subtotal:           total,
