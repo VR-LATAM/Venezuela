@@ -459,12 +459,13 @@ export default function RideScreen() {
       {/* Panel inferior */}
       <View style={styles.bottomPanel}>
         {/* Nombre del pasajero */}
-        {user?.name && (
-          <View style={styles.passengerHeader}>
-            <UserAvatar name={user.name} photoUrl={user.photo_url ?? undefined} size={36} />
-            <Text style={styles.passengerHeaderName}>{user.name}</Text>
+        <View style={styles.passengerHeader}>
+          <UserAvatar name={user?.name ?? 'P'} photoUrl={user?.photo_url ?? undefined} size={36} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.passengerHeaderLabel}>Tu viaje</Text>
+            <Text style={styles.passengerHeaderName}>{user?.name ?? 'Pasajero'}</Text>
           </View>
-        )}
+        </View>
 
         {/* Info del conductor */}
         {assignedDriver && (
@@ -745,24 +746,30 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
   },
+  passengerHeaderLabel: {
+    fontSize: 11,
+    color: '#888',
+    fontFamily: 'Inter_400Regular',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
   passengerHeaderName: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: '#1D4ED8',
     fontFamily: 'Inter_700Bold',
-    flexShrink: 1,
   },
 
   bottomPanel: {
     position: 'absolute',
-    bottom: 19,
+    bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: '#fff',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     padding: 20,
-    paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+    paddingBottom: Platform.OS === 'ios' ? 40 : 24,
     shadowColor: '#000',
     shadowOpacity: 0.15,
     shadowRadius: 16,
@@ -805,20 +812,22 @@ const styles = StyleSheet.create({
 
   actions: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    gap: 6,
   },
   actionBtn: {
+    flex: 1,
     alignItems: 'center',
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 4,
     borderRadius: 12,
     backgroundColor: '#F8F9FA',
-    minWidth: 70,
   },
   sosActionBtn:     { backgroundColor: BRAND_COLORS.ALERT + '12' },
   sosActive:        { backgroundColor: BRAND_COLORS.ALERT },
   recordingActive:  { backgroundColor: BRAND_COLORS.ALERT + '20' },
-  actionEmoji: { fontSize: 24, marginBottom: 4 },
-  actionLabel: { fontSize: 13, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
+  actionEmoji: { fontSize: 20, marginBottom: 3 },
+  actionLabel: { fontSize: 11, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_500Medium' },
   unreadBadge: {
     position: 'absolute', top: 6, right: 6,
     backgroundColor: BRAND_COLORS.ALERT,
