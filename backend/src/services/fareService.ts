@@ -156,9 +156,9 @@ export async function calculateFareEstimate(params: {
   // pg devuelve columnas NUMERIC como strings — convertir siempre a número
   // La columna se llama price_per_mile en BD por historia, pero almacena precio por KM
   const baseFare     = +(stateConfig?.base_fare        ?? 1.00);
-  const pricePerKm   = +(stateConfig?.price_per_mile   ?? 0.92);
+  const pricePerKm   = +(stateConfig?.price_per_mile   ?? 0.88);
   const pricePerMin  = +(stateConfig?.price_per_minute ?? 0.05);
-  const minFare        = +(stateConfig?.min_fare             ?? 5.00);
+  const minFare        = +(stateConfig?.min_fare             ?? 1.00);
   const motorcycleMultiplier = +(stateConfig?.motorcycle_multiplier ?? 0.55);
   const suvMultiplier        = +(stateConfig?.suv_multiplier        ?? 1.30);
 

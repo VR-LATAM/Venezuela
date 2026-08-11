@@ -237,7 +237,8 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold', lineHeight: 32,
   },
   earningsVes: {
-    fontSize: 15, color: '#64748B', fontFamily: 'Inter_400Regular', marginTop: 2,
+    fontSize: 22, fontWeight: '700', color: '#1D4ED8',
+    fontFamily: 'Inter_700Bold', marginTop: 4,
   },
 
   // Rating
