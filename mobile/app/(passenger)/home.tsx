@@ -49,12 +49,14 @@ interface Prediction {
 }
 
 const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string; category: 'transport' | 'delivery' | 'schedule' }[] = [
-  { key: 'motorcycle', label: 'Moto',        emoji: '🏍️', category: 'transport' },
-  { key: 'sedan',      label: 'Sedán',       emoji: '🚗', category: 'transport' },
-  { key: 'suv',        label: 'SUV',         emoji: '🚙', category: 'transport' },
-  { key: 'encomienda', label: 'Encomienda',  emoji: '📦', category: 'delivery'  },
-  { key: 'carga',      label: 'Carga',       emoji: '🏗️', category: 'delivery'  },
-  { key: 'scheduled',  label: 'Programado',  emoji: '🗓️', category: 'schedule'  },
+  { key: 'motorcycle',     label: 'Moto',          emoji: '🏍️', category: 'transport' },
+  { key: 'sedan',          label: 'Sedán',         emoji: '🚗', category: 'transport' },
+  { key: 'suv',            label: 'SUV',           emoji: '🚙', category: 'transport' },
+  { key: 'scheduled',      label: 'Programado',    emoji: '🗓️', category: 'schedule'  },
+  { key: 'hourly',         label: 'Por Hora',      emoji: '⏱️', category: 'schedule'  },
+  { key: 'wait_and_return',label: 'Ida y Vuelta',  emoji: '🔄', category: 'schedule'  },
+  { key: 'encomienda',     label: 'Encomienda',    emoji: '📦', category: 'delivery'  },
+  { key: 'carga',          label: 'Carga',         emoji: '🏗️', category: 'delivery'  },
 ];
 
 const CARGA_SUB_OPTIONS = [
@@ -138,6 +140,10 @@ export default function PassengerHomeScreen() {
   const [pkgRecipient, setPkgRecipient]     = useState('');
   const [pkgPhone, setPkgPhone]             = useState('');
   const [deliveryVehicle, setDeliveryVehicle] = useState<'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma'>('motorcycle');
+
+  // Trabajo por Hora y Esperar-Regresar
+  const [hourlyPackageHours, setHourlyPackageHours]   = useState<2 | 4 | 8>(2);
+  const [estimatedWaitMinutes, setEstimatedWaitMinutes] = useState<30 | 60 | 120>(60);
 
   // Carga (Pick-Up, Plataforma, F-350, NPR)
   const [cargaVehicle, setCargaVehicle]         = useState<'350' | 'npr'>('350');
@@ -615,18 +621,20 @@ export default function PassengerHomeScreen() {
       setEstimateError(null);
 
       try {
-        const services: ServiceType[] = ['motorcycle', 'sedan', 'suv', 'scheduled', 'encomienda', 'pickup', 'plataforma', 'carga'];
+        const services: ServiceType[] = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly', 'wait_and_return', 'encomienda', 'pickup', 'plataforma', 'carga'];
         const results = await Promise.allSettled(
           services.map(svc =>
             rideMobileService.estimateFare({
-              pickupLat:       userLocation.latitude,
-              pickupLng:       userLocation.longitude,
-              dropoffLat:      dropoffCoords.latitude,
-              dropoffLng:      dropoffCoords.longitude,
-              serviceType:     svc,
-              stateCode:       user?.state_code ?? 'DC',
-              deliveryVehicle: svc === 'encomienda' ? deliveryVehicle : undefined,
-              cargaVehicle:    svc === 'carga' ? cargaVehicle : undefined,
+              pickupLat:            userLocation.latitude,
+              pickupLng:            userLocation.longitude,
+              dropoffLat:           dropoffCoords.latitude,
+              dropoffLng:           dropoffCoords.longitude,
+              serviceType:          svc,
+              stateCode:            user?.state_code ?? 'DC',
+              deliveryVehicle:      svc === 'encomienda' ? deliveryVehicle : undefined,
+              cargaVehicle:         svc === 'carga' ? cargaVehicle : undefined,
+              hourlyPackageHours:   svc === 'hourly' ? hourlyPackageHours : undefined,
+              estimatedWaitMinutes: svc === 'wait_and_return' ? estimatedWaitMinutes : undefined,
             })
           )
         );
@@ -789,6 +797,8 @@ export default function PassengerHomeScreen() {
         deliveryVehicle:      selectedService === 'encomienda' ? deliveryVehicle : undefined,
         cargaVehicle:         isCargaHeavy ? cargaVehicle : undefined,
         offeredPrice:         isCargaCategory ? offeredPrice : undefined,
+        hourlyPackageHours:   selectedService === 'hourly' ? hourlyPackageHours : undefined,
+        estimatedWaitMinutes: selectedService === 'wait_and_return' ? estimatedWaitMinutes : undefined,
       });
       setCurrentRide(ride);
       setSearchStatus('searching');
@@ -1214,15 +1224,61 @@ export default function PassengerHomeScreen() {
                             {(est?.surge_multiplier ?? 1) > 1 && (
                               <Text style={styles.surgeTag}>⚡ Alta demanda</Text>
                             )}
-                            {est && !isSched && (
+                            {est && !isSched && svc.key !== 'hourly' && svc.key !== 'wait_and_return' && (
                               <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
                                 {est.duration_minutes ?? 0} min · {(est.distance_km ?? 0).toFixed(1)} km
+                              </Text>
+                            )}
+                            {est && svc.key === 'hourly' && (
+                              <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
+                                Paquete {hourlyPackageHours}h
+                              </Text>
+                            )}
+                            {est && svc.key === 'wait_and_return' && (
+                              <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
+                                {(est.distance_km ?? 0).toFixed(1)} km · espera {estimatedWaitMinutes < 60 ? `${estimatedWaitMinutes} min` : `${estimatedWaitMinutes / 60}h`}
                               </Text>
                             )}
                           </TouchableOpacity>
                         );
                       })}
                     </View>
+
+                    {/* Sub-opciones Por Hora */}
+                    {selectedService === 'hourly' && (
+                      <View style={styles.cargaSubRow}>
+                        {([2, 4, 8] as const).map(h => (
+                          <TouchableOpacity
+                            key={h}
+                            style={[styles.cargaSubBtn, hourlyPackageHours === h && styles.cargaSubBtnActive]}
+                            onPress={() => { setHourlyPackageHours(h); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                          >
+                            <Text style={styles.cargaSubEmoji}>⏱️</Text>
+                            <Text style={[styles.cargaSubLabel, hourlyPackageHours === h && styles.cargaSubLabelActive]}>
+                              {h}h
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+
+                    {/* Sub-opciones Ida y Vuelta */}
+                    {selectedService === 'wait_and_return' && (
+                      <View style={styles.cargaSubRow}>
+                        {([30, 60, 120] as const).map(m => (
+                          <TouchableOpacity
+                            key={m}
+                            style={[styles.cargaSubBtn, estimatedWaitMinutes === m && styles.cargaSubBtnActive]}
+                            onPress={() => { setEstimatedWaitMinutes(m); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                          >
+                            <Text style={styles.cargaSubEmoji}>🔄</Text>
+                            <Text style={[styles.cargaSubLabel, estimatedWaitMinutes === m && styles.cargaSubLabelActive]}>
+                              {m === 30 ? '30 min' : m === 60 ? '1 hora' : '2 horas'}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
 
                     {/* Sub-opciones de Carga */}
                     {(selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma') && (
@@ -2190,7 +2246,7 @@ const styles = StyleSheet.create({
   serviceCardRow:    { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   serviceCardLabel:  { fontSize: 13, fontWeight: '600', color: '#555', fontFamily: 'Inter_600SemiBold' },
   serviceCardPrice:  { fontSize: 14, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
-  serviceCardMeta:   { fontSize: 10, color: '#888', marginTop: 1, fontFamily: 'Inter_400Regular' },
+  serviceCardMeta:   { fontSize: 13, color: '#888', marginTop: 2, fontFamily: 'Inter_400Regular' },
   serviceCardBook:   { fontSize: 12, color: '#666', fontFamily: 'Inter_400Regular' },
   textWhite:          { color: '#fff' },
   textWhiteAlpha:     { color: 'rgba(255,255,255,0.75)' },
