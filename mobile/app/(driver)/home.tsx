@@ -1668,7 +1668,7 @@ const styles = StyleSheet.create({
   zoomControls: {
     position: 'absolute',
     right: 12,
-    top: 200,
+    top: 162,
     gap: 4,
   },
   zoomBtn: {
