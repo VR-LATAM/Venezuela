@@ -86,7 +86,7 @@ function generateSimulatedHeat(): HeatPoint[] {
 }
 
 export default function DashboardPage() {
-  const { data: session } = useSession();
+  const { data: session } = { data: { accessToken: '' } } as any;
   const [kpis, setKpis]           = useState<KPIs | null>(null);
   const [finance, setFinance]     = useState<FinanceData | null>(null);
   const [drivers, setDrivers]     = useState<OnlineDriver[]>([]);

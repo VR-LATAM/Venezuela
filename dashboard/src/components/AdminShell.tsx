@@ -1,12 +1,8 @@
 // Diseñado por: Edward Labrador  ·  Para: ELITE GROUP - Integral Services LLC
 'use client';
 
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { Loader2 } from 'lucide-react';
 
 interface AdminShellProps {
   title:     string;
@@ -16,23 +12,6 @@ interface AdminShellProps {
 }
 
 export function AdminShell({ title, subtitle, action, children }: AdminShellProps) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (status === 'unauthenticated') router.replace('/login');
-  }, [status, router]);
-
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
-        <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!session) return null;
-
   return (
     <div className="flex min-h-screen bg-gray-50 dark:bg-gray-950">
       <Sidebar />
