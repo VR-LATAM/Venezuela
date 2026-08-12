@@ -256,11 +256,22 @@ export const authController = {
         return;
       }
 
-      const adminPassword = process.env.ADMIN_PANEL_PASSWORD;
-      const hash = (s: string) => Buffer.from(crypto.createHash('sha256').update(s).digest('hex'));
-      const passwordMatch = adminPassword
-        ? crypto.timingSafeEqual(hash(password), hash(adminPassword))
-        : false;
+      const bcrypt = await import('bcryptjs');
+      const adminRow = await queryOne<{ dashboard_password_hash: string | null }>(
+        `SELECT dashboard_password_hash FROM users WHERE email = $1 AND role = 'admin'`,
+        [email]
+      );
+      // Verificar contra hash bcrypt guardado en BD, o contra env var como respaldo
+      let passwordMatch = false;
+      if (adminRow?.dashboard_password_hash) {
+        passwordMatch = await bcrypt.compare(password, adminRow.dashboard_password_hash);
+      } else {
+        const adminPassword = process.env.ADMIN_PANEL_PASSWORD;
+        const hash = (s: string) => Buffer.from(crypto.createHash('sha256').update(s).digest('hex'));
+        passwordMatch = adminPassword
+          ? crypto.timingSafeEqual(hash(password), hash(adminPassword))
+          : false;
+      }
       if (!passwordMatch) {
         logger.warn('Admin login failed — wrong password', { ip });
         await recordFailure(ip, email);
