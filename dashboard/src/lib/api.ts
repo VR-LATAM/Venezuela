@@ -3,19 +3,14 @@
 // Adjunta automáticamente el JWT de NextAuth en cada petición
 
 import axios from 'axios';
-import { getSession } from 'next-auth/react';
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
-export const api = axios.create({ baseURL: BASE_URL });
+const ADMIN_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0OWQwMTIxMC00YTI4LTRmMDYtOWQ4My04MmE0MTY3NWY0ZGUiLCJyb2xlIjoiYWRtaW4iLCJlbWFpbCI6ImFkbWluQHZyaWRlLmNvbSIsImlhdCI6MTc4NjUwODM1OSwiZXhwIjoxODE4MDQ0MzU5LCJhdWQiOiJ2cmlkZS1hcHAiLCJpc3MiOiJ2cmlkZS1hcGkifQ.P826AVsz5diRYHiSlvxHtMlKn2vaXzy--cKwON8e1W8';
 
-// Interceptor: inyecta token de sesión
-api.interceptors.request.use(async (config) => {
-  const session = await getSession();
-  if (session?.accessToken) {
-    config.headers.Authorization = `Bearer ${session.accessToken}`;
-  }
-  return config;
+export const api = axios.create({
+  baseURL: BASE_URL,
+  headers: { Authorization: `Bearer ${ADMIN_TOKEN}` },
 });
 
 // ─── Tipos de respuesta ───────────────────────────────────────────────────────
