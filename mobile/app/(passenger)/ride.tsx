@@ -683,7 +683,7 @@ const styles = StyleSheet.create({
 
   headerSafe: {
     position: 'absolute', top: 0, left: 0, right: 0,
-    paddingTop: Platform.OS === 'android' ? 56 : 68,
+    paddingTop: Platform.OS === 'android' ? 30 : 42,
   },
   header: { margin: 16, alignItems: 'center' },
   statusBadge: {
