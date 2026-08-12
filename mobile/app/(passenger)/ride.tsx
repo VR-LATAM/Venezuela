@@ -656,7 +656,7 @@ const styles = StyleSheet.create({
   zoomControls: {
     position: 'absolute',
     right: 12,
-    top: 119,
+    top: 160,
     gap: 4,
   },
   zoomBtn: {
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
 
   bottomPanel: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 40,
     left: 0,
     right: 0,
     backgroundColor: '#fff',
