@@ -286,7 +286,7 @@ export const authController = {
       }
 
       // Verificar estado 2FA del admin
-      const adminRow = await queryOne<{ totp_secret: string; totp_enabled: boolean }>(
+      const admin2faRow = await queryOne<{ totp_secret: string; totp_enabled: boolean }>(
         'SELECT totp_secret, totp_enabled FROM users WHERE id = $1',
         [result.user.id]
       );
