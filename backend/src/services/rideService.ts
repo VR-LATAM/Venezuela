@@ -1198,7 +1198,7 @@ async function searchAndNotifyDrivers(
         estimatedDriverEarnings: estimatedFare,
         tripDistanceKm,
         specialNeeds: specialCategories,
-        passengerName:      (passengerProfile as any)?.name      ?? null,
+        passengerName:      (passengerProfile as any)?.operative_code ?? (passengerProfile as any)?.name ?? null,
         passengerPhotoUrl:  (passengerProfile as any)?.photo_url ?? null,
         passengerRating:    (passengerProfile as any)?.rating_avg ?? null,
         consecutiveRejections: driverData.consecutive_rejections ?? 0,
