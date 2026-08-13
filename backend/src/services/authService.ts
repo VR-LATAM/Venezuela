@@ -94,12 +94,14 @@ export const authService = {
       const initialSpecialNeeds = params.passengerCategories && params.passengerCategories.length > 0
         ? JSON.stringify({ categories: params.passengerCategories })
         : '{}';
+      const passengerCode = generateOperativeCode('PSJ', params.name);
       await client.query(
         `INSERT INTO passengers
-           (id, emergency_contact_name, emergency_contact_phone, emergency_contact_email, special_needs)
-         VALUES ($1, $2, $3, $4, $5::jsonb)`,
+           (id, operative_code, emergency_contact_name, emergency_contact_phone, emergency_contact_email, special_needs)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb)`,
         [
           createdUser.id,
+          passengerCode,
           params.emergencyContactName  ?? null,
           params.emergencyContactPhone ?? null,
           params.emergencyContactEmail ?? null,
@@ -189,10 +191,11 @@ export const authService = {
       );
       const createdUser = userRows[0] as User;
 
+      const driverCode = generateOperativeCode('DR', params.name);
       await client.query(
-        `INSERT INTO drivers (id, state_code, referral_code, referred_by_id)
-         VALUES ($1, $2, $3, $4)`,
-        [createdUser.id, params.stateCode, referralCode, referredById ?? null]
+        `INSERT INTO drivers (id, state_code, referral_code, referred_by_id, operative_code)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [createdUser.id, params.stateCode, referralCode, referredById ?? null, driverCode]
       );
 
       // Si fue referido, crear el registro en tabla referrals
@@ -438,8 +441,25 @@ function generateTokenPair(userId: string, role: UserRole, email: string): AuthT
 }
 
 function generateReferralCode(name: string): string {
-  // Formato: primeras 5 letras del nombre (sin espacios) + 4 caracteres aleatorios
   const namePrefix = name.replace(/\s/g, '').toUpperCase().slice(0, 5);
   const suffix = uuidv4().replace(/-/g, '').toUpperCase().slice(0, 4);
   return `${namePrefix}${suffix}`;
+}
+
+function vehiclePrefix(services: string[]): string {
+  if (services.includes('motorcycle')) return 'MT';
+  if (services.includes('sedan'))      return 'SD';
+  if (services.includes('suv'))        return 'SV';
+  if (services.includes('van'))        return 'VN';
+  if (services.includes('pickup'))     return 'PU';
+  if (services.includes('350') || services.includes('npr')) return 'CG';
+  return 'DR';
+}
+
+export function generateOperativeCode(prefix: string, fullName: string): string {
+  const parts = fullName.trim().split(/\s+/);
+  const lastName = parts.length > 1 ? parts[1] : parts[0];
+  const nameCode = lastName.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '').substring(0, 2).toUpperCase().padEnd(2, 'X');
+  const rand = Math.floor(100 + Math.random() * 900).toString();
+  return `${prefix}-${nameCode}-${rand}`;
 }

@@ -16,10 +16,12 @@ const RIDE_BASE = `
     ST_X(r.pickup_location::geometry)  AS pickup_lng,
     ST_Y(r.dropoff_location::geometry) AS dropoff_lat,
     ST_X(r.dropoff_location::geometry) AS dropoff_lng,
-    u.name      AS passenger_name,
-    u.photo_url AS passenger_photo_url
+    u.name           AS passenger_name,
+    u.photo_url      AS passenger_photo_url,
+    p.operative_code AS passenger_operative_code
   FROM rides r
   LEFT JOIN users u ON u.id = r.passenger_id
+  LEFT JOIN passengers p ON p.id = r.passenger_id
 `;
 
 export interface CreateRideParams {

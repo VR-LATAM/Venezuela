@@ -58,6 +58,7 @@ const DRIVER_SELECT = `
     d.music_preference, d.music_artist,
     d.referral_code, d.referred_by_id,
     d.stripe_account_id, d.stripe_account_verified,
+    d.operative_code,
     d.contract_signed_at, d.contract_signature,
     -- Extraer lat/lng de la geometría PostGIS
     ST_Y(d.current_location::geometry) AS current_latitude,
@@ -227,6 +228,21 @@ export const driverRepository = {
        WHERE id = $1 RETURNING id`,
       [id]
     ),
+
+  updateOperativeCodePrefix: (id: string, services: string[]) => {
+    const prefixMap: Record<string, string> = {
+      motorcycle: 'MT', sedan: 'SD', suv: 'SV',
+      van: 'VN', pickup: 'PU', '350': 'CG', npr: 'CG',
+    };
+    const prefix = services.map(s => prefixMap[s]).find(Boolean) ?? 'DR';
+    return queryOne<{ id: string }>(
+      `UPDATE drivers
+       SET operative_code = regexp_replace(operative_code, '^[A-Z]+', $1),
+           updated_at = NOW()
+       WHERE id = $2 RETURNING id`,
+      [prefix, id]
+    );
+  },
 
   saveContractSignature: (id: string, signature: string) =>
     queryOne<{ id: string }>(

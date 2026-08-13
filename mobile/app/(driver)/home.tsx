@@ -392,7 +392,7 @@ export default function DriverHomeScreen() {
           if (rideAny.passenger_name) {
             setAssignedPassenger({
               id:        rideAny.passenger_id ?? '',
-              name:      rideAny.passenger_name,
+              name:      rideAny.passenger_operative_code ?? rideAny.passenger_name,
               photo_url: rideAny.passenger_photo_url ?? undefined,
             });
           }
@@ -437,8 +437,11 @@ export default function DriverHomeScreen() {
 
     // Info del pasajero al aceptar el viaje
     socketService.on('driver:passenger_assigned', (data: unknown) => {
-      const d = data as { passenger: { id: string; name: string; photo_url?: string; patient_phone?: string | null } };
-      if (d?.passenger) setAssignedPassenger(d.passenger);
+      const d = data as { passenger: { id: string; name: string; operative_code?: string; photo_url?: string; patient_phone?: string | null } };
+      if (d?.passenger) setAssignedPassenger({
+        ...d.passenger,
+        name: d.passenger.operative_code ?? d.passenger.name,
+      });
     });
 
     // Mensajes del pasajero durante el viaje

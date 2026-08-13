@@ -166,7 +166,8 @@ ${signedLine}
 <p>El SUSCRIPTOR deberá suministrar su identidad legal completa, real, vigente y verificable. Antes de activar la cuenta deberá presentar y mantener vigentes: cédula de identidad o pasaporte vigente, RIF vigente, correo y teléfono verificables, fotografía o verificación facial, licencia de conducir vigente con categoría apropiada, documento de propiedad o posesión legítima de la Unidad, placa y datos de la Unidad, seguro de responsabilidad civil vigente, permiso o habilitación exigida por el INTT, alcaldía u autoridad competente según modalidad y localidad, y cuenta bancaria o billetera a nombre del SUSCRIPTOR cuando aplique procesamiento de pagos.</p>
 
 <h3>5. CÓDIGO ALFANUMÉRICO DE IDENTIFICACIÓN OPERATIVA</h3>
-<p>Al activar la cuenta, la PLATAFORMA asignará al SUSCRIPTOR un Código Alfanumérico único, personal y no transferible para identificarlo ante los Usuarios Pasajeros sin revelar su identidad legal completa. El código podrá incluir la modalidad (MOTO, TAXI, SUV, VAN, PickUp), las dos primeras letras del apellido del SUSCRIPTOR y caracteres alfanuméricos aleatorios. Ejemplos: MT-GO-482 / SD-RA-731 / SV-LI-615 / VN-AN-902 / PU-PE-247.</p>
+${driver?.operative_code ? `<p style="background:#EFF6FF;border:1.5px solid #1E3A8A;border-radius:8px;padding:12px;text-align:center;font-size:13pt"><b>Código asignado al SUSCRIPTOR: <span style="font-size:16pt;color:#1E3A8A;letter-spacing:2px">${driver.operative_code}</span></b></p>` : ''}
+<p>La PLATAFORMA asigna al SUSCRIPTOR un Código Alfanumérico único, personal y no transferible para identificarlo ante los Usuarios Pasajeros sin revelar su identidad legal completa. El código incluye la modalidad de transporte, las dos primeras letras del apellido del SUSCRIPTOR y un número aleatorio asignado por la PLATAFORMA.</p>
 <p>La PLATAFORMA conservará internamente la identidad legal completa del SUSCRIPTOR para fines contractuales, tributarios, de seguridad y requerimientos de autoridades. El SUSCRIPTOR no podrá modificar, prestar, vender ni compartir su Código Alfanumérico.</p>
 
 <h3>6. MEMBRESÍA, PRECIO Y RENOVACIÓN</h3>
@@ -372,10 +373,15 @@ ${signedLine}
       </Clause>
 
       <Clause title="5. CÓDIGO ALFANUMÉRICO DE IDENTIFICACIÓN OPERATIVA">
+        {driver?.operative_code && (
+          <View style={styles.codeBox}>
+            <Text style={styles.codeLabel}>Código asignado al SUSCRIPTOR</Text>
+            <Text style={styles.codeValue}>{driver.operative_code}</Text>
+          </View>
+        )}
         <Text style={styles.clauseBody}>
-          Al activar la cuenta, la PLATAFORMA asignará al SUSCRIPTOR un Código Alfanumérico único, personal y no transferible para identificarlo ante los Usuarios Pasajeros sin revelar su identidad legal completa. El código incluirá la modalidad de transporte, las dos primeras letras del apellido del SUSCRIPTOR y caracteres alfanuméricos aleatorios.{'\n\n'}
-          Ejemplos: MT-GO-482 (Moto) / SD-RA-731 (Auto) / SV-LI-615 (SUV) / VN-AN-902 (Van) / PU-PE-247 (Pick-Up).{'\n\n'}
-          La PLATAFORMA conservará internamente la identidad legal completa del SUSCRIPTOR para fines contractuales, tributarios, de seguridad y requerimientos de autoridades competentes. El SUSCRIPTOR no podrá modificar, prestar, vender, transferir ni compartir su Código Alfanumérico.
+          La PLATAFORMA asigna al SUSCRIPTOR un Código Alfanumérico único, personal y no transferible para identificarlo ante los Usuarios Pasajeros sin revelar su identidad legal completa. El código incluye la modalidad de transporte, las dos primeras letras del apellido del SUSCRIPTOR y un número aleatorio asignado por la PLATAFORMA.{'\n\n'}
+          La PLATAFORMA conservará internamente la identidad legal completa del SUSCRIPTOR para fines contractuales, tributarios, de seguridad y requerimientos de autoridades. El SUSCRIPTOR no podrá modificar, prestar, vender, transferir ni compartir su Código Alfanumérico.
         </Text>
       </Clause>
 
@@ -568,6 +574,13 @@ const styles = StyleSheet.create({
   clause:      { marginBottom: 14 },
   clauseTitle: { fontSize: 12, fontWeight: '700', color: BRAND.PRIMARY, marginBottom: 6 },
   clauseBody:  { fontSize: 12, color: '#374151', lineHeight: 19 },
+
+  codeBox: {
+    backgroundColor: '#EFF6FF', borderWidth: 1.5, borderColor: BRAND.PRIMARY,
+    borderRadius: 12, padding: 14, alignItems: 'center', marginBottom: 10,
+  },
+  codeLabel: { fontSize: 11, color: BRAND.GRAY, marginBottom: 4 },
+  codeValue: { fontSize: 22, fontWeight: '800', color: BRAND.PRIMARY, letterSpacing: 2 },
 
   declaration: { fontSize: 13, color: BRAND.TEXT, marginTop: 20, lineHeight: 20, fontStyle: 'italic' },
   dateText:    { fontSize: 12, color: BRAND.GRAY, marginTop: 8, marginBottom: 20 },

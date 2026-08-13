@@ -132,6 +132,9 @@ export const driverController = {
     try {
       const body = updateProfileSchema.parse(req.body);
       await driverRepository.updateDocuments(req.user!.userId, body);
+      if (body.services && body.services.length > 0) {
+        await driverRepository.updateOperativeCodePrefix(req.user!.userId, body.services);
+      }
       const updated = await driverRepository.findById(req.user!.userId);
       sendSuccess(res, updated);
     } catch (err) {

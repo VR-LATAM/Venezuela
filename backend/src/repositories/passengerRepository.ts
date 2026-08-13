@@ -12,7 +12,7 @@ const PASSENGER_SELECT = `
   SELECT
     u.id, u.firebase_uid, u.email, u.name, u.phone, u.phone_verified,
     u.photo_url, u.role, u.language, u.state_code, u.is_active, u.created_at, u.updated_at,
-    p.rating_avg, p.total_rides, p.emergency_contact_name,
+    p.operative_code, p.rating_avg, p.total_rides, p.emergency_contact_name,
     p.emergency_contact_phone, p.stripe_customer_id,
     p.special_needs
   FROM users u

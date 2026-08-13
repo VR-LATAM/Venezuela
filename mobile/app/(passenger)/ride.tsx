@@ -477,7 +477,7 @@ export default function RideScreen() {
             />
             <View style={styles.driverInfo}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={styles.driverName}>{assignedDriver.name ?? 'Conductor'}</Text>
+                <Text style={styles.driverName}>{assignedDriver.operative_code ?? assignedDriver.name ?? 'Conductor'}</Text>
                 {(() => {
                   const badge = getDriverBadge(assignedDriver.total_rides ?? 0, Number(assignedDriver.rating_avg) || 5);
                   return (
