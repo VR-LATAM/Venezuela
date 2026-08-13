@@ -471,7 +471,7 @@ export default function RideScreen() {
         {assignedDriver && (
           <View style={styles.driverRow}>
             <UserAvatar
-              name={assignedDriver.name}
+              name={assignedDriver.operative_code ?? assignedDriver.name}
               photoUrl={assignedDriver.photo_url}
               size={48}
             />

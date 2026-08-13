@@ -243,7 +243,8 @@ export const driverService = {
     // Solo devolver campos públicos — nunca documentos, balance, etc.
     return {
       id: driver.id,
-      name: driver.name,
+      name: driver.operative_code ?? driver.name,
+      operative_code: driver.operative_code,
       photo_url: driver.photo_url,
       rating_avg: driver.rating_avg,
       total_rides: driver.total_rides,

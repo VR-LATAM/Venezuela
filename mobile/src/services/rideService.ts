@@ -141,7 +141,7 @@ export const rideMobileService = {
 
   // Perfil público de un conductor (para mostrar al pasajero)
   getDriverPublicProfile: async (driverId: string): Promise<{
-    id: string; name: string; photo_url?: string; rating_avg: number;
+    id: string; name: string; operative_code?: string; photo_url?: string; rating_avg: number;
     vehicle_brand?: string; vehicle_model?: string; vehicle_color?: string; vehicle_plate?: string;
   }> => {
     const r = await apiClient.get(`/driver/public/${driverId}`);
