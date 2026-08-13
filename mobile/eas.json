@@ -30,8 +30,8 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://vridebackend-production-00dd.up.railway.app",
-        "EXPO_PUBLIC_SOCKET_URL": "https://vridebackend-production-00dd.up.railway.app",
+        "EXPO_PUBLIC_API_URL": "https://vridebackend-production-dd32.up.railway.app",
+        "EXPO_PUBLIC_SOCKET_URL": "https://vridebackend-production-dd32.up.railway.app",
         "EXPO_PUBLIC_FIREBASE_API_KEY": "AIzaSyC-KX0r_gnUvL3DcJblWtN9v4FbmO91AFA",
         "EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN": "vride-production.firebaseapp.com",
         "EXPO_PUBLIC_FIREBASE_PROJECT_ID": "vride-production",
@@ -55,8 +55,8 @@
         "credentialsSource": "remote"
       },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://vridebackend-production-00dd.up.railway.app/api/v1",
-        "EXPO_PUBLIC_SOCKET_URL": "https://vridebackend-production-00dd.up.railway.app"
+        "EXPO_PUBLIC_API_URL": "https://vridebackend-production-dd32.up.railway.app/api/v1",
+        "EXPO_PUBLIC_SOCKET_URL": "https://vridebackend-production-dd32.up.railway.app"
       }
     }
   },
