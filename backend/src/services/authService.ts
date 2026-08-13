@@ -459,7 +459,11 @@ function vehiclePrefix(services: string[]): string {
 export function generateOperativeCode(prefix: string, fullName: string): string {
   const parts = fullName.trim().split(/\s+/);
   const lastName = parts.length > 1 ? parts[1] : parts[0];
-  const nameCode = lastName.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ]/g, '').substring(0, 2).toUpperCase().padEnd(2, 'X');
+  const normalized = lastName
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-zA-Z]/g, '');
+  const nameCode = normalized.substring(0, 2).toUpperCase().padEnd(2, 'X');
   const rand = Math.floor(100 + Math.random() * 900).toString();
   return `${prefix}-${nameCode}-${rand}`;
 }

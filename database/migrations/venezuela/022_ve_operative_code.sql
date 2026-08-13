@@ -16,7 +16,15 @@ BEGIN
     last_name := full_name;
   END IF;
 
-  name_code := upper(left(regexp_replace(last_name, '[^a-zA-ZáéíóúÁÉÍÓÚñÑ]', '', 'g'), 2));
+  name_code := upper(left(
+    regexp_replace(
+      translate(last_name,
+        'áéíóúÁÉÍÓÚàèìòùÀÈÌÒÙäëïöüÄËÏÖÜâêîôûÂÊÎÔÛñÑ',
+        'aeiouAEIOUaeiouAEIOUaeiouAEIOUaeiouAEIOUnN'
+      ),
+      '[^a-zA-Z]', '', 'g'
+    ), 2
+  ));
   IF length(name_code) < 2 THEN
     name_code := rpad(name_code, 2, 'X');
   END IF;
