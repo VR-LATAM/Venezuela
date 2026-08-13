@@ -2100,7 +2100,7 @@ const styles = StyleSheet.create({
   zoomBtnActive: { backgroundColor: '#1E293B' },
   headerSafe: {
     position: 'absolute', top: 0, left: 0, right: 0,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 24) + 24 : 24,
+    paddingTop: Platform.OS === 'android' ? Math.max(0, (StatusBar.currentHeight ?? 24) - 6) : 27,
   },
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
