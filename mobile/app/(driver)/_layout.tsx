@@ -154,7 +154,7 @@ export default function DriverLayout() {
             if (rideAny.passenger_name) {
               setAssignedPassenger({
                 id:        rideAny.passenger_id ?? '',
-                name:      rideAny.passenger_name,
+                name:      rideAny.passenger_operative_code ?? rideAny.passenger_name,
                 photo_url: rideAny.passenger_photo_url ?? undefined,
               });
             }
