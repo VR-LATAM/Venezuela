@@ -25,8 +25,8 @@ export default function ContractScreen() {
   const [committedPaths, setCommittedPaths]      = useState<string[]>([]);
   const [livePath, setLivePath]                  = useState('');
 
-  const livePathRef    = useRef('');
-  const committedRef   = useRef<string[]>([]);
+  const livePathRef  = useRef('');
+  const committedRef = useRef<string[]>([]);
 
   React.useEffect(() => {
     apiClient.get('/driver/profile').then(res => {
@@ -81,17 +81,10 @@ export default function ContractScreen() {
       ? `<p style="color:#065F46;font-weight:bold">✓ Firmado digitalmente el ${new Date(contractSignedAt).toLocaleDateString('es-VE')}</p>`
       : '';
 
-    // Firma: usar la recién dibujada si existe, si no la guardada en BD
     const pathsForPdf = committedPaths.length > 0 ? committedPaths : savedSignature;
 
-    // Calcular bounding box real de todos los trazos para no cortar la firma
     const buildSignatureSvg = (paths: string[]) => {
       if (paths.length === 0) return '<p style="color:#aaa;text-align:center;font-size:9pt">Sin firma</p>';
-      const coords: number[] = [];
-      paths.forEach(p => {
-        const nums = p.match(/-?\d+\.?\d*/g);
-        if (nums) nums.forEach((n) => coords.push(parseFloat(n)));
-      });
       const xs: number[] = [], ys: number[] = [];
       paths.forEach(p => {
         const tokens = p.match(/[ML]-?\d+\.?\d*,-?\d+\.?\d*/g) ?? [];
@@ -116,25 +109,33 @@ export default function ContractScreen() {
 <style>
   @page { size: letter; margin: 1in; }
   body{font-family:Arial,sans-serif;font-size:11pt;color:#1F2937;margin:0;padding:0;line-height:1.5}
-  h1{color:#1E3A8A;font-size:14pt;text-align:center;margin-bottom:4px}
-  h2{color:#0D9488;font-size:11pt;text-align:center;margin-top:0}
-  h3{color:#1E3A8A;font-size:10pt;margin-top:18px;margin-bottom:4px}
+  h1{color:#1E3A8A;font-size:13pt;text-align:center;margin-bottom:2px}
+  h2{color:#0D9488;font-size:10pt;text-align:center;margin-top:0;margin-bottom:2px}
+  h4{color:#6B7280;font-size:9pt;text-align:center;margin-top:0;font-weight:normal}
+  h3{color:#1E3A8A;font-size:10pt;margin-top:16px;margin-bottom:4px}
   .field{margin:3px 0;font-size:10pt}
   .field b{min-width:80px;display:inline-block}
   p{font-size:10pt;margin:6px 0}
-  .sign-box{border:1px solid #CBD5E1;border-radius:8px;height:80px;margin-top:8px}
+  ul{margin:4px 0;padding-left:18px;font-size:10pt}
+  li{margin:2px 0}
   table{width:100%;border-collapse:collapse;margin-top:20px}
   td{border:1px solid #CBD5E1;padding:12px;text-align:center;font-size:10pt}
 </style></head><body>
-<h1>VERONA RIDE — VENEZUELA</h1>
-<h2>CONTRATO DE PRESTACIÓN DE SERVICIOS COMO CONDUCTOR INDEPENDIENTE</h2>
+<h1>VERONA TECHNOLOGY GROUP C.A.</h1>
+<h2>CONTRATO DE SUSCRIPCIÓN, LICENCIA DE USO Y ACCESO A PLATAFORMA TECNOLÓGICA<br>PARA PRESTADORES INDEPENDIENTES DE TRANSPORTE</h2>
+<h4>Versión: 2.7 &nbsp;|&nbsp; Plataforma: VERONA Ride - Venezuela</h4>
 ${signedLine}
-<h3>DATOS DEL CONDUCTOR</h3>
+
+<h3>LAS PARTES</h3>
+<p><b>VERONA Technology Group C.A.</b>, sociedad mercantil constituida conforme a las leyes de la República Bolivariana de Venezuela, domiciliada en Venezuela, en adelante denominada la <b>"PLATAFORMA"</b>.</p>
+<p>Y por la otra, el SUSCRIPTOR cuyos datos se indican a continuación, en adelante denominado el <b>"SUSCRIPTOR"</b>. Conjuntamente las "PARTES".</p>
+
+<h3>DATOS DEL SUSCRIPTOR</h3>
 <div class="field"><b>Nombre:</b> ${user?.name ?? '—'}</div>
 <div class="field"><b>Correo:</b> ${user?.email ?? '—'}</div>
 <div class="field"><b>Teléfono:</b> ${user?.phone ?? '—'}</div>
 
-<h3>DATOS DEL VEHÍCULO</h3>
+<h3>DATOS DE LA UNIDAD</h3>
 <div class="field"><b>Marca:</b> ${driver?.vehicle_brand ?? '—'}</div>
 <div class="field"><b>Modelo:</b> ${driver?.vehicle_model ?? '—'}</div>
 <div class="field"><b>Año:</b> ${driver?.vehicle_year ?? '—'}</div>
@@ -143,50 +144,76 @@ ${signedLine}
 <div class="field"><b>Seguro:</b> ${driver?.insurance_company ?? '—'}</div>
 <div class="field"><b>Póliza:</b> ${driver?.insurance_policy_number ?? '—'}</div>
 
-<h3>PRIMERA — NATURALEZA DEL SERVICIO</h3>
-<p>EL CONDUCTOR prestará servicios de transporte de personas y/o encomiendas a través de la plataforma tecnológica VERONA Ride, operando como trabajador independiente. No existe relación laboral, de dependencia ni subordinación entre EL CONDUCTOR y LA PLATAFORMA.</p>
+<h3>1. DEFINICIONES</h3>
+<p><b>Aplicación o Plataforma:</b> software, aplicación móvil, portal web, interfaces, mensajería, geolocalización, módulos de seguridad, paneles administrativos y demás herramientas operadas bajo la marca VERONA Technology Group C.A.</p>
+<p><b>Membresía o Suscripción:</b> servicio tecnológico pagado que permite al SUSCRIPTOR acceder a las funcionalidades del plan contratado durante un período definido.</p>
+<p><b>Solicitud:</b> petición de traslado generada por un Usuario Pasajero mediante la Aplicación.</p>
+<p><b>Usuario Pasajero:</b> persona que utiliza la Aplicación para solicitar un traslado.</p>
+<p><b>Servicio de Transporte:</b> traslado material que el SUSCRIPTOR decide aceptar y prestar directamente al Usuario Pasajero, por su propia cuenta, riesgo y responsabilidad.</p>
+<p><b>Unidad:</b> automóvil, motocicleta u otro vehículo legalmente habilitado y registrado por el SUSCRIPTOR en la Aplicación.</p>
+<p><b>Código Operativo:</b> identificador público alfanumérico asignado por la PLATAFORMA para mostrar al SUSCRIPTOR ante pasajeros sin divulgar innecesariamente su identidad legal completa.</p>
+<p><b>Días Restituibles:</b> crédito de acceso no monetario correspondiente a los días completos de Membresía pendientes luego de una restricción por rechazos válidos.</p>
 
-<h3>SEGUNDA — MEMBRESÍA SEMANAL</h3>
-<p>EL CONDUCTOR se compromete a pagar la membresía semanal según el tipo de vehículo:<br>
-Motocicleta: USD 15,00/sem — Sedán: USD 25,00/sem — SUV: USD 30,00/sem — Pick-Up: USD 35,00/sem — Plataforma/Carga: USD 40,00/sem.<br>
-El período va de viernes a jueves. El pago debe realizarse antes de iniciar operaciones.</p>
+<h3>2. OBJETO</h3>
+<p>La PLATAFORMA otorga al SUSCRIPTOR una licencia limitada, personal, no exclusiva, no transferible, revocable y condicionada para utilizar las funcionalidades habilitadas de la Aplicación. Según el plan contratado, la Membresía podrá incluir: perfil profesional, recepción y gestión de Solicitudes, geolocalización, mensajería interna, historial de viajes, herramientas de seguridad, soporte técnico, sistema de calificaciones y módulos adicionales habilitados.</p>
+<p>La PLATAFORMA presta tecnología y no garantiza al SUSCRIPTOR cantidad mínima de Solicitudes, pasajeros, ingresos, ganancias, rentabilidad, zona exclusiva ni disponibilidad ininterrumpida.</p>
 
-<h3>TERCERA — COMISIÓN</h3>
-<p>VERONA Ride Venezuela opera con CERO POR CIENTO (0%) de comisión. EL CONDUCTOR conserva el 100% del valor cobrado por cada servicio.</p>
+<h3>3. NATURALEZA COMERCIAL</h3>
+<p>El presente contrato regula una relación de suscripción a servicios tecnológicos. El SUSCRIPTOR contrata y paga a la PLATAFORMA por el uso de herramientas digitales. El SUSCRIPTOR declara que no recibe de la PLATAFORMA: salario, sueldo, vacaciones, bono vacacional, utilidades, prestaciones sociales, cestaticket, horas extras ni ingreso mínimo garantizado.</p>
+<p>La PLATAFORMA no fija jornada, turnos, guardias, cuota mínima de horas ni exclusividad. El SUSCRIPTOR puede desarrollar actividades para sí o terceros, siempre que no utilice datos, marcas o información de usuarios obtenidos mediante la PLATAFORMA para eludirla.</p>
 
-<h3>CUARTA — TARIFAS Y FORMA DE COBRO</h3>
-<p>El cobro se realiza en dólares estadounidenses (USD) en efectivo. Las tarifas son calculadas automáticamente por la plataforma. Los montos en bolívares se expresan de manera referencial conforme a la tasa BCV vigente.</p>
+<h3>4. IDENTIDAD LEGAL Y REQUISITOS</h3>
+<p>El SUSCRIPTOR deberá suministrar su identidad legal completa, real, vigente y verificable. Antes de activar la cuenta deberá presentar y mantener vigentes: cédula de identidad o pasaporte vigente, RIF vigente, correo y teléfono verificables, fotografía o verificación facial, licencia de conducir vigente con categoría apropiada, documento de propiedad o posesión legítima de la Unidad, placa y datos de la Unidad, seguro de responsabilidad civil vigente, permiso o habilitación exigida por el INTT, alcaldía u autoridad competente según modalidad y localidad, y cuenta bancaria o billetera a nombre del SUSCRIPTOR cuando aplique procesamiento de pagos.</p>
 
-<h3>QUINTA — PENALIZACIÓN POR CANCELACIÓN</h3>
-<p>Las cancelaciones del pasajero después de 2 minutos de gracia generan cargos fijos según el tipo de vehículo. EL CONDUCTOR recibe el 100% de la penalización cobrada.</p>
+<h3>5. CÓDIGO ALFANUMÉRICO DE IDENTIFICACIÓN OPERATIVA</h3>
+<p>Al activar la cuenta, la PLATAFORMA asignará al SUSCRIPTOR un Código Alfanumérico único, personal y no transferible para identificarlo ante los Usuarios Pasajeros sin revelar su identidad legal completa. El código podrá incluir la modalidad (MOTO, TAXI, SUV, VAN, PickUp), las dos primeras letras del apellido del SUSCRIPTOR y caracteres alfanuméricos aleatorios. Ejemplos: MT-GO-482 / SD-RA-731 / SV-LI-615 / VN-AN-902 / PU-PE-247.</p>
+<p>La PLATAFORMA conservará internamente la identidad legal completa del SUSCRIPTOR para fines contractuales, tributarios, de seguridad y requerimientos de autoridades. El SUSCRIPTOR no podrá modificar, prestar, vender ni compartir su Código Alfanumérico.</p>
 
-<h3>SEXTA — CÓDIGO DE CONDUCTA</h3>
-<p>EL CONDUCTOR se compromete a mantener calificación mínima de 4.5 estrellas, no operar bajo efectos de alcohol o drogas, mantener el vehículo en condiciones óptimas, tratar a los pasajeros con respeto y profesionalismo, no fumar durante el servicio, y completar los cursos de certificación requeridos.</p>
+<h3>6. MEMBRESÍA, PRECIO Y RENOVACIÓN</h3>
+<p>Precio semanal: <b>USD 10,00</b>. Fecha de pago ordinario: viernes. El período de Membresía va desde las 00:00:00 horas del sábado siguiente hasta las 23:59:59 horas del viernes siguiente.</p>
+<p>El precio corresponde exclusivamente al acceso tecnológico y no constituye descuento salarial ni pago laboral. Si el SUSCRIPTOR no realiza el pago al vencimiento, la PLATAFORMA podrá limitar el acceso hasta regularizar la obligación. La PLATAFORMA notificará cualquier cambio de precio con anticipación razonable.</p>
 
-<h3>SÉPTIMA — SUSPENSIÓN Y CANCELACIÓN</h3>
-<p>LA PLATAFORMA puede suspender o cancelar la cuenta por incumplimiento del contrato, calificación sostenida inferior a 4.5 estrellas por más de 7 días, uso fraudulento, conducta inapropiada, o incumplimiento del pago de membresía.</p>
+<h3>7. DISPONIBILIDAD, RECHAZOS Y CALIDAD</h3>
+<p>El SUSCRIPTOR decide libremente cuándo activar o desactivar su estado de "Disponible". No existe obligación de conexión, horario ni permanencia mínima. La PLATAFORMA podrá registrar indicadores objetivos de Solicitudes recibidas, aceptadas, rechazadas y canceladas. No se computarán como rechazos válidos los casos de error técnico, Solicitud duplicada, pasajero bloqueado, información incompleta, punto fuera de la configuración seleccionada, emergencia o fuerza mayor.</p>
 
-<h3>OCTAVA — RESPONSABILIDAD DEL CONDUCTOR</h3>
-<p>EL CONDUCTOR es responsable de mantener vigentes todos sus documentos: licencia, seguro, revisión técnica, tarjeta de propiedad y cualquier documento exigido por las autoridades venezolanas.</p>
+<h3>8. RESTRICCIÓN POR 15 RECHAZOS</h3>
+<p>Si el SUSCRIPTOR acumula quince (15) rechazos válidos antes del vencimiento de su Período de Membresía, la PLATAFORMA podrá restringir inmediatamente la recepción de nuevas Solicitudes hasta el final de dicho período.</p>
+<p>La PLATAFORMA acreditará al SUSCRIPTOR los <b>Días Restituibles</b> equivalentes a los días calendario completos restantes desde la restricción hasta el viernes de vencimiento. No habrá devolución de dinero. El SUSCRIPTOR podrá solicitar revisión dentro de las 48 horas siguientes a la medida. Los Días Restituibles son personales, no transferibles, no canjeables por dinero y no acumulables con otras promociones.</p>
 
-<h3>NOVENA — PROTECCIÓN DE DATOS</h3>
-<p>EL CONDUCTOR autoriza a VERONA Ride a almacenar y procesar sus datos personales con la finalidad exclusiva de operar y mejorar el servicio.</p>
+<h3>9. PRESENTACIÓN, EQUIPOS E IDENTIDAD VISUAL</h3>
+<p>El SUSCRIPTOR mantendrá una presentación limpia, segura y respetuosa. Modalidad motocicleta: casco para conductor y pasajero, chaleco reflectivo e identificación visual aprobada. Modalidad automóvil: placa visible, documentos y seguro vigentes, identificación y señalización exigida por la autoridad competente.</p>
+<p>El SUSCRIPTOR podrá adquirir accesorios conforme al Catálogo Oficial de Identificación y Seguridad publicado por la PLATAFORMA. No podrá usar logos o emblemas alterados, deteriorados o no autorizados.</p>
 
-<h3>DÉCIMA — VIGENCIA Y TERMINACIÓN</h3>
-<p>Este contrato entra en vigencia a partir de la fecha de firma con duración indefinida. Cualquiera de las partes puede darlo por terminado con 7 días de aviso previo.</p>
+<h3>10. MARCA, RETIRO Y DEVOLUCIÓN</h3>
+<p>La Empresa conserva la titularidad exclusiva de sus marcas, logos, emblemas, QR y demás signos distintivos. La licencia de uso de marca termina automáticamente al vencer la Membresía sin pago, desactivarse o suspenderse la cuenta. Desde la terminación, el SUSCRIPTOR deberá retirar stickers, QR, credenciales y emblemas removibles, y cubrir permanentemente los no removibles. Los bienes entregados en préstamo o comodato deberán devolverse dentro de cinco (5) días hábiles siguientes a la terminación.</p>
 
-<p style="margin-top:20px;font-style:italic">EL CONDUCTOR declara que ha leído, comprendido y acepta voluntariamente el presente contrato en su totalidad.</p>
+<h3>11. OBLIGACIONES DEL SUSCRIPTOR</h3>
+<p>El SUSCRIPTOR se obliga a: mantener documentos auténticos y vigentes; conservar la Unidad en condiciones adecuadas; cumplir normas de tránsito, seguros y permisos; no conducir bajo alcohol o drogas; tratar con respeto a pasajeros y terceros; no permitir el uso de su cuenta por terceros; no alterar GPS, identidad, datos o sistemas; reportar accidentes, incidentes y documentos vencidos; asumir costos de vehículo, combustible, mantenimiento, teléfono, seguros, impuestos y gastos propios; cooperar con investigaciones de seguridad relacionadas con viajes gestionados por la Aplicación.</p>
+
+<h3>12. PAGOS Y FACTURACIÓN</h3>
+<p>El Usuario Pasajero paga directamente al SUSCRIPTOR. La PLATAFORMA solo proporciona tecnología. Los importes recibidos por viajes corresponden a la actividad independiente del SUSCRIPTOR y no constituyen salario pagado por la PLATAFORMA. La PLATAFORMA emitirá comprobante por Membresía y cargos tecnológicos propios. El SUSCRIPTOR es responsable de su facturación e impuestos por los servicios de transporte.</p>
+
+<h3>13. NO ELUSIÓN Y DATOS DE PASAJEROS</h3>
+<p>Los datos de identidad, contacto, ubicación e historial de pasajeros se suministran exclusivamente para evaluar, aceptar y ejecutar Solicitudes gestionadas mediante la Aplicación. El SUSCRIPTOR no podrá usar esos datos para ofrecer o negociar servicios por fuera de la PLATAFORMA cuando la oportunidad se origine en una Solicitud proporcionada por ella. El SUSCRIPTOR no podrá solicitar a pasajeros teléfono personal, redes sociales, dirección, datos bancarios ni información personal con el propósito de contratar fuera de la Aplicación.</p>
+
+<h3>14. SEGURIDAD, DATOS Y RESPONSABILIDAD</h3>
+<p>El SUSCRIPTOR cooperará con investigaciones de seguridad relacionadas con viajes gestionados en la Aplicación. La PLATAFORMA podrá limitar el acceso ante indicios razonables de riesgo grave, fraude, agresión, suplantación o documento falso. El SUSCRIPTOR autoriza el tratamiento de sus datos de identidad, documentos, ubicación, rutas, Solicitudes y calificaciones para operar la Aplicación, prevenir fraude, proteger usuarios y cumplir obligaciones legales. La PLATAFORMA no garantiza disponibilidad continua ni resultado económico. El SUSCRIPTOR responde por la conducción, Unidad, permisos e infracciones.</p>
+
+<h3>15. NO RENUNCIA, LEY Y ACEPTACIÓN</h3>
+<p>Nada de este contrato se interpretará como renuncia de derechos irrenunciables. Este contrato se regirá por las leyes de la República Bolivariana de Venezuela. Las PARTES procurarán resolver controversias mediante comunicación directa; de no alcanzar acuerdo, serán competentes los tribunales que correspondan conforme a la ley. Forman parte de este contrato: Política de Privacidad, Política de Seguridad, Política de Calidad y Cancelaciones, Tabla de Membresías, Política de Pagos, Catálogo Oficial de Identificación y Seguridad, Manual de Identidad Visual y Requisitos documentales publicados en la Aplicación.</p>
+
+<p style="margin-top:20px;font-style:italic">EL SUSCRIPTOR declara que ha leído, comprendido y acepta voluntariamente el presente contrato y sus anexos en su totalidad.</p>
 <p>Lugar y fecha: Venezuela, ${dateStr}</p>
 
 <table>
-  <tr><td><b>Firma del Conductor</b></td><td><b>Firma y Sello VERONA Ride</b></td></tr>
+  <tr><td><b>Firma del Suscriptor</b></td><td><b>Firma y Sello VERONA Technology Group C.A.</b></td></tr>
   <tr>
     <td style="height:180px;padding:8px">
       ${signatureSvg}
       <div style="margin-top:6px;font-size:9pt">${user?.name ?? ''}</div>
       <div style="font-size:8pt;color:#6B7280">${user?.email ?? ''}</div>
     </td>
-    <td style="height:180px">Representante autorizado<br>VERONA RIDE VENEZUELA</td>
+    <td style="height:180px">Representante autorizado<br>VERONA TECHNOLOGY GROUP C.A.</td>
   </tr>
 </table>
 </body></html>`;
@@ -246,13 +273,15 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
       contentContainerStyle={styles.content}
       scrollEnabled={scrollEnabled}
     >
-      {/* Header */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
         <Text style={styles.backText}>← Volver</Text>
       </TouchableOpacity>
 
-      <Text style={styles.mainTitle}>VERONA RIDE — VENEZUELA</Text>
-      <Text style={styles.subTitle}>CONTRATO DE PRESTACIÓN DE SERVICIOS COMO CONDUCTOR INDEPENDIENTE</Text>
+      <Text style={styles.mainTitle}>VERONA TECHNOLOGY GROUP C.A.</Text>
+      <Text style={styles.subTitle}>
+        CONTRATO DE SUSCRIPCIÓN, LICENCIA DE USO Y ACCESO A PLATAFORMA TECNOLÓGICA PARA PRESTADORES INDEPENDIENTES DE TRANSPORTE
+      </Text>
+      <Text style={styles.version}>Versión: 2.7  |  Plataforma: VERONA Ride - Venezuela</Text>
 
       {contractSignedAt && (
         <View style={styles.signedBadge}>
@@ -262,14 +291,23 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
         </View>
       )}
 
-      {/* Datos del conductor */}
-      <Text style={styles.sectionTitle}>DATOS DEL CONDUCTOR</Text>
+      {/* Partes */}
+      <Text style={styles.sectionTitle}>LAS PARTES</Text>
+      <Text style={styles.bodyText}>
+        <Text style={styles.bold}>VERONA Technology Group C.A.</Text>, sociedad mercantil constituida conforme a las leyes de la República Bolivariana de Venezuela, en adelante denominada la <Text style={styles.bold}>"PLATAFORMA"</Text>.
+      </Text>
+      <Text style={styles.bodyText}>
+        Y por la otra, el SUSCRIPTOR cuyos datos se indican a continuación, en adelante denominado el <Text style={styles.bold}>"SUSCRIPTOR"</Text>. Conjuntamente las "PARTES".
+      </Text>
+
+      {/* Datos del Suscriptor */}
+      <Text style={styles.sectionTitle}>DATOS DEL SUSCRIPTOR</Text>
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Nombre:</Text><Text style={styles.fieldValue}>{user?.name ?? '—'}</Text></View>
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Correo:</Text><Text style={styles.fieldValue}>{user?.email ?? '—'}</Text></View>
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Teléfono:</Text><Text style={styles.fieldValue}>{user?.phone ?? '—'}</Text></View>
 
-      {/* Datos del vehículo */}
-      <Text style={styles.sectionTitle}>DATOS DEL VEHÍCULO</Text>
+      {/* Datos de la Unidad */}
+      <Text style={styles.sectionTitle}>DATOS DE LA UNIDAD</Text>
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Marca:</Text><Text style={styles.fieldValue}>{driver?.vehicle_brand ?? '—'}</Text></View>
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Modelo:</Text><Text style={styles.fieldValue}>{driver?.vehicle_model ?? '—'}</Text></View>
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Año:</Text><Text style={styles.fieldValue}>{driver?.vehicle_year ?? '—'}</Text></View>
@@ -279,69 +317,158 @@ El período va de viernes a jueves. El pago debe realizarse antes de iniciar ope
       <View style={styles.fieldRow}><Text style={styles.fieldLabel}>Póliza:</Text><Text style={styles.fieldValue}>{driver?.insurance_policy_number ?? '—'}</Text></View>
 
       {/* Cláusulas */}
-      <Text style={styles.sectionTitle}>CLÁUSULAS DEL CONTRATO</Text>
+      <Text style={styles.sectionTitle}>CLÁUSULAS</Text>
 
-      <Clause title="PRIMERA — NATURALEZA DEL SERVICIO">
-        EL CONDUCTOR prestará servicios de transporte de personas y/o encomiendas a través de la plataforma tecnológica VERONA Ride, operando como trabajador independiente. No existe relación laboral, de dependencia ni subordinación entre EL CONDUCTOR y LA PLATAFORMA.
+      <Clause title="1. DEFINICIONES">
+        <Text style={styles.clauseBody}>
+          <Text style={styles.bold}>Aplicación o Plataforma:</Text> software, aplicación móvil, portal web, interfaces, mensajería, geolocalización, módulos de seguridad, paneles administrativos y demás herramientas operadas bajo la marca VERONA Technology Group C.A.{'\n\n'}
+          <Text style={styles.bold}>Membresía o Suscripción:</Text> servicio tecnológico pagado que permite al SUSCRIPTOR acceder a las funcionalidades del plan contratado durante un período definido.{'\n\n'}
+          <Text style={styles.bold}>Solicitud:</Text> petición de traslado generada por un Usuario Pasajero mediante la Aplicación.{'\n\n'}
+          <Text style={styles.bold}>Usuario Pasajero:</Text> persona que utiliza la Aplicación para solicitar un traslado.{'\n\n'}
+          <Text style={styles.bold}>Servicio de Transporte:</Text> traslado material que el SUSCRIPTOR decide aceptar y prestar directamente al Usuario Pasajero, por su propia cuenta, riesgo y responsabilidad, sujeto a la normativa aplicable.{'\n\n'}
+          <Text style={styles.bold}>Unidad:</Text> automóvil, motocicleta u otro vehículo legalmente habilitado y registrado por el SUSCRIPTOR en la Aplicación.{'\n\n'}
+          <Text style={styles.bold}>Código Operativo:</Text> identificador público alfanumérico asignado por la PLATAFORMA para mostrar al SUSCRIPTOR ante pasajeros sin divulgar innecesariamente su identidad legal completa.{'\n\n'}
+          <Text style={styles.bold}>Días Restituibles:</Text> crédito de acceso no monetario correspondiente a los días completos de Membresía pendientes luego de una restricción por rechazos válidos.
+        </Text>
       </Clause>
 
-      <Clause title="SEGUNDA — MEMBRESÍA SEMANAL">
-        EL CONDUCTOR se compromete a pagar la membresía semanal correspondiente al tipo de vehículo registrado:{'\n'}
-        {'   '}Motocicleta: USD 15,00/semana{'\n'}
-        {'   '}Sedán: USD 25,00/semana{'\n'}
-        {'   '}SUV: USD 30,00/semana{'\n'}
-        {'   '}Pick-Up: USD 35,00/semana{'\n'}
-        {'   '}Plataforma/Carga: USD 40,00/semana{'\n'}
-        El período va de viernes a jueves. El pago debe realizarse antes de iniciar operaciones.
+      <Clause title="2. OBJETO">
+        <Text style={styles.clauseBody}>
+          La PLATAFORMA otorga al SUSCRIPTOR una licencia limitada, personal, no exclusiva, no transferible, revocable y condicionada para utilizar las funcionalidades habilitadas de la Aplicación. Según el plan contratado, la Membresía podrá incluir: perfil profesional de conductor, recepción y gestión de Solicitudes, geolocalización, mensajería interna, historial de viajes, herramientas de seguridad, soporte técnico, sistema de calificaciones, campañas comerciales opcionales, procesamiento tecnológico de pagos cuando aplique, y módulos adicionales expresamente habilitados.{'\n\n'}
+          La PLATAFORMA presta tecnología y no garantiza al SUSCRIPTOR cantidad mínima de Solicitudes, pasajeros, ingresos, ganancias, rentabilidad, zona exclusiva, horas de actividad ni disponibilidad ininterrumpida.
+        </Text>
       </Clause>
 
-      <Clause title="TERCERA — COMISIÓN">
-        VERONA Ride Venezuela opera con CERO POR CIENTO (0%) de comisión. EL CONDUCTOR conserva el 100% del valor cobrado por cada servicio prestado.
+      <Clause title="3. NATURALEZA COMERCIAL">
+        <Text style={styles.clauseBody}>
+          El presente contrato regula una relación de suscripción a servicios tecnológicos. El SUSCRIPTOR contrata y paga a la PLATAFORMA por el uso de herramientas digitales. El SUSCRIPTOR declara que no recibe de la PLATAFORMA: salario, sueldo, vacaciones, bono vacacional, utilidades, prestaciones sociales, cestaticket, pago de horas extras, ingreso mínimo garantizado, ni pago por tiempo de disponibilidad.{'\n\n'}
+          La PLATAFORMA no fija jornada, turnos, guardias, cuota mínima de horas, cuota mínima de viajes, ruta obligatoria ni exclusividad. El SUSCRIPTOR puede desarrollar actividades para sí, clientes directos, otras aplicaciones o terceros, siempre que no utilice datos, marcas o información de usuarios obtenidos mediante la PLATAFORMA para eludirla.
+        </Text>
       </Clause>
 
-      <Clause title="CUARTA — TARIFAS Y FORMA DE COBRO">
-        El cobro se realiza en dólares estadounidenses (USD) en efectivo. Las tarifas son calculadas automáticamente por la plataforma. Los montos en bolívares se expresan de manera referencial conforme a la tasa BCV vigente.
+      <Clause title="4. IDENTIDAD LEGAL Y REQUISITOS">
+        <Text style={styles.clauseBody}>
+          El SUSCRIPTOR deberá suministrar su identidad legal completa, real, vigente y verificable para fines contractuales, administrativos, tributarios, de pagos, seguros, permisos y seguridad. Antes de activar la cuenta deberá presentar y mantener vigentes:{'\n\n'}
+          • Cédula de identidad venezolana vigente o pasaporte vigente.{'\n'}
+          • RIF vigente.{'\n'}
+          • Correo electrónico y teléfono verificables.{'\n'}
+          • Fotografía o verificación facial.{'\n'}
+          • Licencia de conducir vigente con categoría apropiada.{'\n'}
+          • Documento de propiedad, matrícula, certificado de origen o posesión legítima de la Unidad.{'\n'}
+          • Placa, marca, modelo, color, año y demás datos de la Unidad.{'\n'}
+          • Seguro de responsabilidad civil o cobertura exigible vigente.{'\n'}
+          • Permiso, habilitación de taxi, mototaxi u otra autorización exigida por el INTT, alcaldía u autoridad competente según modalidad y localidad.{'\n'}
+          • Cuenta bancaria o billetera a nombre del SUSCRIPTOR cuando se procesen pagos mediante la Plataforma.{'\n\n'}
+          La PLATAFORMA podrá pausar la cuenta mientras un requisito obligatorio esté vencido, incompleto o bajo verificación razonable.
+        </Text>
       </Clause>
 
-      <Clause title="QUINTA — PENALIZACIÓN POR CANCELACIÓN">
-        Las cancelaciones del pasajero después de 2 minutos de gracia generan cargos fijos según el tipo de vehículo. EL CONDUCTOR recibe el 100% de la penalización cobrada.
+      <Clause title="5. CÓDIGO ALFANUMÉRICO DE IDENTIFICACIÓN OPERATIVA">
+        <Text style={styles.clauseBody}>
+          Al activar la cuenta, la PLATAFORMA asignará al SUSCRIPTOR un Código Alfanumérico único, personal y no transferible para identificarlo ante los Usuarios Pasajeros sin revelar su identidad legal completa. El código incluirá la modalidad de transporte, las dos primeras letras del apellido del SUSCRIPTOR y caracteres alfanuméricos aleatorios.{'\n\n'}
+          Ejemplos: MT-GO-482 (Moto) / SD-RA-731 (Auto) / SV-LI-615 (SUV) / VN-AN-902 (Van) / PU-PE-247 (Pick-Up).{'\n\n'}
+          La PLATAFORMA conservará internamente la identidad legal completa del SUSCRIPTOR para fines contractuales, tributarios, de seguridad y requerimientos de autoridades competentes. El SUSCRIPTOR no podrá modificar, prestar, vender, transferir ni compartir su Código Alfanumérico.
+        </Text>
       </Clause>
 
-      <Clause title="SEXTA — CÓDIGO DE CONDUCTA">
-        EL CONDUCTOR se compromete a mantener calificación mínima de 4.5 estrellas, no operar bajo efectos de alcohol o drogas, mantener el vehículo en condiciones óptimas, tratar a los pasajeros con respeto y profesionalismo, no fumar durante el servicio, y completar los cursos de certificación requeridos.
+      <Clause title="6. MEMBRESÍA, PRECIO Y RENOVACIÓN">
+        <Text style={styles.clauseBody}>
+          Precio semanal: <Text style={styles.bold}>USD 10,00</Text>. Fecha de pago ordinario: viernes. El período de Membresía va desde las 00:00:00 horas del sábado siguiente hasta las 23:59:59 horas del viernes siguiente. La hora oficial será la registrada por los servidores de la PLATAFORMA.{'\n\n'}
+          El precio corresponde exclusivamente al acceso tecnológico y no constituye descuento salarial, pago laboral ni anticipo de ingresos. Si el SUSCRIPTOR no realiza el pago al vencimiento, la PLATAFORMA podrá limitar el acceso hasta regularizar la obligación. La PLATAFORMA notificará cualquier cambio de precio con anticipación razonable.
+        </Text>
       </Clause>
 
-      <Clause title="SÉPTIMA — SUSPENSIÓN Y CANCELACIÓN">
-        LA PLATAFORMA puede suspender o cancelar la cuenta por incumplimiento del contrato, calificación sostenida inferior a 4.5 estrellas por más de 7 días, uso fraudulento, conducta inapropiada, o incumplimiento del pago de membresía.
+      <Clause title="7. DISPONIBILIDAD, RECHAZOS Y CALIDAD">
+        <Text style={styles.clauseBody}>
+          El SUSCRIPTOR decide libremente cuándo activar o desactivar su estado de "Disponible". No existe obligación de conexión, horario ni permanencia mínima. La PLATAFORMA podrá registrar indicadores objetivos de Solicitudes recibidas, aceptadas, rechazadas y canceladas, y tiempos de respuesta.{'\n\n'}
+          No se computarán como rechazos válidos: error técnico de la Aplicación, Solicitud duplicada, pasajero bloqueado por el SUSCRIPTOR, información esencial incompleta, punto de recogida o destino fuera de la configuración seleccionada, distancia superior al límite informado, emergencia, riesgo razonable, caso fortuito o fuerza mayor.
+        </Text>
       </Clause>
 
-      <Clause title="OCTAVA — RESPONSABILIDAD DEL CONDUCTOR">
-        EL CONDUCTOR es responsable de mantener vigentes todos sus documentos: licencia, seguro, revisión técnica, tarjeta de propiedad y cualquier documento exigido por las autoridades venezolanas.
+      <Clause title="8. RESTRICCIÓN POR 15 RECHAZOS">
+        <Text style={styles.clauseBody}>
+          Si el SUSCRIPTOR acumula quince (15) rechazos válidos y computables antes del vencimiento de su Período de Membresía, la PLATAFORMA podrá restringir inmediatamente la recepción de nuevas Solicitudes y el uso operativo de la Aplicación hasta el final del período en curso.{'\n\n'}
+          La PLATAFORMA acreditará al SUSCRIPTOR los <Text style={styles.bold}>Días Restituibles</Text>, equivalentes a los días calendario completos restantes desde la restricción hasta el viernes de vencimiento. No habrá devolución de dinero. Los Días Restituibles otorgarán acceso posterior sin pago adicional, siempre que la cuenta y documentación estén vigentes.{'\n\n'}
+          Ejemplo: si el SUSCRIPTOR alcanza quince rechazos un lunes, será restringido ese lunes. Los días martes, miércoles, jueves y viernes que faltaban serán Días Restituibles. La cuenta se reactivará el martes de la semana siguiente.{'\n\n'}
+          El SUSCRIPTOR podrá solicitar revisión dentro de las 48 horas siguientes. Los Días Restituibles son personales, no transferibles, no canjeables por dinero y no acumulables con otras promociones.
+        </Text>
       </Clause>
 
-      <Clause title="NOVENA — PROTECCIÓN DE DATOS">
-        EL CONDUCTOR autoriza a VERONA Ride a almacenar y procesar sus datos personales con la finalidad exclusiva de operar y mejorar el servicio.
+      <Clause title="9. PRESENTACIÓN, EQUIPOS E IDENTIDAD VISUAL">
+        <Text style={styles.clauseBody}>
+          El SUSCRIPTOR mantendrá una presentación limpia, segura, respetuosa y compatible con la prestación de transporte de pasajeros.{'\n\n'}
+          <Text style={styles.bold}>Modalidad motocicleta o mototaxi:</Text> casco adecuado para el conductor, casco adecuado para el pasajero, chaleco reflectivo, elementos exigidos por autoridad competente e identificación visual permitida por la PLATAFORMA.{'\n\n'}
+          <Text style={styles.bold}>Modalidad taxi o automóvil:</Text> placa visible, documentos vigentes, seguro vigente, identificación y señalización exigida por la autoridad competente y elementos de identidad visual aprobados por la PLATAFORMA cuando correspondan.{'\n\n'}
+          La PLATAFORMA no exigirá artículos no publicados previamente en el Catálogo Oficial de Identificación y Seguridad. El SUSCRIPTOR no podrá usar logos o emblemas alterados, deteriorados, no autorizados o que oculten placas, luces o señalización oficial.
+        </Text>
       </Clause>
 
-      <Clause title="DÉCIMA — VIGENCIA Y TERMINACIÓN">
-        Este contrato entra en vigencia a partir de la fecha de firma con duración indefinida. Cualquiera de las partes puede darlo por terminado con 7 días de aviso previo.
+      <Clause title="10. MARCA, RETIRO Y DEVOLUCIÓN">
+        <Text style={styles.clauseBody}>
+          La Empresa conserva la titularidad exclusiva de sus marcas, logos, emblemas, QR, credenciales, colores y demás signos distintivos. La licencia de uso de marca termina automáticamente cuando la Membresía vence sin pago, la cuenta se desactiva o suspende, o la PLATAFORMA revoca el acceso por razones de seguridad o incumplimiento grave.{'\n\n'}
+          Desde la terminación, el SUSCRIPTOR deberá retirar stickers, QR, credenciales y emblemas removibles, cubrir permanentemente los no removibles sin afectar la seguridad del equipo, y abstenerse de presentarse como conductor activo o afiliado autorizado.{'\n\n'}
+          Los bienes entregados en préstamo, comodato o custodia deberán devolverse dentro de cinco (5) días hábiles siguientes a la terminación. Todo bien entregado deberá constar en Acta de Entrega e Inventario con fotografías, seriales, estado y valor de reposición.
+        </Text>
       </Clause>
 
-      {/* Declaración */}
+      <Clause title="11. OBLIGACIONES DEL SUSCRIPTOR">
+        <Text style={styles.clauseBody}>
+          El SUSCRIPTOR se obliga a:{'\n\n'}
+          • Mantener documentos auténticos y vigentes.{'\n'}
+          • Conservar la Unidad en condiciones mecánicas, sanitarias y de seguridad adecuadas.{'\n'}
+          • Cumplir las normas de tránsito, transporte, seguros, tributos, permisos y autoridades aplicables.{'\n'}
+          • No conducir bajo efectos de alcohol, drogas o sustancias que afecten sus capacidades.{'\n'}
+          • Tratar con respeto a pasajeros, terceros, otros conductores y personal de soporte.{'\n'}
+          • No acosar, amenazar, discriminar, agredir ni realizar actos inseguros.{'\n'}
+          • No permitir que otra persona use su cuenta.{'\n'}
+          • No alterar GPS, ubicación, identidad, datos del vehículo, pagos ni calificaciones.{'\n'}
+          • Reportar accidentes, incidentes, objetos perdidos, cambios de Unidad y documentos vencidos.{'\n'}
+          • Asumir costos de vehículo, combustible, mantenimiento, teléfono, seguros, impuestos, multas, peajes y demás gastos propios.{'\n'}
+          • Cooperar razonablemente con investigaciones de seguridad relacionadas con viajes gestionados por la Aplicación.
+        </Text>
+      </Clause>
+
+      <Clause title="12. PAGOS Y FACTURACIÓN">
+        <Text style={styles.clauseBody}>
+          El Usuario Pasajero paga directamente al SUSCRIPTOR. La PLATAFORMA solo proporciona tecnología. Los importes recibidos por viajes corresponden a la actividad independiente del SUSCRIPTOR y no constituyen salario pagado por la PLATAFORMA.{'\n\n'}
+          La PLATAFORMA emitirá el comprobante que corresponda por Membresía y cargos tecnológicos propios. El SUSCRIPTOR será responsable de sus comprobantes, facturación, declaraciones e impuestos por los servicios de transporte cuando legalmente corresponda.
+        </Text>
+      </Clause>
+
+      <Clause title="13. NO ELUSIÓN Y DATOS DE PASAJEROS">
+        <Text style={styles.clauseBody}>
+          Los datos de identidad, contacto, ubicación, Solicitud, destino, historial y preferencias de pasajeros se suministran únicamente para evaluar, aceptar y ejecutar Solicitudes gestionadas mediante la Aplicación. El SUSCRIPTOR no podrá usar esos datos para ofrecer, negociar o ejecutar servicios por fuera de la PLATAFORMA cuando la oportunidad se origine en una Solicitud o dato proporcionado por ella.{'\n\n'}
+          El SUSCRIPTOR no podrá solicitar a pasajeros teléfono personal, redes sociales, dirección, datos bancarios ni información personal cuando el propósito sea concretar contrataciones futuras fuera de la Aplicación. Esta regla no impide comunicaciones estrictamente necesarias para el viaje activo, emergencias, objetos perdidos u obligación legal.
+        </Text>
+      </Clause>
+
+      <Clause title="14. SEGURIDAD, DATOS Y RESPONSABILIDAD">
+        <Text style={styles.clauseBody}>
+          El SUSCRIPTOR cooperará razonablemente con investigaciones de seguridad relacionadas con viajes gestionados en la Aplicación. Ante una emergencia, deberá priorizar la vida e integridad de las personas y contactar servicios públicos o autoridades cuando sea necesario.{'\n\n'}
+          La PLATAFORMA podrá limitar inmediatamente el acceso ante indicios razonables de riesgo grave, fraude, agresión, suplantación, documento falso, conducción insegura, uso no autorizado de marca u orden de autoridad competente.{'\n\n'}
+          El SUSCRIPTOR autoriza el tratamiento de sus datos de identidad, documentos, ubicación, rutas, Solicitudes, pagos, calificaciones e incidencias para operar la Aplicación, prevenir fraude, proteger usuarios, resolver reclamos, cumplir obligaciones legales y atender requerimientos de autoridades. La PLATAFORMA no garantiza disponibilidad continua ni resultado económico. El SUSCRIPTOR responde por la conducción, Unidad, permisos e infracciones.
+        </Text>
+      </Clause>
+
+      <Clause title="15. NO RENUNCIA, LEY Y ACEPTACIÓN">
+        <Text style={styles.clauseBody}>
+          Nada de este contrato se interpretará como renuncia, limitación o menoscabo de derechos irrenunciables. Este contrato se regirá por las leyes de la República Bolivariana de Venezuela. Las PARTES procurarán resolver cualquier controversia mediante comunicación directa; de no alcanzar acuerdo, serán competentes los tribunales que correspondan conforme a la ley.{'\n\n'}
+          Forman parte de este contrato: Política de Privacidad, Política de Seguridad, Política de Calidad y Cancelaciones, Tabla de Membresías, Política de Pagos, Política de Objetos Perdidos, Catálogo Oficial de Identificación y Seguridad, Manual de Identidad Visual, Acta de Entrega e Inventario y Requisitos documentales publicados en la Aplicación.
+        </Text>
+      </Clause>
+
       <Text style={styles.declaration}>
-        EL CONDUCTOR declara que ha leído, comprendido y acepta voluntariamente el presente contrato en su totalidad.
+        EL SUSCRIPTOR declara que ha leído, comprendido y acepta voluntariamente el presente contrato y sus anexos en su totalidad.
       </Text>
       <Text style={styles.dateText}>Lugar y fecha: Venezuela, {dateStr}</Text>
 
-      {/* Botón PDF */}
       <TouchableOpacity style={styles.pdfBtn} onPress={handleDownloadPDF}>
         <Text style={styles.pdfBtnText}>📄 Descargar contrato en PDF</Text>
       </TouchableOpacity>
 
-      {/* Firma */}
       {!contractSignedAt ? (
         <View style={styles.signSection}>
-          <Text style={styles.signLabel}>Firma del conductor</Text>
+          <Text style={styles.signLabel}>Firma del Suscriptor</Text>
           <View style={styles.signCanvas} {...panResponder.panHandlers}>
             <Svg height="140" width="100%">
               {committedPaths.map((p, i) => (
@@ -393,8 +520,7 @@ function Clause({ title, children }: { title: string; children: React.ReactNode 
   return (
     <View style={styles.clause}>
       <Text style={styles.clauseTitle}>{title}</Text>
-      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-      <Text style={styles.clauseBody}>{children as any}</Text>
+      {children}
     </View>
   );
 }
@@ -407,22 +533,26 @@ const styles = StyleSheet.create({
   backBtn:     { marginBottom: 16 },
   backText:    { fontSize: 15, color: BRAND.PRIMARY, fontWeight: '600' },
 
-  mainTitle:   { fontSize: 17, fontWeight: '800', color: BRAND.PRIMARY, textAlign: 'center', marginBottom: 4 },
-  subTitle:    { fontSize: 12, color: BRAND.ACCENT, textAlign: 'center', marginBottom: 20, lineHeight: 18 },
+  mainTitle:   { fontSize: 16, fontWeight: '800', color: BRAND.PRIMARY, textAlign: 'center', marginBottom: 6 },
+  subTitle:    { fontSize: 11, color: BRAND.ACCENT, textAlign: 'center', marginBottom: 4, lineHeight: 17 },
+  version:     { fontSize: 11, color: BRAND.GRAY, textAlign: 'center', marginBottom: 20 },
 
-  signedBadge: { backgroundColor: '#D1FAE5', borderRadius: 10, padding: 10, marginBottom: 16 },
+  signedBadge:     { backgroundColor: '#D1FAE5', borderRadius: 10, padding: 10, marginBottom: 16 },
   signedBadgeText: { color: '#065F46', fontSize: 13, fontWeight: '600', textAlign: 'center' },
 
   sectionTitle: {
     fontSize: 13, fontWeight: '700', color: BRAND.PRIMARY,
     marginTop: 20, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5,
   },
+  bodyText:    { fontSize: 12, color: '#374151', lineHeight: 19, marginBottom: 8 },
+  bold:        { fontWeight: '700' },
+
   fieldRow:    { flexDirection: 'row', paddingVertical: 4, gap: 8 },
   fieldLabel:  { fontSize: 13, fontWeight: '600', color: BRAND.GRAY, width: 70 },
   fieldValue:  { fontSize: 13, color: BRAND.TEXT, flex: 1 },
 
   clause:      { marginBottom: 14 },
-  clauseTitle: { fontSize: 12, fontWeight: '700', color: BRAND.PRIMARY, marginBottom: 4 },
+  clauseTitle: { fontSize: 12, fontWeight: '700', color: BRAND.PRIMARY, marginBottom: 6 },
   clauseBody:  { fontSize: 12, color: '#374151', lineHeight: 19 },
 
   declaration: { fontSize: 13, color: BRAND.TEXT, marginTop: 20, lineHeight: 20, fontStyle: 'italic' },
@@ -436,8 +566,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden', justifyContent: 'center', alignItems: 'center',
   },
   signPlaceholder: { color: '#CBD5E1', fontSize: 14, position: 'absolute' },
-  clearBtn:    { alignSelf: 'flex-end', marginTop: 6, padding: 6 },
-  clearBtnText:{ fontSize: 13, color: BRAND.GRAY },
+  clearBtn:        { alignSelf: 'flex-end', marginTop: 6, padding: 6 },
+  clearBtnText:    { fontSize: 13, color: BRAND.GRAY },
   signBtn: {
     backgroundColor: BRAND.PRIMARY, borderRadius: 14,
     paddingVertical: 15, alignItems: 'center', marginTop: 16,
