@@ -109,6 +109,7 @@ export interface User {
 // ─────────────────────────────────────
 export interface Passenger extends User {
   role: 'passenger';
+  operative_code?: string;
   rating_avg: number;
   total_rides: number;
   emergency_contact_name?: string;
@@ -180,6 +181,7 @@ export type DriverCertifications = Partial<Record<CertificationType, Certificati
 // ─────────────────────────────────────
 export interface Driver extends User {
   role: 'driver';
+  operative_code?: string;
   // Datos personales
   date_of_birth?: string;
   ssn_last4?: string;
