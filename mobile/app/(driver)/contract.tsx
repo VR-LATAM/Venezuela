@@ -170,7 +170,15 @@ ${signedLine}
 <p>La PLATAFORMA conservará internamente la identidad legal completa del SUSCRIPTOR para fines contractuales, tributarios, de seguridad y requerimientos de autoridades. El SUSCRIPTOR no podrá modificar, prestar, vender ni compartir su Código Alfanumérico.</p>
 
 <h3>6. MEMBRESÍA, PRECIO Y RENOVACIÓN</h3>
-<p>Precio semanal: <b>USD 10,00</b>. Fecha de pago ordinario: viernes. El período de Membresía va desde las 00:00:00 horas del sábado siguiente hasta las 23:59:59 horas del viernes siguiente.</p>
+<p>El SUSCRIPTOR contrata la Membresía según el tipo de Unidad registrada:</p>
+<ul>
+  <li>Motocicleta: <b>USD 15,00/semana</b></li>
+  <li>Sedán: <b>USD 25,00/semana</b></li>
+  <li>SUV: <b>USD 30,00/semana</b></li>
+  <li>Pick-Up: <b>USD 35,00/semana</b></li>
+  <li>Plataforma/Carga: <b>USD 40,00/semana</b></li>
+</ul>
+<p>Fecha de pago ordinario: viernes. El período de Membresía va desde las 00:00:00 horas del sábado siguiente hasta las 23:59:59 horas del viernes siguiente.</p>
 <p>El precio corresponde exclusivamente al acceso tecnológico y no constituye descuento salarial ni pago laboral. Si el SUSCRIPTOR no realiza el pago al vencimiento, la PLATAFORMA podrá limitar el acceso hasta regularizar la obligación. La PLATAFORMA notificará cualquier cambio de precio con anticipación razonable.</p>
 
 <h3>7. DISPONIBILIDAD, RECHAZOS Y CALIDAD</h3>
@@ -373,7 +381,13 @@ ${signedLine}
 
       <Clause title="6. MEMBRESÍA, PRECIO Y RENOVACIÓN">
         <Text style={styles.clauseBody}>
-          Precio semanal: <Text style={styles.bold}>USD 10,00</Text>. Fecha de pago ordinario: viernes. El período de Membresía va desde las 00:00:00 horas del sábado siguiente hasta las 23:59:59 horas del viernes siguiente. La hora oficial será la registrada por los servidores de la PLATAFORMA.{'\n\n'}
+          El SUSCRIPTOR contrata la Membresía según el tipo de Unidad registrada:{'\n\n'}
+          • Motocicleta: <Text style={styles.bold}>USD 15,00/semana</Text>{'\n'}
+          • Sedán: <Text style={styles.bold}>USD 25,00/semana</Text>{'\n'}
+          • SUV: <Text style={styles.bold}>USD 30,00/semana</Text>{'\n'}
+          • Pick-Up: <Text style={styles.bold}>USD 35,00/semana</Text>{'\n'}
+          • Plataforma/Carga: <Text style={styles.bold}>USD 40,00/semana</Text>{'\n\n'}
+          Fecha de pago ordinario: viernes. El período de Membresía va desde las 00:00:00 horas del sábado siguiente hasta las 23:59:59 horas del viernes siguiente. La hora oficial será la registrada por los servidores de la PLATAFORMA.{'\n\n'}
           El precio corresponde exclusivamente al acceso tecnológico y no constituye descuento salarial, pago laboral ni anticipo de ingresos. Si el SUSCRIPTOR no realiza el pago al vencimiento, la PLATAFORMA podrá limitar el acceso hasta regularizar la obligación. La PLATAFORMA notificará cualquier cambio de precio con anticipación razonable.
         </Text>
       </Clause>
