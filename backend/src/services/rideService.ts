@@ -418,14 +418,15 @@ export const rideService = {
     emitToUser(ride.passenger_id, 'passenger:driver_assigned', {
       rideId,
       driver: {
-        id: driver?.id,
-        name: driver?.name,
-        photo_url: driver?.photo_url,
-        rating_avg: driver?.rating_avg,
-        vehicle_brand: driver?.vehicle_brand,
-        vehicle_model: driver?.vehicle_model,
-        vehicle_color: driver?.vehicle_color,
-        vehicle_plate: driver?.vehicle_plate,
+        id:             driver?.id,
+        name:           driver?.operative_code ?? driver?.name,
+        operative_code: driver?.operative_code,
+        photo_url:      driver?.photo_url,
+        rating_avg:     driver?.rating_avg,
+        vehicle_brand:  driver?.vehicle_brand,
+        vehicle_model:  driver?.vehicle_model,
+        vehicle_color:  driver?.vehicle_color,
+        vehicle_plate:  driver?.vehicle_plate,
       },
     });
 
@@ -436,10 +437,11 @@ export const rideService = {
     emitToUser(driverId, 'driver:passenger_assigned', {
       rideId,
       passenger: {
-        id:            passenger?.id,
-        name:          clinicRequest ? clinicRequest.patient_name : passenger?.name,
-        photo_url:     passenger?.photo_url,
-        patient_phone: clinicRequest?.patient_phone ?? null,
+        id:             passenger?.id,
+        name:           passenger?.operative_code ?? (clinicRequest ? clinicRequest.patient_name : passenger?.name),
+        operative_code: passenger?.operative_code,
+        photo_url:      passenger?.photo_url,
+        patient_phone:  clinicRequest?.patient_phone ?? null,
       },
     });
 
@@ -980,7 +982,9 @@ export const rideService = {
       emitToUser(passengerId, 'passenger:driver_assigned', {
         rideId,
         driver: {
-          id: driver?.id, name: driver?.name, photo_url: driver?.photo_url,
+          id: driver?.id, name: driver?.operative_code ?? driver?.name,
+          operative_code: driver?.operative_code,
+          photo_url: driver?.photo_url,
           rating_avg: driver?.rating_avg, vehicle_brand: driver?.vehicle_brand,
           vehicle_model: driver?.vehicle_model, vehicle_color: driver?.vehicle_color,
           vehicle_plate: driver?.vehicle_plate,
@@ -988,7 +992,12 @@ export const rideService = {
       });
       emitToUser(counterDriverId, 'driver:passenger_assigned', {
         rideId,
-        passenger: { id: passenger?.id, name: passenger?.name, photo_url: passenger?.photo_url },
+        passenger: {
+          id: passenger?.id,
+          name: passenger?.operative_code ?? passenger?.name,
+          operative_code: passenger?.operative_code,
+          photo_url: passenger?.photo_url,
+        },
       });
       emitToAdmins('admin:ride_status_changed', { rideId, status: 'driver_assigned', driverId: counterDriverId });
       logger.info(`Contra-oferta aceptada: viaje=${rideId} conductor=${counterDriverId}`);
