@@ -139,18 +139,21 @@ export default function DriverHomeScreen() {
   const { pickAndUpload, uploading: uploadingPhoto } = usePhotoUpload();
 
   // Banner de recordatorio de pago de membresía
-  const [showPaymentBanner, setShowPaymentBanner] = useState(false);
+  const [showPaymentBanner,  setShowPaymentBanner]  = useState(false);
+  const [showDeadlineBanner, setShowDeadlineBanner] = useState(false);
 
   useEffect(() => {
     function checkPaymentWindow() {
-      const nowVE  = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Caracas' }));
-      const day    = nowVE.getDay();
-      const hour   = nowVE.getHours();
-      const inWindow = (day === 4 && hour >= 12) || (day === 5 && hour < 14);
+      const nowVE = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Caracas' }));
+      const day   = nowVE.getDay();
+      const hour  = nowVE.getHours();
+      const inWindow      = (day === 4 && hour >= 12) || (day === 5 && hour < 14);
+      const deadlinePassed = day === 5 && hour >= 14;
       setShowPaymentBanner(inWindow);
+      setShowDeadlineBanner(deadlinePassed);
     }
     checkPaymentWindow();
-    const timer = setInterval(checkPaymentWindow, 60 * 60 * 1000); // cada hora
+    const timer = setInterval(checkPaymentWindow, 60 * 60 * 1000);
     return () => clearInterval(timer);
   }, []);
 
@@ -1120,6 +1123,16 @@ export default function DriverHomeScreen() {
         </TouchableOpacity>
       )}
 
+      {/* ── BANNER PLAZO VENCIDO ── */}
+      {showDeadlineBanner && (
+        <View style={styles.deadlineBanner}>
+          <Text style={styles.deadlineBannerTitle}>🚫 Plazo de pago vencido</Text>
+          <Text style={styles.deadlineBannerText}>
+            El horario límite de pago (viernes 2:00 PM) ya pasó. Tu membresía no estará vigente mañana y tu cuenta será suspendida automáticamente a las 12:00 AM.
+          </Text>
+        </View>
+      )}
+
       {/* ── BANNER DE LLEGADA ── */}
       {arrivalBanner && (
         <View style={styles.arrivalBanner}>
@@ -2005,6 +2018,33 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
     fontFamily: 'Inter_700Bold',
+  },
+  deadlineBanner: {
+    position: 'absolute',
+    top: 100,
+    left: 16, right: 16,
+    backgroundColor: '#450a0a',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    zIndex: 50,
+    gap: 6,
+    shadowColor: '#000', shadowOpacity: 0.35, shadowRadius: 8, elevation: 8,
+    borderWidth: 1, borderColor: '#dc2626',
+  },
+  deadlineBannerTitle: {
+    color: '#fca5a5',
+    fontSize: 14,
+    fontWeight: '700',
+    textAlign: 'center',
+    fontFamily: 'Inter_700Bold',
+  },
+  deadlineBannerText: {
+    color: '#fecaca',
+    fontSize: 12,
+    textAlign: 'center',
+    fontFamily: 'Inter_400Regular',
+    lineHeight: 18,
   },
   arrivalBanner: {
     position: 'absolute',
