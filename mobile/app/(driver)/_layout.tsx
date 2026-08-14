@@ -43,6 +43,9 @@ interface IncomingRequest {
   offeredPrice?: number;
   // Penalidad semanal
   consecutiveRejections?: number;
+  // Descuento nuevo pasajero
+  isDiscountRide?: boolean;
+  discountAmount?: number;
 }
 
 const SPECIAL_NEEDS_LABELS: Record<string, string> = {
@@ -68,12 +71,25 @@ export default function DriverLayout() {
   const [counterReasonInput, setCounterReasonInput] = useState('');
   const [sendingCounter, setSendingCounter] = useState(false);
 
+  // Modal de descuento voluntario
+  interface VoluntaryDiscountRequest {
+    rideId: string;
+    pickupAddress: string;
+    dropoffAddress: string;
+    estimatedFare: number;
+    discountAmount: number;
+    driverEarnings: number;
+  }
+  const [voluntaryDiscount, setVoluntaryDiscount] = useState<VoluntaryDiscountRequest | null>(null);
+
   // ── Registrar handler de nuevas solicitudes a nivel de layout ──
   // Siempre activo, independientemente de la pantalla del conductor
   useEffect(() => {
     const register = async () => {
       await socketService.connect();
       socketService.off('driver:new_ride_request');
+      socketService.off('driver:voluntary_discount_request');
+
       socketService.on('driver:new_ride_request', (data: unknown) => {
         console.log('[Driver] new_ride_request recibido:', JSON.stringify(data).slice(0, 120));
         const req = data as IncomingRequest;
@@ -81,11 +97,17 @@ export default function DriverLayout() {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         nokiaToneService.play();
       });
+
+      socketService.on('driver:voluntary_discount_request', (data: unknown) => {
+        setVoluntaryDiscount(data as VoluntaryDiscountRequest);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      });
     };
     void register();
 
     return () => {
       socketService.off('driver:new_ride_request');
+      socketService.off('driver:voluntary_discount_request');
     };
   }, []);
 
@@ -323,6 +345,14 @@ export default function DriverLayout() {
                     </View>
                   )}
 
+                  {incomingRequest.isDiscountRide && (
+                    <View style={styles.discountBanner}>
+                      <Text style={styles.discountBannerText}>
+                        🎁 Nuevo pasajero — descuento de ${(incomingRequest.discountAmount ?? 2).toFixed(2)} aplicado
+                      </Text>
+                    </View>
+                  )}
+
                   {incomingRequest.estimatedDriverEarnings > 0 && (
                     <View style={styles.fareRow}>
                       <View style={[styles.fareBox, styles.fareBoxAccent, { flex: 1 }]}>
@@ -453,6 +483,58 @@ export default function DriverLayout() {
           </View>
         )}
       </Modal>
+
+      {/* Modal de descuento voluntario — cuando el conductor ya cumplió su límite automático */}
+      <Modal
+        visible={!!voluntaryDiscount}
+        animationType="fade"
+        transparent
+        statusBarTranslucent
+      >
+        {voluntaryDiscount && (
+          <View style={styles.voluntaryOverlay}>
+            <View style={styles.voluntaryCard}>
+              <Text style={styles.voluntaryTitle}>🎁 Solicitud especial</Text>
+              <Text style={styles.voluntarySubtitle}>
+                Este es un nuevo pasajero. ¿Deseas aceptar el viaje con un descuento de ${voluntaryDiscount.discountAmount.toFixed(2)}?
+              </Text>
+              <View style={styles.voluntaryDetail}>
+                <Text style={styles.voluntaryDetailRow}>📍 {voluntaryDiscount.pickupAddress}</Text>
+                <Text style={styles.voluntaryDetailRow}>🏁 {voluntaryDiscount.dropoffAddress}</Text>
+                <Text style={styles.voluntaryDetailRow}>
+                  Tarifa: ${voluntaryDiscount.estimatedFare.toFixed(2)} → Tus ganancias: ${voluntaryDiscount.driverEarnings.toFixed(2)}
+                </Text>
+              </View>
+              <View style={styles.voluntaryActions}>
+                <TouchableOpacity
+                  style={styles.rejectButton}
+                  onPress={() => {
+                    socketService.emit('driver:voluntary_discount_response', {
+                      rideId: voluntaryDiscount.rideId,
+                      accepted: false,
+                    });
+                    setVoluntaryDiscount(null);
+                  }}
+                >
+                  <Text style={styles.rejectButtonText}>✕ No, gracias</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.acceptButton}
+                  onPress={() => {
+                    socketService.emit('driver:voluntary_discount_response', {
+                      rideId: voluntaryDiscount.rideId,
+                      accepted: true,
+                    });
+                    setVoluntaryDiscount(null);
+                  }}
+                >
+                  <Text style={styles.acceptButtonText}>✓ Aceptar</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        )}
+      </Modal>
     </>
   );
 }
@@ -527,6 +609,11 @@ const styles = StyleSheet.create({
   },
   encomiendaBoxTitle: { fontSize: 13, fontWeight: '700', color: '#92400E', marginBottom: 4 },
   encomiendaBoxRow: { fontSize: 13, color: '#78350F' },
+  discountBanner: {
+    backgroundColor: '#ECFDF5', borderRadius: 10, padding: 10,
+    borderLeftWidth: 4, borderLeftColor: '#10B981', marginBottom: 6,
+  },
+  discountBannerText: { fontSize: 13, fontWeight: '700', color: '#065F46' },
   specialNeedsBox: {
     backgroundColor: '#FFFBEB', borderRadius: 10, padding: 12,
     borderLeftWidth: 4, borderLeftColor: '#F59E0B', gap: 4,
@@ -606,4 +693,23 @@ const styles = StyleSheet.create({
   counterPanelReason: {
     minHeight: 72, textAlignVertical: 'top',
   },
+  voluntaryOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24,
+  },
+  voluntaryCard: {
+    backgroundColor: '#fff', borderRadius: 20, padding: 24, width: '100%',
+    shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 12, elevation: 8,
+  },
+  voluntaryTitle: {
+    fontSize: 20, fontWeight: '800', color: '#065F46', textAlign: 'center', marginBottom: 8,
+  },
+  voluntarySubtitle: {
+    fontSize: 14, color: '#374151', textAlign: 'center', marginBottom: 16, lineHeight: 20,
+  },
+  voluntaryDetail: {
+    backgroundColor: '#F0FDF4', borderRadius: 12, padding: 12, gap: 6, marginBottom: 20,
+  },
+  voluntaryDetailRow: { fontSize: 13, color: '#166534' },
+  voluntaryActions: { flexDirection: 'row', gap: 12 },
 });

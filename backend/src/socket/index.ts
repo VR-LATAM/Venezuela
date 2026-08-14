@@ -184,6 +184,16 @@ export function setupSocketHandlers(io: SocketServer): void {
         }
       });
 
+      // Respuesta a descuento voluntario (conductor decide si acepta aunque ya cumplió su límite)
+      socket.on('driver:voluntary_discount_response', async (raw: unknown) => {
+        try {
+          const data = responseSchema.parse(raw);
+          await rideService.handleVoluntaryDiscountResponse(data.rideId, userId, data.accepted);
+        } catch (err) {
+          logger.error(`Error en voluntary_discount_response de ${userId}:`, err);
+        }
+      });
+
       // Wait & Return — conductor inicia espera en el lugar de la cita
       socket.on('driver:start_wait', async (raw: unknown) => {
         try {

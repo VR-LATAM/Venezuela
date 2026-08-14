@@ -726,7 +726,8 @@ function Clause({ title, children }: { title: string; children: React.ReactNode 
   return (
     <View style={styles.clause}>
       <Text style={styles.clauseTitle}>{title}</Text>
-      {children}
+      {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+      {children as any}
     </View>
   );
 }

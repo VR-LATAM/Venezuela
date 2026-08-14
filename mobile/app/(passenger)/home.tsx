@@ -99,6 +99,9 @@ export default function PassengerHomeScreen() {
   const [driverWaitMinutes, setDriverWaitMinutes]   = useState(0);
   const [driverEtaMinutes, setDriverEtaMinutes]     = useState<number | null>(null);
 
+  // Descuento nuevo pasajero
+  const [rideDiscount, setRideDiscount] = useState<{ amount: number } | null>(null);
+
   // Chat con el conductor (disponible desde driver_assigned)
   const [chatOpen, setChatOpen]         = useState(false);
   const [chatMessage, setChatMessage]   = useState('');
@@ -352,9 +355,10 @@ export default function PassengerHomeScreen() {
   const registerSocketListeners = () => {
     const unsubs = [
       socketService.on('passenger:driver_assigned', (data: unknown) => {
-        const d = data as { driver: typeof assignedDriver };
+        const d = data as { driver: typeof assignedDriver; hasDiscount?: boolean; discountAmount?: number };
         setSearchStatus('driver_assigned');
         setAssignedDriver(d.driver);
+        if (d.hasDiscount && d.discountAmount) setRideDiscount({ amount: d.discountAmount });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         // Asegurar que currentRide está cargado (puede faltar si la app se reconectó)
         if (!useRideStore.getState().currentRide) {
@@ -1682,6 +1686,13 @@ export default function PassengerHomeScreen() {
                 ⭐ {(Number(assignedDriver.rating_avg) || 5).toFixed(1)}
               </Text>
             </View>
+            {rideDiscount && (
+              <View style={styles.discountBanner}>
+                <Text style={styles.discountBannerText}>
+                  🎁 ¡Felicidades! Tienes ${ rideDiscount.amount.toFixed(2)} de descuento en este viaje.
+                </Text>
+              </View>
+            )}
             <Text style={styles.statusTitle}>Tu conductor está en camino</Text>
             {driverEtaMinutes !== null && (
               <Text style={styles.etaBadge}>🕐 ~{driverEtaMinutes} min de distancia</Text>
@@ -2364,6 +2375,11 @@ const styles = StyleSheet.create({
   driverCar:        { fontSize: 14, color: '#666', marginTop: 2, fontFamily: 'Inter_400Regular' },
   driverPlate:      { fontSize: 14, color: BRAND_COLORS.PRIMARY, fontWeight: '600', marginTop: 2, fontFamily: 'Inter_600SemiBold' },
   driverRating:     { fontSize: 15, fontWeight: '600', color: '#F59E0B', fontFamily: 'Inter_600SemiBold' },
+  discountBanner: {
+    backgroundColor: '#ECFDF5', borderRadius: 10, padding: 10,
+    borderLeftWidth: 4, borderLeftColor: '#10B981', marginBottom: 8,
+  },
+  discountBannerText: { fontSize: 13, fontWeight: '700', color: '#065F46', fontFamily: 'Inter_700Bold' },
 
   // Flotantes
   cancelFloat: {

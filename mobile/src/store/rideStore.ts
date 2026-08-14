@@ -31,6 +31,7 @@ interface DriverLocation {
 interface AssignedDriver {
   id: string;
   name: string;
+  operative_code?: string;
   photo_url?: string;
   rating_avg: number;
   total_rides?: number;
