@@ -15,7 +15,7 @@ import * as Haptics from 'expo-haptics';
 import { BRAND_COLORS } from '@vride/shared';
 import { apiClient } from '../../src/services/apiClient';
 
-type MembershipStatus = 'inactive' | 'pending_approval' | 'active' | 'suspended';
+type MembershipStatus = 'inactive' | 'pending_approval' | 'active' | 'suspended' | 'suspended_penalty';
 
 interface Plan {
   vehicle_type: string;
@@ -53,11 +53,12 @@ const PAYMENT_METHODS = [
   { key: 'efectivo',   label: 'Efectivo al administrador' },
 ] as const;
 
-const STATUS_CONFIG: Record<MembershipStatus, { color: string; bg: string; icon: string; label: string }> = {
-  active:           { color: '#15803D', bg: '#F0FFF4', icon: '✅', label: 'Membresía activa' },
-  pending_approval: { color: '#B45309', bg: '#FFFBEB', icon: '⏳', label: 'Pendiente de aprobación' },
-  inactive:         { color: '#475569', bg: '#F8FAFC', icon: '⚪', label: 'Sin membresía activa' },
-  suspended:        { color: '#DC2626', bg: '#FEF2F2', icon: '🚫', label: 'Cuenta suspendida' },
+const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string; label: string }> = {
+  active:             { color: '#15803D', bg: '#F0FFF4', icon: '✅', label: 'Membresía activa' },
+  pending_approval:   { color: '#B45309', bg: '#FFFBEB', icon: '⏳', label: 'Pendiente de aprobación' },
+  inactive:           { color: '#475569', bg: '#F8FAFC', icon: '⚪', label: 'Sin membresía activa' },
+  suspended:          { color: '#DC2626', bg: '#FEF2F2', icon: '🚫', label: 'Cuenta suspendida' },
+  suspended_penalty:  { color: '#DC2626', bg: '#FEF2F2', icon: '🚫', label: 'Cuenta suspendida' },
 };
 
 function formatDate(iso: string): string {
@@ -163,7 +164,7 @@ export default function MembershipScreen() {
     );
   }
 
-  const st = STATUS_CONFIG[data?.status ?? 'inactive'];
+  const st = STATUS_CONFIG[data?.status ?? 'inactive'] ?? STATUS_CONFIG['inactive'];
   const needsPayment = data?.status === 'inactive' || data?.status === 'suspended';
   const canSubmit    = membership?.status === 'pending_payment' || membership?.status === 'rejected';
 

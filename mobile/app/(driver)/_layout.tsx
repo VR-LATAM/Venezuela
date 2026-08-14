@@ -200,6 +200,7 @@ export default function DriverLayout() {
         <Stack.Screen name="earnings" />
         <Stack.Screen name="history" />
         <Stack.Screen name="service-history" />
+        <Stack.Screen name="membership" />
         <Stack.Screen name="referrals" />
         <Stack.Screen name="rating" />
         <Stack.Screen name="training" />
