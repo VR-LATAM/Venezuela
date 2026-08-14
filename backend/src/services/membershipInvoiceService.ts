@@ -360,7 +360,7 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
     doc.rect(M, y, halfW, 38).fillAndStroke('#EFF6FF', C.line);
     doc.rect(M + halfW + 16, y, halfW, 38).fillAndStroke('#EFF6FF', C.line);
     doc.fontSize(7.5).font('Helvetica').fillColor(C.muted).text('NÚMERO DE CONTROL', M + 8, y + 5);
-    doc.fontSize(14).font('Helvetica-Bold').fillColor(C.primary).text(m.invoice_number, M + 8, y + 15, { width: halfW - 16, lineBreak: false });
+    doc.fontSize(14).font('Helvetica-Bold').fillColor(C.primary).text(m.invoice_number!, M + 8, y + 15, { width: halfW - 16, lineBreak: false });
     doc.fontSize(7.5).font('Helvetica').fillColor(C.muted).text('FECHA DE EMISIÓN', M + halfW + 24, y + 5);
     doc.fontSize(14).font('Helvetica-Bold').fillColor(C.primary).text(fecha, M + halfW + 24, y + 15, { width: halfW - 16, lineBreak: false });
     y += 50;
