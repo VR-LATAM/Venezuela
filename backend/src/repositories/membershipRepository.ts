@@ -23,20 +23,21 @@ export interface DriverMembership {
   created_at:        string;
 }
 
-/* Devuelve el viernes más reciente (inicio del período actual) */
+/* Devuelve el sábado más reciente (inicio del período actual) */
 export function currentPeriodStart(): Date {
   const now = new Date();
-  const day = now.getDay(); // 0=Dom ... 5=Vie ... 6=Sáb
-  const daysSinceFriday = (day + 2) % 7;
+  const day = now.getDay(); // 0=Dom ... 6=Sáb
+  const daysSinceSaturday = (day + 1) % 7;
   const start = new Date(now);
-  start.setDate(now.getDate() - daysSinceFriday);
-  start.setHours(0, 0, 0, 0);
+  start.setDate(now.getDate() - daysSinceSaturday);
+  start.setHours(0, 0, 1, 0); // 00:00:01
   return start;
 }
 
 export function currentPeriodEnd(start: Date): Date {
   const end = new Date(start);
-  end.setDate(start.getDate() + 6); // jueves siguiente
+  end.setDate(start.getDate() + 6); // viernes siguiente
+  end.setHours(23, 59, 59, 0); // 23:59:59
   return end;
 }
 

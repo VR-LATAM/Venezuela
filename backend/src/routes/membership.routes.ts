@@ -13,8 +13,9 @@ const router = Router();
 
 router.use(requireAuth, requireRole('driver'));
 
-router.get ('/status',         asyncHandler(membershipController.getStatus));
-router.post('/initiate',       asyncHandler(membershipController.initiate));
-router.post('/submit',         asyncHandler(membershipController.submitPayment));
+router.get ('/status',              asyncHandler(membershipController.getStatus));
+router.post('/initiate',            asyncHandler(membershipController.initiate));
+router.post('/submit',              asyncHandler(membershipController.submitPayment));
+router.get ('/:id/invoice',         asyncHandler(membershipController.downloadInvoice));
 
 export default router;

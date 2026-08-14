@@ -8,6 +8,7 @@
 import nodemailer from 'nodemailer';
 import { receiptService, RideReceiptData } from './receiptService';
 import { logger } from '../utils/logger';
+import type { InvoiceResult } from './membershipInvoiceService';
 
 async function createTransport(): Promise<nodemailer.Transporter> {
   // Gmail con App Password
@@ -155,7 +156,6 @@ export const emailService = {
         attachments: [{ filename, content: pdfBuffer, contentType: 'application/pdf' }],
       });
 
-      // En desarrollo con Ethereal, loguear la URL de preview
       const previewUrl = nodemailer.getTestMessageUrl(info);
       if (previewUrl) {
         logger.info(`📧 Receipt email preview (Ethereal): ${previewUrl}`);
@@ -164,6 +164,97 @@ export const emailService = {
       }
     } catch (err) {
       logger.error(`Failed to send receipt email for ride ${ride.id}:`, err);
+    }
+  },
+
+  sendMembershipInvoice: async (params: {
+    toEmail:       string;
+    toName:        string;
+    invoice:       InvoiceResult;
+    vehicleType:   string;
+    periodStart:   string;
+    periodEnd:     string;
+  }): Promise<void> => {
+    const { toEmail, toName, invoice, vehicleType, periodStart, periodEnd } = params;
+
+    const vehicleLabel: Record<string, string> = { moto: 'Moto', sedan: 'Sedán', suv: 'SUV' };
+    const vLabel = vehicleLabel[vehicleType] ?? vehicleType.toUpperCase();
+
+    const fmt = (iso: string) => iso.split('-').reverse().join('/');
+    const fmtVes = (n: number) => `Bs. ${n.toLocaleString('es-VE', { minimumFractionDigits: 2 })}`;
+
+    const subject = `Tu comprobante de membresía V-Ride — ${invoice.invoiceNumber}`;
+
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:540px;margin:0 auto;color:#1E293B">
+        <div style="background:#1a2e4a;padding:28px 32px;border-radius:12px 12px 0 0;border-bottom:4px solid #c8a84b">
+          <h1 style="margin:0;color:#fff;font-size:22px;letter-spacing:-0.5px">V-RIDE</h1>
+          <p style="margin:4px 0 0;color:rgba(255,255,255,0.65);font-size:12px">VERONA - Technology Group C.A.  ·  RIF J-00000000-0</p>
+          <p style="margin:8px 0 0;color:#c8a84b;font-size:13px;font-weight:700">COMPROBANTE ELECTRÓNICO</p>
+        </div>
+
+        <div style="background:#F8FAFC;padding:28px 32px;border-radius:0 0 12px 12px;border:1px solid #E2E8F0;border-top:none">
+          <p style="margin:0 0 4px;font-size:14px">Hola <strong>${toName}</strong>,</p>
+          <p style="margin:0 0 24px;font-size:13px;color:#64748B">
+            Tu membresía semanal <strong>${vLabel}</strong> ha sido aprobada y activada.<br>
+            Período: <strong>${fmt(periodStart)} al ${fmt(periodEnd)}</strong>
+          </p>
+
+          <table style="width:100%;border-collapse:collapse;margin-bottom:4px">
+            <tr style="background:#1a2e4a">
+              <td style="padding:8px 10px;color:#fff;font-size:12px;font-weight:700">DESCRIPCIÓN</td>
+              <td style="padding:8px 10px;color:#fff;font-size:12px;font-weight:700;text-align:right">MONTO</td>
+            </tr>
+            <tr style="background:#fff">
+              <td style="padding:10px;font-size:14px;color:#1E293B">Membresía Semanal — ${vLabel}<br>
+                <span style="font-size:11px;color:#64748B">Período: ${fmt(periodStart)} al ${fmt(periodEnd)}</span>
+              </td>
+              <td style="padding:10px;font-size:14px;color:#1E293B;text-align:right;font-weight:700">${fmtVes(invoice.amountVes)}</td>
+            </tr>
+            <tr style="background:#F8FAFC">
+              <td style="padding:8px 10px;font-size:13px;color:#64748B">IVA (16%)</td>
+              <td style="padding:8px 10px;font-size:13px;color:#64748B;text-align:right">${fmtVes(invoice.ivaVes)}</td>
+            </tr>
+            <tr style="background:#1a2e4a">
+              <td style="padding:10px 10px;color:#fff;font-size:14px;font-weight:700">TOTAL</td>
+              <td style="padding:10px 10px;color:#c8a84b;font-size:18px;font-weight:700;text-align:right">${fmtVes(invoice.totalVes)}</td>
+            </tr>
+          </table>
+
+          <div style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:12px 14px;margin:16px 0;font-size:12px;color:#78350F">
+            <strong>Nota informativa (USD):</strong><br>
+            Base: $${invoice.amountUsd.toFixed(2)} + IVA: $${invoice.ivaUsd.toFixed(2)} = <strong>Total: $${invoice.totalUsd.toFixed(2)}</strong><br>
+            Tasa BCV aplicada: 1 USD = Bs. ${invoice.rateVes.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+          </div>
+
+          <p style="font-size:12px;color:#94A3B8;text-align:center;margin-top:20px">
+            El comprobante en PDF está adjunto a este correo.<br>
+            N° de control: <strong>${invoice.invoiceNumber}</strong><br>
+            También puedes descargarlo desde la app en cualquier momento.
+          </p>
+        </div>
+      </div>
+    `;
+
+    try {
+      const [transport] = await Promise.all([createTransport()]);
+      const from     = process.env.GMAIL_USER ?? process.env.SMTP_USER ?? 'noreply@vride.com';
+      const filename = `factura-membresia-${invoice.invoiceNumber}.pdf`;
+      const info = await transport.sendMail({
+        from:        `"V-Ride Venezuela" <${from}>`,
+        to:          toEmail,
+        subject,
+        html,
+        attachments: [{ filename, content: invoice.pdfBuffer, contentType: 'application/pdf' }],
+      });
+      const previewUrl = nodemailer.getTestMessageUrl(info);
+      if (previewUrl) {
+        logger.info(`📧 Invoice email preview (Ethereal): ${previewUrl}`);
+      } else {
+        logger.info(`Invoice email sent to ${toEmail} — ${invoice.invoiceNumber}`);
+      }
+    } catch (err) {
+      logger.error(`Failed to send membership invoice email to ${toEmail}:`, err);
     }
   },
 };

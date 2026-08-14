@@ -8,6 +8,8 @@ import { Request, Response } from 'express';
 import { db } from '../config/database';
 import { membershipRepository, currentPeriodStart, currentPeriodEnd } from '../repositories/membershipRepository';
 import { sendSuccess, sendError, ApiErrors } from '../utils/response';
+import { generateMembershipInvoice, getInvoiceForMembership } from '../services/membershipInvoiceService';
+import { emailService } from '../services/emailService';
 
 const PAYMENT_METHODS = ['zelle', 'wire', 'pago_movil', 'efectivo'] as const;
 const VEHICLE_TYPES   = ['moto', 'sedan', 'suv'] as const;
@@ -29,7 +31,7 @@ export const membershipController = {
     const periodEnd   = currentPeriodEnd(periodStart);
 
     const nextFriday = new Date(periodStart);
-    nextFriday.setDate(periodStart.getDate() + 7);
+    nextFriday.setDate(periodStart.getDate() + 6);
 
     sendSuccess(res, {
       status:            cached.membership_status,
@@ -85,6 +87,18 @@ export const membershipController = {
       return sendError(res, 422, 'Método de pago inválido', 'VALIDATION_ERROR');
     }
 
+    /* Corte de pago: viernes antes de las 14:00 hora Venezuela (UTC-4) */
+    const nowVE  = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Caracas' }));
+    const dayVE  = nowVE.getDay();  // 5 = viernes
+    const hourVE = nowVE.getHours();
+    if (dayVE === 5 && hourVE >= 14) {
+      return sendError(
+        res, 422,
+        'El horario límite de pago (viernes 2:00 PM) ya pasó. Podrás renovar el próximo viernes antes de las 2:00 PM.',
+        'PAYMENT_DEADLINE_PASSED'
+      );
+    }
+
     const membership = await membershipRepository.submitPayment(
       membership_id,
       driverId,
@@ -115,7 +129,49 @@ export const membershipController = {
     const membership = await membershipRepository.approve(id, adminId);
     if (!membership) return sendError(res, 404, 'Membresía no encontrada o ya procesada', 'NOT_FOUND');
 
+    /* Generar y enviar factura en background (no bloquea la respuesta) */
+    const { rows: driverRows } = await db.query<{ full_name: string; email: string; cedula: string | null }>(
+      'SELECT full_name, email, cedula FROM users WHERE id = $1',
+      [membership.driver_id]
+    );
+    const driver = driverRows[0];
+    if (driver) {
+      generateMembershipInvoice({
+        membershipId: membership.id,
+        amountUsd:    membership.amount_usd,
+        vehicleType:  membership.vehicle_type,
+        periodStart:  membership.period_start,
+        periodEnd:    membership.period_end,
+        driverName:   driver.full_name,
+        driverEmail:  driver.email,
+        driverCedula: driver.cedula,
+        approvedAt:   new Date(),
+      }).then(invoice =>
+        emailService.sendMembershipInvoice({
+          toEmail:     driver.email,
+          toName:      driver.full_name,
+          invoice,
+          vehicleType: membership.vehicle_type,
+          periodStart: membership.period_start,
+          periodEnd:   membership.period_end,
+        })
+      ).catch(() => {});
+    }
+
     sendSuccess(res, { membership });
+  },
+
+  /* GET /membership/:id/invoice — descarga PDF del comprobante */
+  async downloadInvoice(req: Request, res: Response) {
+    const driverId = req.user!.userId;
+    const { id }   = req.params;
+
+    const pdfBuffer = await getInvoiceForMembership(id, driverId);
+    if (!pdfBuffer) return sendError(res, 404, 'Factura no disponible', 'NOT_FOUND');
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="factura-membresia-${id.slice(0, 8).toUpperCase()}.pdf"`);
+    res.end(pdfBuffer);
   },
 
   /* POST /admin/memberships/:id/reject */

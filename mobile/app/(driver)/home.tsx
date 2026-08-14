@@ -138,6 +138,22 @@ export default function DriverHomeScreen() {
   const [docAlerts, setDocAlerts]               = useState<Array<{ document_type: string; days_left: number; is_expired: boolean; urgent: boolean }>>([]);
   const { pickAndUpload, uploading: uploadingPhoto } = usePhotoUpload();
 
+  // Banner de recordatorio de pago de membresía
+  const [showPaymentBanner, setShowPaymentBanner] = useState(false);
+
+  useEffect(() => {
+    function checkPaymentWindow() {
+      const nowVE  = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Caracas' }));
+      const day    = nowVE.getDay();
+      const hour   = nowVE.getHours();
+      const inWindow = (day === 4 && hour >= 12) || (day === 5 && hour < 14);
+      setShowPaymentBanner(inWindow);
+    }
+    checkPaymentWindow();
+    const timer = setInterval(checkPaymentWindow, 60 * 60 * 1000); // cada hora
+    return () => clearInterval(timer);
+  }, []);
+
   // Chat con el pasajero
   const [chatOpen, setChatOpen]       = useState(false);
   const [chatMessage, setChatMessage] = useState('');
@@ -1091,6 +1107,19 @@ export default function DriverHomeScreen() {
         </View>
       </SafeAreaView>
 
+      {/* ── BANNER RECORDATORIO PAGO MEMBRESÍA ── */}
+      {showPaymentBanner && (
+        <TouchableOpacity
+          style={styles.paymentReminderBanner}
+          onPress={() => router.push('/(driver)/membership')}
+          activeOpacity={0.85}
+        >
+          <Text style={styles.paymentReminderText}>
+            ⚠️  Renueva tu membresía antes del viernes 2:00 PM — Toca para pagar
+          </Text>
+        </TouchableOpacity>
+      )}
+
       {/* ── BANNER DE LLEGADA ── */}
       {arrivalBanner && (
         <View style={styles.arrivalBanner}>
@@ -1959,6 +1988,24 @@ const styles = StyleSheet.create({
   },
 
   // Arrival banner
+  paymentReminderBanner: {
+    position: 'absolute',
+    top: 100,
+    left: 16, right: 16,
+    backgroundColor: '#7c2d12',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    zIndex: 50,
+    shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 6, elevation: 6,
+  },
+  paymentReminderText: {
+    color: '#fed7aa',
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+    fontFamily: 'Inter_700Bold',
+  },
   arrivalBanner: {
     position: 'absolute',
     top: 100,

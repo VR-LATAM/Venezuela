@@ -8,7 +8,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
-  ScrollView, TextInput, Alert, ActivityIndicator,
+  ScrollView, TextInput, Alert, ActivityIndicator, Linking,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -33,6 +33,7 @@ interface Membership {
   rejection_reason:  string | null;
   amount_usd:        number;
   vehicle_type:      string;
+  invoice_number:    string | null;
 }
 
 interface StatusData {
@@ -69,10 +70,11 @@ export default function MembershipScreen() {
   const [isLoading, setIsLoading]     = useState(true);
   const [membership, setMembership]   = useState<Membership | null>(null);
 
-  const [vehicleType, setVehicleType] = useState<string>('');
-  const [method, setMethod]           = useState<string>('');
-  const [reference, setReference]     = useState('');
-  const [submitting, setSubmitting]   = useState(false);
+  const [vehicleType, setVehicleType]     = useState<string>('');
+  const [method, setMethod]               = useState<string>('');
+  const [reference, setReference]         = useState('');
+  const [submitting, setSubmitting]       = useState(false);
+  const [downloading, setDownloading]     = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -99,6 +101,24 @@ export default function MembershipScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     } catch {
       Alert.alert('Error', 'No se pudo iniciar el trámite.');
+    }
+  };
+
+  const handleDownloadInvoice = async (membershipId: string) => {
+    setDownloading(true);
+    try {
+      const baseUrl = (apiClient.defaults.baseURL ?? '').replace(/\/$/, '');
+      const url = `${baseUrl}/membership/${membershipId}/invoice`;
+      const supported = await Linking.canOpenURL(url);
+      if (supported) {
+        await Linking.openURL(url);
+      } else {
+        Alert.alert('Error', 'No se puede abrir el archivo. Revisa tu conexión.');
+      }
+    } catch {
+      Alert.alert('Error', 'No se pudo descargar la factura.');
+    } finally {
+      setDownloading(false);
     }
   };
 
@@ -172,6 +192,18 @@ export default function MembershipScreen() {
           {data?.status === 'suspended' && (
             <Text style={styles.statusSub}>Renueva tu membresía para volver a recibir viajes</Text>
           )}
+          {data?.status === 'active' && membership?.invoice_number && (
+            <TouchableOpacity
+              style={styles.invoiceBtn}
+              onPress={() => handleDownloadInvoice(membership.id)}
+              disabled={downloading}
+            >
+              {downloading
+                ? <ActivityIndicator size="small" color="#fff" />
+                : <Text style={styles.invoiceBtnText}>📄 Descargar Factura {membership.invoice_number}</Text>
+              }
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Período actual */}
@@ -182,7 +214,7 @@ export default function MembershipScreen() {
               {formatDate(data.currentPeriod.start)} → {formatDate(data.currentPeriod.end)}
             </Text>
             <Text style={styles.periodSub}>
-              Próximo pago: viernes {formatDate(data.nextPaymentDate)}
+              Próximo pago: viernes {formatDate(data.nextPaymentDate)} · antes de las 2:00 PM
             </Text>
           </View>
         )}
@@ -226,7 +258,7 @@ export default function MembershipScreen() {
             </View>
 
             <Text style={[styles.instructionsText, { marginTop: 8, color: '#DC2626', fontWeight: '600' }]}>
-              ⚠️  El pago debe realizarse todos los viernes. Si no renuevas, tu cuenta se suspende automáticamente.
+              ⚠️  El pago debe realizarse cada viernes antes de las 2:00 PM. Tu membresía se activa el sábado a las 12:00 AM. Si no pagas a tiempo, tu cuenta se suspende automáticamente.
             </Text>
           </View>
         )}
@@ -459,4 +491,10 @@ const styles = StyleSheet.create({
   historyAmount:     { fontSize: 15, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
   historyStatusPill: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
   historyStatusText: { fontSize: 12, fontWeight: '600', color: '#1E293B', fontFamily: 'Inter_600SemiBold' },
+
+  invoiceBtn: {
+    marginTop: 10, backgroundColor: '#1a2e4a', borderRadius: 12,
+    paddingHorizontal: 18, paddingVertical: 10,
+  },
+  invoiceBtnText: { color: '#c8a84b', fontSize: 13, fontWeight: '700', fontFamily: 'Inter_700Bold' },
 });
