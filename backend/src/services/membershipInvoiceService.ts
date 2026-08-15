@@ -245,7 +245,7 @@ function buildPDF(data: PDFData): Promise<Buffer> {
       ['DESCRIPCIÓN',  COL_DESC, 'left'],
       ['CANT.',        COL_CANT, 'center'],
       ['PRECIO UNIT.', COL_PU,   'right'],
-      ['ALÍC.',        COL_ALIC, 'center'],
+      ['IVA',          COL_ALIC, 'center'],
       ['DESC.',        COL_DES,  'right'],
       ['MONTO',        COL_MON,  'right'],
     ];
