@@ -208,6 +208,36 @@ export default function MembershipScreen() {
           )}
         </View>
 
+        {/* Mis Facturas — siempre visible si existen */}
+        {(data?.history?.filter(h => h.invoice_number).length ?? 0) > 0 && (
+          <View style={styles.historySection}>
+            <Text style={styles.historyTitle}>Mis facturas</Text>
+            {data!.history.filter(h => h.invoice_number).map(h => (
+              <View key={h.id} style={styles.invoiceListRow}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={styles.invoiceListNumber}>{h.invoice_number}</Text>
+                  <Text style={styles.invoiceListPeriod}>
+                    {formatDate(h.period_start)} al {formatDate(h.period_end)}
+                  </Text>
+                  <Text style={styles.invoiceListVehicle}>
+                    {h.vehicle_type === 'moto' ? 'Moto' : h.vehicle_type === 'sedan' ? 'Sedán' : 'SUV'}
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                  <Text style={styles.invoiceListAmount}>${Number(h.amount_usd).toFixed(2)}</Text>
+                  <TouchableOpacity
+                    onPress={() => handleDownloadInvoice(h.id)}
+                    disabled={downloading}
+                    style={styles.invoiceDownloadBtn}
+                  >
+                    <Text style={styles.invoiceDownloadBtnText}>📄 Descargar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
         {/* Período actual */}
         {data && (
           <View style={styles.periodCard}>
@@ -354,36 +384,6 @@ export default function MembershipScreen() {
                 <Text style={styles.rejectionText}>{membership.rejection_reason}</Text>
               </View>
             )}
-          </View>
-        )}
-
-        {/* Mis Facturas */}
-        {(data?.history?.filter(h => h.invoice_number).length ?? 0) > 0 && (
-          <View style={styles.historySection}>
-            <Text style={styles.historyTitle}>Mis facturas</Text>
-            {data!.history.filter(h => h.invoice_number).map(h => (
-              <View key={h.id} style={styles.invoiceListRow}>
-                <View style={{ flex: 1, gap: 2 }}>
-                  <Text style={styles.invoiceListNumber}>{h.invoice_number}</Text>
-                  <Text style={styles.invoiceListPeriod}>
-                    {formatDate(h.period_start)} al {formatDate(h.period_end)}
-                  </Text>
-                  <Text style={styles.invoiceListVehicle}>
-                    {h.vehicle_type === 'moto' ? 'Moto' : h.vehicle_type === 'sedan' ? 'Sedán' : 'SUV'}
-                  </Text>
-                </View>
-                <View style={{ alignItems: 'flex-end', gap: 6 }}>
-                  <Text style={styles.invoiceListAmount}>${Number(h.amount_usd).toFixed(2)}</Text>
-                  <TouchableOpacity
-                    onPress={() => handleDownloadInvoice(h.id)}
-                    disabled={downloading}
-                    style={styles.invoiceDownloadBtn}
-                  >
-                    <Text style={styles.invoiceDownloadBtnText}>📄 Descargar</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            ))}
           </View>
         )}
 
