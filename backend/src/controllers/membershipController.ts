@@ -130,8 +130,8 @@ export const membershipController = {
     if (!membership) return sendError(res, 404, 'Membresía no encontrada o ya procesada', 'NOT_FOUND');
 
     /* Generar y enviar factura en background (no bloquea la respuesta) */
-    const { rows: driverRows } = await db.query<{ full_name: string; email: string; cedula: string | null }>(
-      'SELECT full_name, email, cedula FROM users WHERE id = $1',
+    const { rows: driverRows } = await db.query<{ name: string; email: string; cedula: string | null }>(
+      'SELECT name, email, cedula FROM users WHERE id = $1',
       [membership.driver_id]
     );
     const driver = driverRows[0];
@@ -142,7 +142,7 @@ export const membershipController = {
         vehicleType:  membership.vehicle_type,
         periodStart:  membership.period_start,
         periodEnd:    membership.period_end,
-        driverName:   driver.full_name,
+        driverName:   driver.name,
         driverEmail:  driver.email,
         driverCedula: driver.cedula,
         approvedAt:   new Date(),
@@ -190,8 +190,8 @@ export const membershipController = {
     if (!membership) return sendError(res, 404, 'Membresía no encontrada', 'NOT_FOUND');
     if (membership.status !== 'active') return sendError(res, 422, 'Solo se puede facturar membresías activas', 'INVALID_STATUS');
 
-    const { rows: driverRows } = await db.query<{ full_name: string; email: string; cedula: string | null }>(
-      'SELECT full_name, email, cedula FROM users WHERE id = $1',
+    const { rows: driverRows } = await db.query<{ name: string; email: string; cedula: string | null }>(
+      'SELECT name, email, cedula FROM users WHERE id = $1',
       [membership.driver_id]
     );
     const driver = driverRows[0];
@@ -203,7 +203,7 @@ export const membershipController = {
       vehicleType:  membership.vehicle_type,
       periodStart:  membership.period_start,
       periodEnd:    membership.period_end,
-      driverName:   driver.full_name,
+      driverName:   driver.name,
       driverEmail:  driver.email,
       driverCedula: driver.cedula,
       approvedAt:   membership.approved_at ? new Date(membership.approved_at) : new Date(),
@@ -211,7 +211,7 @@ export const membershipController = {
 
     emailService.sendMembershipInvoice({
       toEmail:     driver.email,
-      toName:      driver.full_name,
+      toName:      driver.name,
       invoice,
       vehicleType: membership.vehicle_type,
       periodStart: membership.period_start,

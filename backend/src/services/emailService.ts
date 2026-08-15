@@ -180,7 +180,10 @@ export const emailService = {
     const vehicleLabel: Record<string, string> = { moto: 'Moto', sedan: 'Sedán', suv: 'SUV' };
     const vLabel = vehicleLabel[vehicleType] ?? vehicleType.toUpperCase();
 
-    const fmt = (iso: string) => iso.split('-').reverse().join('/');
+    const fmt = (v: Date | string) => {
+      const s = v instanceof Date ? v.toISOString().split('T')[0] : String(v).split('T')[0];
+      return s.split('-').reverse().join('/');
+    };
     const fmtVes = (n: number) => `Bs. ${n.toLocaleString('es-VE', { minimumFractionDigits: 2 })}`;
 
     const subject = `Tu comprobante de membresía V-Ride — ${invoice.invoiceNumber}`;

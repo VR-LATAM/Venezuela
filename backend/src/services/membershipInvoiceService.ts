@@ -119,13 +119,17 @@ export interface InvoiceResult {
 }
 
 export async function generateMembershipInvoice(input: InvoiceInput): Promise<InvoiceResult> {
-  const { membershipId, amountUsd, vehicleType, periodStart, periodEnd,
-          driverName, driverEmail, driverCedula, approvedAt } = input;
+  const { membershipId, amountUsd, vehicleType, driverName, driverEmail, driverCedula, approvedAt } = input;
+  const toDateStr = (v: Date | string): string =>
+    v instanceof Date ? v.toISOString().split('T')[0] : String(v).split('T')[0];
+  const periodStart = toDateStr(input.periodStart as any);
+  const periodEnd   = toDateStr(input.periodEnd as any);
 
-  const ivaUsd   = parseFloat((amountUsd * IVA_RATE).toFixed(2));
-  const totalUsd = parseFloat((amountUsd + ivaUsd).toFixed(2));
+  const amountUsdN = Number(amountUsd);
+  const ivaUsd   = parseFloat((amountUsdN * IVA_RATE).toFixed(2));
+  const totalUsd = parseFloat((amountUsdN + ivaUsd).toFixed(2));
 
-  const { ves: amountVes, rate: rateVes } = await convertToVES(amountUsd);
+  const { ves: amountVes, rate: rateVes } = await convertToVES(amountUsdN);
   const ivaVes   = parseFloat((amountVes * IVA_RATE).toFixed(2));
   const totalVes = parseFloat((amountVes + ivaVes).toFixed(2));
 
@@ -254,7 +258,7 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
 
     doc.fontSize(9).font('Helvetica').fillColor('#78350F');
     const nota = [
-      [`Membresía (base)`, formatUsd(amountUsd)],
+      [`Membresía (base)`, formatUsd(amountUsdN)],
       [`IVA 16%`,          formatUsd(ivaUsd)],
       [`Total USD`,        formatUsd(totalUsd)],
       [`Tasa BCV aplicada`, `1 USD = Bs. ${rateVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
@@ -281,7 +285,7 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
   });
 
   logger.info(`Factura membresía generada: ${invoiceNumber} — ${driverName}`);
-  return { invoiceNumber, pdfBuffer, amountUsd, ivaUsd, totalUsd, amountVes, ivaVes, totalVes, rateVes };
+  return { invoiceNumber, pdfBuffer, amountUsd: amountUsdN, ivaUsd, totalUsd, amountVes, ivaVes, totalVes, rateVes };
 }
 
 /* ─── Regenerar PDF desde datos guardados (para descarga) ────── */
@@ -398,7 +402,7 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
     y += 20;
     doc.fontSize(9).font('Helvetica').fillColor('#78350F');
     for (const [lbl, val] of [
-      [`Membresía (base)`, formatUsd(amountUsd)],
+      [`Membresía (base)`, formatUsd(amountUsdN)],
       [`IVA 16%`,          formatUsd(ivaUsd)],
       [`Total USD`,        formatUsd(totalUsd)],
       [`Tasa BCV aplicada`, `1 USD = Bs. ${rateVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
