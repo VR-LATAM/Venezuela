@@ -246,7 +246,7 @@ function buildPDF(data: PDFData): Promise<Buffer> {
       ['CANT.',        COL_CANT, 'center'],
       ['PRECIO UNIT.', COL_PU,   'right'],
       ['IVA',          COL_ALIC, 'center'],
-      ['DESC.',        COL_DES,  'right'],
+      ['PROMO.',       COL_DES,  'right'],
       ['MONTO',        COL_MON,  'right'],
     ];
     let xCol = M;
@@ -325,7 +325,7 @@ function buildPDF(data: PDFData): Promise<Buffer> {
     const totX = M + W - totW;
 
     const totRows: [string, string, boolean, string?][] = [
-      ['Descuento:',              formatVes(0),        false],
+      ['Promoción:',              formatVes(0),        false],
       ['Base Imponible 16,00%:', formatVes(amountVes), false],
       ['IVA 16,00%:',            formatVes(ivaVes),    false, C.muted],
       ['Total Factura:',         formatVes(totalVes),  true],
