@@ -360,34 +360,43 @@ export default function MembershipScreen() {
         {(data?.history?.length ?? 0) > 0 && (
           <View style={styles.historySection}>
             <Text style={styles.historyTitle}>Historial de membresías</Text>
-            {data!.history.map(h => (
-              <View key={h.id} style={styles.historyRow}>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.historyPeriod}>
-                    {formatDate(h.period_start)} — {formatDate(h.period_end)}
-                  </Text>
-                  <Text style={styles.historyMethod}>{h.payment_method ?? '—'}</Text>
-                </View>
-                <View style={styles.historyRight}>
-                  <Text style={styles.historyAmount}>${Number(h.amount_usd).toFixed(2)}</Text>
-                  <View style={[
-                    styles.historyStatusPill,
-                    { backgroundColor:
-                        h.status === 'active'           ? '#BBF7D0' :
-                        h.status === 'pending_approval' ? '#FDE68A' :
-                        h.status === 'rejected'         ? '#FECACA' : '#E2E8F0'
-                    }
-                  ]}>
-                    <Text style={styles.historyStatusText}>
-                      {h.status === 'active'           ? 'Activa'    :
-                       h.status === 'pending_approval' ? 'Pendiente' :
-                       h.status === 'rejected'         ? 'Rechazada' :
-                       h.status === 'expired'          ? 'Vencida'   : h.status}
+            {data!.history.map(h => {
+              const pillBg =
+                h.status === 'active'           ? '#BBF7D0' :
+                h.status === 'pending_approval' ? '#FDE68A' :
+                h.status === 'rejected'         ? '#FECACA' : '#E2E8F0';
+              const pillLabel =
+                h.status === 'active'           ? 'Activa'    :
+                h.status === 'pending_approval' ? 'Pendiente' :
+                h.status === 'rejected'         ? 'Rechazada' :
+                h.status === 'expired'          ? 'Vencida'   : h.status;
+              return (
+                <View key={h.id} style={styles.historyRow}>
+                  {/* Columna izquierda */}
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <Text style={styles.historyLabel}>Semana</Text>
+                    <Text style={styles.historyPeriod}>
+                      {formatDate(h.period_start)} al {formatDate(h.period_end)}
+                    </Text>
+                    <Text style={styles.historyMethod}>
+                      {h.payment_method === 'zelle'      ? 'Zelle'                    :
+                       h.payment_method === 'wire'        ? 'Transferencia bancaria'   :
+                       h.payment_method === 'pago_movil'  ? 'Pago Móvil'              :
+                       h.payment_method === 'efectivo'    ? 'Efectivo'                 :
+                       h.payment_method ?? '—'}
                     </Text>
                   </View>
+                  {/* Columna derecha */}
+                  <View style={styles.historyRight}>
+                    <Text style={styles.historyLabel}>Monto</Text>
+                    <Text style={styles.historyAmount}>${Number(h.amount_usd).toFixed(2)}</Text>
+                    <View style={[styles.historyStatusPill, { backgroundColor: pillBg }]}>
+                      <Text style={styles.historyStatusText}>{pillLabel}</Text>
+                    </View>
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         )}
 
@@ -486,8 +495,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#F8FAFC', borderRadius: 12, padding: 12,
     borderWidth: 1, borderColor: '#E2E8F0',
   },
-  historyPeriod:     { fontSize: 14, fontWeight: '600', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_600SemiBold' },
-  historyMethod:     { fontSize: 12, color: '#888', fontFamily: 'Inter_400Regular', marginTop: 2 },
+  historyLabel:      { fontSize: 11, fontWeight: '600', color: '#94A3B8', letterSpacing: 0.5, textTransform: 'uppercase', fontFamily: 'Inter_600SemiBold' },
+  historyPeriod:     { fontSize: 13, fontWeight: '600', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_600SemiBold' },
+  historyMethod:     { fontSize: 12, color: '#888', fontFamily: 'Inter_400Regular' },
   historyRight:      { alignItems: 'flex-end', gap: 4 },
   historyAmount:     { fontSize: 15, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
   historyStatusPill: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
