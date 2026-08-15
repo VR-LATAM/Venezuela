@@ -258,7 +258,7 @@ function buildPDF(data: PDFData): Promise<Buffer> {
     y += 26;
 
     /* ── 4. Fila de ítem ────────────────────────────────────── */
-    const ROW_H = 72;
+    const ROW_H = 88;
     doc.rect(M, y, W, ROW_H).fill(C.bg);
 
     const mid = y + ROW_H / 2 - 5;
@@ -267,14 +267,20 @@ function buildPDF(data: PDFData): Promise<Buffer> {
     doc.fontSize(8).font('Helvetica-Bold').fillColor(C.dark)
        .text(svcCode, M + 3, mid, { width: COL_COD - 6, align: 'center', lineBreak: false });
 
-    // Descripción (3 líneas)
+    // Descripción: igual a YUMI con fechas y hora
     const xDesc2 = M + COL_COD + 4;
-    doc.fontSize(9).font('Helvetica-Bold').fillColor(C.dark)
-       .text(`Membresía Semanal — ${vLabel}`, xDesc2, y + 8, { width: COL_DESC - 8, lineBreak: false });
+    doc.fontSize(8.5).font('Helvetica-Bold').fillColor(C.dark)
+       .text(
+         `Servicios de plataforma tecnológica para gestión de solicitudes de transporte — ${vLabel}`,
+         xDesc2, y + 8, { width: COL_DESC - 8 }
+       );
     doc.fontSize(8).font('Helvetica').fillColor(C.muted)
-       .text(`Período: ${ps} al ${pe}`, xDesc2, y + 21, { width: COL_DESC - 8, lineBreak: false });
+       .text(
+         `de ${toStr(periodStart)} 00:00 a ${toStr(periodEnd)} 23:59`,
+         xDesc2, y + 46, { width: COL_DESC - 8, lineBreak: false }
+       );
     doc.fontSize(7.5).font('Helvetica').fillColor('#78350F')
-       .text(`${formatUsd(amountUsdN)} × Bs. ${rateStr} (BCV)`, xDesc2, y + 33, { width: COL_DESC - 8, lineBreak: false });
+       .text(`${formatUsd(amountUsdN)} × Bs. ${rateStr} (BCV)`, xDesc2, y + 58, { width: COL_DESC - 8, lineBreak: false });
 
     // Cantidad
     const xCant2 = M + COL_COD + COL_DESC;
