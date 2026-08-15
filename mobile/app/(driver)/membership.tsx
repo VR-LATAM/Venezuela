@@ -394,6 +394,15 @@ export default function MembershipScreen() {
                     <View style={[styles.historyStatusPill, { backgroundColor: pillBg }]}>
                       <Text style={styles.historyStatusText}>{pillLabel}</Text>
                     </View>
+                    {h.invoice_number && (
+                      <TouchableOpacity
+                        onPress={() => handleDownloadInvoice(h.id)}
+                        disabled={downloading}
+                        style={styles.historyInvoiceBtn}
+                      >
+                        <Text style={styles.historyInvoiceBtnText}>📄 Factura</Text>
+                      </TouchableOpacity>
+                    )}
                   </View>
                 </View>
               );
@@ -503,6 +512,8 @@ const styles = StyleSheet.create({
   historyAmount:     { fontSize: 15, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
   historyStatusPill: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
   historyStatusText: { fontSize: 12, fontWeight: '600', color: '#1E293B', fontFamily: 'Inter_600SemiBold' },
+  historyInvoiceBtn: { marginTop: 4, backgroundColor: '#1a2e4a', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  historyInvoiceBtnText: { color: '#c8a84b', fontSize: 11, fontWeight: '700', fontFamily: 'Inter_700Bold' },
 
   invoiceBtn: {
     marginTop: 10, backgroundColor: '#1a2e4a', borderRadius: 12,

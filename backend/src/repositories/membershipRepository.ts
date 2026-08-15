@@ -185,8 +185,8 @@ export const membershipRepository = {
   async listPending(): Promise<Array<DriverMembership & { driver_name: string; driver_phone: string }>> {
     const { rows } = await db.query<DriverMembership & { driver_name: string; driver_phone: string }>(
       `SELECT dm.*,
-              u.full_name  AS driver_name,
-              u.phone      AS driver_phone
+              u.name   AS driver_name,
+              u.phone  AS driver_phone
        FROM driver_memberships dm
        JOIN users u ON u.id = dm.driver_id
        WHERE dm.status = 'pending_approval'
