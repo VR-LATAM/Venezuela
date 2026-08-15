@@ -281,15 +281,18 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
        .text(formatVes(totalVes), M, y + 11, { width: W - 12, align: 'right', lineBreak: false });
     y += 54;
 
-    y += 16;
-
-    /* ── Pie ────────────────────────────────────────────────── */
-    hLine(doc, y);
-    y += 8;
+    /* ── Pie de página (posición fija al fondo) ───────────── */
+    const footerY = 841.89 - 40;
+    hLine(doc, footerY - 10);
     doc.fontSize(7).font('Helvetica').fillColor(C.muted)
        .text(
-         `Este documento es un comprobante electrónico emitido por ${EMISOR.nombre} RIF ${EMISOR.rif}.  ·  Válido sin firma ni sello.  ·  Consultas: ${EMISOR.email}`,
-         M, y, { width: W, align: 'center' }
+         `Este documento es un comprobante electrónico emitido por ${EMISOR.nombre} RIF ${EMISOR.rif}.`,
+         M, footerY, { width: W, align: 'center', lineBreak: false }
+       );
+    doc.fontSize(7).font('Helvetica').fillColor(C.muted)
+       .text(
+         `Válido sin firma ni sello.  ·  Consultas: ${EMISOR.email}`,
+         M, footerY + 12, { width: W, align: 'center', lineBreak: false }
        );
 
     doc.end();
@@ -443,12 +446,18 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
        .text(formatVes(totalVes), M, y + 11, { width: W - 12, align: 'right', lineBreak: false });
     y += 54;
 
-    y += 16;
-    hLine(doc, y); y += 8;
+    /* ── Pie de página (posición fija al fondo) ───────────── */
+    const footerY2 = 841.89 - 40;
+    hLine(doc, footerY2 - 10);
     doc.fontSize(7).font('Helvetica').fillColor(C.muted)
        .text(
-         `Este documento es un comprobante electrónico emitido por ${EMISOR.nombre} RIF ${EMISOR.rif}.  ·  Válido sin firma ni sello.  ·  Consultas: ${EMISOR.email}`,
-         M, y, { width: W, align: 'center' }
+         `Este documento es un comprobante electrónico emitido por ${EMISOR.nombre} RIF ${EMISOR.rif}.`,
+         M, footerY2, { width: W, align: 'center', lineBreak: false }
+       );
+    doc.fontSize(7).font('Helvetica').fillColor(C.muted)
+       .text(
+         `Válido sin firma ni sello.  ·  Consultas: ${EMISOR.email}`,
+         M, footerY2 + 12, { width: W, align: 'center', lineBreak: false }
        );
 
     doc.end();
