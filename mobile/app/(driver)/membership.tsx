@@ -363,7 +363,7 @@ export default function MembershipScreen() {
             <Text style={styles.historyTitle}>Historial de membresías</Text>
             {data!.history.map(h => (
               <View key={h.id} style={styles.historyRow}>
-                <View>
+                <View style={{ flex: 1 }}>
                   <Text style={styles.historyPeriod}>
                     {formatDate(h.period_start)} — {formatDate(h.period_end)}
                   </Text>
