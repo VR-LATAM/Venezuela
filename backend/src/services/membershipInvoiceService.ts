@@ -363,26 +363,25 @@ function buildPDF(data: PDFData): Promise<Buffer> {
 
     doc.fontSize(6.5).font('Helvetica').fillColor(C.muted)
        .text(
-         'Este pago estará sujeto al cobro adicional del 3% del Impuesto a las Grandes Transacciones Financieras (IGTF), ' +
-         'de conformidad con la Providencia Administrativa SNAT/2022/000013 publicada en la G.O. N° 42.339 del 17-03-2022, ' +
-         'en caso de ser cancelado en divisas. No aplica en pago en Bs.',
+         'El monto reflejado en este documento podrá estar sujeto al pago adicional del 3% por concepto del Impuesto a las ' +
+         'Grandes Transacciones Financieras (IGTF), según lo dispuesto en la Providencia Administrativa SNAT/2022/000013 ' +
+         '(G.O. N° 42.339 del 17/03/2022), únicamente cuando el pago se efectúe en moneda extranjera. No aplica para pagos en Bolívares.',
          M, FOOTER_Y, { width: W }
        );
 
     doc.fontSize(6.5).font('Helvetica').fillColor(C.muted)
        .text(
-         'Este documento se expresa en Bolívares con su equivalencia en divisas al tipo de cambio corriente del mercado ' +
-         'a la fecha de su emisión, según lo establecido en el artículo 13 numeral 14 de la Providencia Administrativa SNAT/2011/0071 ' +
-         'en concordancia con el artículo 128 de la Ley del Banco Central de Venezuela (BCV); artículo 25 de la Ley que establece ' +
-         'el Impuesto al Valor Agregado (IVA) y 38 del Reglamento General de la Ley que establece el Impuesto al Valor Agregado (RLIVA).',
-         M, FOOTER_Y + 22, { width: W }
+         'Los montos expresados en Bolívares se calculan aplicando el tipo de cambio oficial publicado por el Banco Central ' +
+         'de Venezuela (BCV) a la fecha de emisión del presente comprobante, en cumplimiento del artículo 13 numeral 14 de la ' +
+         'Providencia SNAT/2011/0071, el artículo 128 de la Ley del BCV, el artículo 25 de la Ley del IVA y el artículo 38 de su Reglamento (RLIVA).',
+         M, FOOTER_Y + 24, { width: W }
        );
 
     doc.fontSize(6.5).font('Helvetica').fillColor(C.muted)
        .text(
-         `Comprobante electrónico emitido por ${EMISOR.nombre} RIF ${EMISOR.rif}, ` +
-         'conforme a la Providencia Administrativa SNAT/2024/000102 de fecha 17/10/2024.',
-         M, FOOTER_Y + 54, { width: W, align: 'center', lineBreak: false }
+         `Documento electrónico generado por ${EMISOR.nombre} · RIF ${EMISOR.rif} · ` +
+         'Emitido conforme a la Providencia Administrativa SNAT/2024/000102 del 17/10/2024.',
+         M, FOOTER_Y + 56, { width: W, align: 'center', lineBreak: false }
        );
 
     hLine(doc, PH - 28);
