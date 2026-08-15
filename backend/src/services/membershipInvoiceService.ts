@@ -148,7 +148,7 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
 
   /* ── PDF ──────────────────────────────────────────────────── */
   const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-    const doc    = new PDFDocument({ size: 'LETTER', margin: M, autoFirstPage: true });
+    const doc    = new PDFDocument({ size: 'LETTER', margin: 0, autoFirstPage: true });
     const chunks: Buffer[] = [];
     doc.on('data',  (c: Buffer) => chunks.push(c));
     doc.on('end',   () => resolve(Buffer.concat(chunks)));
@@ -354,7 +354,7 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
   const totalUsd  = parseFloat((amountUsd + ivaUsd).toFixed(2));
 
   return new Promise<Buffer>((resolve, reject) => {
-    const doc    = new PDFDocument({ size: 'LETTER', margin: M, autoFirstPage: true });
+    const doc    = new PDFDocument({ size: 'LETTER', margin: 0, autoFirstPage: true });
     const chunks: Buffer[] = [];
     doc.on('data',  (c: Buffer) => chunks.push(c));
     doc.on('end',   () => resolve(Buffer.concat(chunks)));
