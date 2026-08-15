@@ -14,6 +14,7 @@ import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import * as SecureStore from 'expo-secure-store';
 import { BRAND_COLORS } from '@vride/shared';
 import { apiClient } from '../../src/services/apiClient';
 
@@ -112,12 +113,12 @@ export default function MembershipScreen() {
     setDownloading(true);
     try {
       const baseUrl = (apiClient.defaults.baseURL ?? '').replace(/\/$/, '');
-      const token   = apiClient.defaults.headers.common['Authorization'] as string | undefined;
+      const token   = await SecureStore.getItemAsync('access_token');
       const url     = `${baseUrl}/membership/${membershipId}/invoice`;
       const dest    = `${FileSystem.cacheDirectory}factura-${membershipId.slice(0, 8).toUpperCase()}.pdf`;
 
       const { status } = await FileSystem.downloadAsync(url, dest, {
-        headers: token ? { Authorization: token } : {},
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
       if (status !== 200) {
