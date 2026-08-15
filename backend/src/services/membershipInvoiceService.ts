@@ -140,7 +140,7 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
   const vLabel = vehicleLabel[vehicleType] ?? vehicleType.toUpperCase();
 
   const fecha = approvedAt.toLocaleDateString('es-VE', {
-    day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Caracas',
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Caracas',
   });
 
   const descripcion = `Membresía Semanal — ${vLabel}`;
@@ -339,7 +339,7 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
 
   const approvedAt = m.approved_at ? new Date(m.approved_at) : new Date();
   const fecha = approvedAt.toLocaleDateString('es-VE', {
-    day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'America/Caracas',
+    day: 'numeric', month: 'long', year: 'numeric', timeZone: 'America/Caracas',
   });
 
   const amountVes = Number(m.invoice_amount_ves ?? 0);
