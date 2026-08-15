@@ -215,8 +215,9 @@ export default function MembershipScreen() {
               {formatDate(data.currentPeriod.start)} → {formatDate(data.currentPeriod.end)}
             </Text>
             <Text style={styles.periodSub}>
-              Próximo pago: viernes {formatDate(data.nextPaymentDate)} · antes de las 2:00 PM
+              Próximo pago: viernes {formatDate(data.nextPaymentDate)}
             </Text>
+            <Text style={styles.periodSub}>Pagar antes de las 2:00 PM</Text>
           </View>
         )}
 
@@ -248,14 +249,14 @@ export default function MembershipScreen() {
             </View>
 
             <View style={styles.bankInfo}>
-              <Text style={styles.bankTitle}>Transferencia bancaria (USA / Panamá / Aruba)</Text>
-              <Text style={styles.bankDetail}>Banco: [por confirmar con administración]</Text>
+              <Text style={styles.bankTitle}>Transferencia bancaria</Text>
+              <Text style={styles.bankDetail}>USA / Panamá / Aruba — por confirmar</Text>
               <Text style={styles.bankDetail}>Titular: VERONA Ride Venezuela LLC</Text>
             </View>
 
             <View style={styles.bankInfo}>
               <Text style={styles.bankTitle}>Pago Móvil</Text>
-              <Text style={styles.bankDetail}>Banco: [por confirmar con administración]</Text>
+              <Text style={styles.bankDetail}>Banco: por confirmar con administración</Text>
             </View>
 
             <Text style={[styles.instructionsText, { marginTop: 8, color: '#DC2626', fontWeight: '600' }]}>
@@ -423,7 +424,7 @@ const styles = StyleSheet.create({
   },
   periodTitle: { fontSize: 12, fontWeight: '700', color: '#888', letterSpacing: 0.8, textTransform: 'uppercase', fontFamily: 'Inter_700Bold' },
   periodDates: { fontSize: 18, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
-  periodSub:   { fontSize: 13, color: '#64748B', fontFamily: 'Inter_400Regular' },
+  periodSub:   { fontSize: 13, color: '#64748B', fontFamily: 'Inter_400Regular', flexShrink: 1 },
 
   plansCard:   { backgroundColor: '#F8FAFC', borderRadius: 14, padding: 16, gap: 12, borderWidth: 1, borderColor: '#E2E8F0' },
   plansTitle:  { fontSize: 14, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
@@ -437,7 +438,7 @@ const styles = StyleSheet.create({
   bold:             { fontWeight: '700' },
   bankInfo:         { backgroundColor: '#fff', borderRadius: 10, padding: 12, gap: 4 },
   bankTitle:        { fontSize: 13, fontWeight: '700', color: '#1E293B', fontFamily: 'Inter_700Bold', flexShrink: 1 },
-  bankDetail:       { fontSize: 13, color: '#475569', fontFamily: 'Inter_400Regular' },
+  bankDetail:       { fontSize: 13, color: '#475569', fontFamily: 'Inter_400Regular', flexShrink: 1 },
 
   initiateBtn: {
     backgroundColor: BRAND_COLORS.PRIMARY, borderRadius: 14, height: 54,
