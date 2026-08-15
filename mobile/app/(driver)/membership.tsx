@@ -62,7 +62,8 @@ const STATUS_CONFIG: Record<string, { color: string; bg: string; icon: string; l
 };
 
 function formatDate(iso: string): string {
-  const [y, m, d] = iso.split('-');
+  const datePart = iso.split('T')[0]; // funciona con "YYYY-MM-DD" y "YYYY-MM-DDTHH:MM:SSZ"
+  const [y, m, d] = datePart.split('-');
   return `${d}/${m}/${y}`;
 }
 
