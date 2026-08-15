@@ -427,16 +427,16 @@ const styles = StyleSheet.create({
 
   plansCard:   { backgroundColor: '#F8FAFC', borderRadius: 14, padding: 16, gap: 12, borderWidth: 1, borderColor: '#E2E8F0' },
   plansTitle:  { fontSize: 14, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
-  planRow:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  planVehicle: { fontSize: 15, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_400Regular' },
-  planPrice:   { fontSize: 15, fontWeight: '700', color: BRAND_COLORS.PRIMARY, fontFamily: 'Inter_700Bold' },
+  planRow:     { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
+  planVehicle: { fontSize: 15, color: BRAND_COLORS.TEXT, fontFamily: 'Inter_400Regular', flex: 1 },
+  planPrice:   { fontSize: 15, fontWeight: '700', color: BRAND_COLORS.PRIMARY, fontFamily: 'Inter_700Bold', textAlign: 'right' },
 
   instructionsCard: { backgroundColor: '#FFF8F0', borderRadius: 14, padding: 16, gap: 12, borderWidth: 1, borderColor: '#FED7AA' },
   instructionsTitle:{ fontSize: 15, fontWeight: '700', color: '#92400E', fontFamily: 'Inter_700Bold' },
   instructionsText: { fontSize: 14, color: '#78350F', fontFamily: 'Inter_400Regular', lineHeight: 20 },
   bold:             { fontWeight: '700' },
   bankInfo:         { backgroundColor: '#fff', borderRadius: 10, padding: 12, gap: 4 },
-  bankTitle:        { fontSize: 13, fontWeight: '700', color: '#1E293B', fontFamily: 'Inter_700Bold' },
+  bankTitle:        { fontSize: 13, fontWeight: '700', color: '#1E293B', fontFamily: 'Inter_700Bold', flexShrink: 1 },
   bankDetail:       { fontSize: 13, color: '#475569', fontFamily: 'Inter_400Regular' },
 
   initiateBtn: {
