@@ -309,20 +309,22 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
     `SELECT dm.invoice_number, dm.invoice_rate_ves, dm.invoice_amount_ves,
             dm.invoice_iva_ves, dm.invoice_total_ves, dm.invoice_generated_at,
             dm.amount_usd, dm.vehicle_type, dm.period_start, dm.period_end, dm.approved_at,
-            u.full_name AS driver_name, u.email AS driver_email, u.cedula AS driver_cedula
+            u.name AS driver_name, u.email AS driver_email, u.cedula AS driver_cedula
      FROM driver_memberships dm
      JOIN users u ON u.id = dm.driver_id
-     WHERE dm.id = $1 AND dm.driver_id = $2 AND dm.status = 'active'`,
+     WHERE dm.id = $1 AND dm.driver_id = $2 AND dm.invoice_number IS NOT NULL`,
     [membershipId, driverId]
   );
 
   const m = rows[0];
   if (!m || !m.invoice_number) return null;
 
+  const toStr = (v: Date | string): string =>
+    v instanceof Date ? v.toISOString().split('T')[0] : String(v).split('T')[0];
   const vehicleLabel: Record<string, string> = { moto: 'Moto', sedan: 'Sedán', suv: 'SUV' };
   const vLabel = vehicleLabel[m.vehicle_type] ?? m.vehicle_type.toUpperCase();
   const descripcion = `Membresía Semanal — ${vLabel}`;
-  const periodo     = `Período: ${m.period_start.split('-').reverse().join('/')} al ${m.period_end.split('-').reverse().join('/')}`;
+  const periodo     = `Período: ${toStr(m.period_start as any).split('-').reverse().join('/')} al ${toStr(m.period_end as any).split('-').reverse().join('/')}`;
 
   const approvedAt = m.approved_at ? new Date(m.approved_at) : new Date();
   const fecha = approvedAt.toLocaleDateString('es-VE', {
