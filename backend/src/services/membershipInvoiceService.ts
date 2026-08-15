@@ -271,7 +271,7 @@ function buildPDF(data: PDFData): Promise<Buffer> {
     const xDesc2 = M + COL_COD + 4;
     doc.fontSize(8.5).font('Helvetica-Bold').fillColor(C.dark)
        .text(
-         `Servicios de plataforma tecnológica para gestión de solicitudes de transporte — ${vLabel}`,
+         `Suscripción semanal a la plataforma digital V-Ride para intermediación y coordinación de servicios de transporte — ${vLabel}`,
          xDesc2, y + 8, { width: COL_DESC - 8 }
        );
     doc.fontSize(8).font('Helvetica').fillColor(C.muted)
