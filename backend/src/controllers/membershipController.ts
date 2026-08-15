@@ -174,6 +174,53 @@ export const membershipController = {
     res.end(pdfBuffer);
   },
 
+  /* POST /admin/memberships/:id/generate-invoice — genera/regenera factura para membresía activa */
+  async generateInvoice(req: Request, res: Response) {
+    const { id } = req.params;
+
+    const { rows } = await db.query<{
+      id: string; driver_id: string; amount_usd: number; vehicle_type: string;
+      period_start: string; period_end: string; status: string; approved_at: string | null;
+    }>(
+      `SELECT id, driver_id, amount_usd, vehicle_type, period_start, period_end, status, approved_at
+       FROM driver_memberships WHERE id = $1`,
+      [id]
+    );
+    const membership = rows[0];
+    if (!membership) return sendError(res, 404, 'Membresía no encontrada', 'NOT_FOUND');
+    if (membership.status !== 'active') return sendError(res, 422, 'Solo se puede facturar membresías activas', 'INVALID_STATUS');
+
+    const { rows: driverRows } = await db.query<{ full_name: string; email: string; cedula: string | null }>(
+      'SELECT full_name, email, cedula FROM users WHERE id = $1',
+      [membership.driver_id]
+    );
+    const driver = driverRows[0];
+    if (!driver) return sendError(res, 404, 'Conductor no encontrado', 'NOT_FOUND');
+
+    const invoice = await generateMembershipInvoice({
+      membershipId: membership.id,
+      amountUsd:    membership.amount_usd,
+      vehicleType:  membership.vehicle_type,
+      periodStart:  membership.period_start,
+      periodEnd:    membership.period_end,
+      driverName:   driver.full_name,
+      driverEmail:  driver.email,
+      driverCedula: driver.cedula,
+      approvedAt:   membership.approved_at ? new Date(membership.approved_at) : new Date(),
+    });
+
+    emailService.sendMembershipInvoice({
+      toEmail:     driver.email,
+      toName:      driver.full_name,
+      invoice,
+      vehicleType: membership.vehicle_type,
+      periodStart: membership.period_start,
+      periodEnd:   membership.period_end,
+    }).catch(() => {});
+
+    sendSuccess(res, { invoice_number: invoice.invoiceNumber });
+  },
+
   /* POST /admin/memberships/:id/reject */
   async reject(req: Request, res: Response) {
     const adminId = req.user!.userId;

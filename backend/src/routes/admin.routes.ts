@@ -52,8 +52,9 @@ router.put('/incidents/:id/resolve',                incidentController.resolve);
 
 // Membresías semanales
 router.get ('/memberships/pending',        asyncHandler(membershipController.listPending));
-router.post('/memberships/:id/approve',    asyncHandler(membershipController.approve));
-router.post('/memberships/:id/reject',     asyncHandler(membershipController.reject));
+router.post('/memberships/:id/approve',           asyncHandler(membershipController.approve));
+router.post('/memberships/:id/reject',            asyncHandler(membershipController.reject));
+router.post('/memberships/:id/generate-invoice',  asyncHandler(membershipController.generateInvoice));
 
 // Clínicas
 router.get  ('/clinics',                            clinicController.listAll);
