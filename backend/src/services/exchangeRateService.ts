@@ -84,9 +84,11 @@ export async function refreshExchangeRate(): Promise<number> {
 export async function convertToVES(amountUSD: number): Promise<{ ves: number; rate: number }> {
   try {
     const rate = await getUSDToVES();
-    return { ves: parseFloat((amountUSD * rate).toFixed(2)), rate };
+    if (rate > 0) return { ves: parseFloat((amountUSD * rate).toFixed(2)), rate };
+    throw new Error('rate = 0');
   } catch {
-    logger.warn('convertToVES: tasa BCV no disponible — retornando sin conversión VES');
-    return { ves: 0, rate: 0 };
+    logger.warn(`convertToVES: usando fallback ${FALLBACK_RATE} Bs.`);
+    const rate = FALLBACK_RATE;
+    return { ves: parseFloat((amountUSD * rate).toFixed(2)), rate };
   }
 }

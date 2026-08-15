@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import * as SecureStore from 'expo-secure-store';
 import { BRAND_COLORS } from '@vride/shared';
@@ -117,12 +117,13 @@ export default function MembershipScreen() {
       const url     = `${baseUrl}/membership/${membershipId}/invoice`;
       const dest    = `${FileSystem.cacheDirectory}factura-${membershipId.slice(0, 8).toUpperCase()}.pdf`;
 
-      const { status } = await FileSystem.downloadAsync(url, dest, {
+      const result = await FileSystem.downloadAsync(url, dest, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
 
-      if (status !== 200) {
-        Alert.alert('Error', 'No se pudo descargar la factura.');
+      if (result.status !== 200) {
+        const body = await FileSystem.readAsStringAsync(dest).catch(() => '');
+        Alert.alert('Error ' + result.status, body.slice(0, 300) || 'Sin detalle');
         return;
       }
 
@@ -132,8 +133,8 @@ export default function MembershipScreen() {
       } else {
         Alert.alert('Descargada', `Factura guardada en: ${dest}`);
       }
-    } catch {
-      Alert.alert('Error', 'No se pudo descargar la factura.');
+    } catch (e: any) {
+      Alert.alert('Error excepción', e?.message ?? String(e));
     } finally {
       setDownloading(false);
     }
