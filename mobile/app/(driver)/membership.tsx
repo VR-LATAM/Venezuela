@@ -357,7 +357,37 @@ export default function MembershipScreen() {
           </View>
         )}
 
-        {/* Historial */}
+        {/* Mis Facturas */}
+        {(data?.history?.filter(h => h.invoice_number).length ?? 0) > 0 && (
+          <View style={styles.historySection}>
+            <Text style={styles.historyTitle}>Mis facturas</Text>
+            {data!.history.filter(h => h.invoice_number).map(h => (
+              <View key={h.id} style={styles.invoiceListRow}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={styles.invoiceListNumber}>{h.invoice_number}</Text>
+                  <Text style={styles.invoiceListPeriod}>
+                    {formatDate(h.period_start)} al {formatDate(h.period_end)}
+                  </Text>
+                  <Text style={styles.invoiceListVehicle}>
+                    {h.vehicle_type === 'moto' ? 'Moto' : h.vehicle_type === 'sedan' ? 'Sedán' : 'SUV'}
+                  </Text>
+                </View>
+                <View style={{ alignItems: 'flex-end', gap: 6 }}>
+                  <Text style={styles.invoiceListAmount}>${Number(h.amount_usd).toFixed(2)}</Text>
+                  <TouchableOpacity
+                    onPress={() => handleDownloadInvoice(h.id)}
+                    disabled={downloading}
+                    style={styles.invoiceDownloadBtn}
+                  >
+                    <Text style={styles.invoiceDownloadBtnText}>📄 Descargar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {/* Historial de membresías */}
         {(data?.history?.length ?? 0) > 0 && (
           <View style={styles.historySection}>
             <Text style={styles.historyTitle}>Historial de membresías</Text>
@@ -373,36 +403,25 @@ export default function MembershipScreen() {
                 h.status === 'expired'          ? 'Vencida'   : h.status;
               return (
                 <View key={h.id} style={styles.historyRow}>
-                  {/* Columna izquierda */}
                   <View style={{ flex: 1, gap: 4 }}>
                     <Text style={styles.historyLabel}>Semana</Text>
                     <Text style={styles.historyPeriod}>
                       {formatDate(h.period_start)} al {formatDate(h.period_end)}
                     </Text>
                     <Text style={styles.historyMethod}>
-                      {h.payment_method === 'zelle'      ? 'Zelle'                    :
-                       h.payment_method === 'wire'        ? 'Transferencia bancaria'   :
-                       h.payment_method === 'pago_movil'  ? 'Pago Móvil'              :
-                       h.payment_method === 'efectivo'    ? 'Efectivo'                 :
+                      {h.payment_method === 'zelle'      ? 'Zelle'              :
+                       h.payment_method === 'wire'        ? 'Transferencia'      :
+                       h.payment_method === 'pago_movil'  ? 'Pago Móvil'        :
+                       h.payment_method === 'efectivo'    ? 'Efectivo'           :
                        h.payment_method ?? '—'}
                     </Text>
                   </View>
-                  {/* Columna derecha */}
                   <View style={styles.historyRight}>
                     <Text style={styles.historyLabel}>Monto</Text>
                     <Text style={styles.historyAmount}>${Number(h.amount_usd).toFixed(2)}</Text>
                     <View style={[styles.historyStatusPill, { backgroundColor: pillBg }]}>
                       <Text style={styles.historyStatusText}>{pillLabel}</Text>
                     </View>
-                    {h.invoice_number && (
-                      <TouchableOpacity
-                        onPress={() => handleDownloadInvoice(h.id)}
-                        disabled={downloading}
-                        style={styles.historyInvoiceBtn}
-                      >
-                        <Text style={styles.historyInvoiceBtnText}>📄 Factura</Text>
-                      </TouchableOpacity>
-                    )}
                   </View>
                 </View>
               );
@@ -512,8 +531,21 @@ const styles = StyleSheet.create({
   historyAmount:     { fontSize: 15, fontWeight: '700', color: BRAND_COLORS.TEXT, fontFamily: 'Inter_700Bold' },
   historyStatusPill: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 2 },
   historyStatusText: { fontSize: 12, fontWeight: '600', color: '#1E293B', fontFamily: 'Inter_600SemiBold' },
-  historyInvoiceBtn: { marginTop: 4, backgroundColor: '#1a2e4a', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
-  historyInvoiceBtnText: { color: '#c8a84b', fontSize: 11, fontWeight: '700', fontFamily: 'Inter_700Bold' },
+
+  invoiceListRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: '#F0F4FF', borderRadius: 12, padding: 14,
+    borderWidth: 1, borderColor: '#C7D7F5',
+  },
+  invoiceListNumber:  { fontSize: 13, fontWeight: '700', color: '#1a2e4a', fontFamily: 'Inter_700Bold' },
+  invoiceListPeriod:  { fontSize: 12, color: '#475569', fontFamily: 'Inter_400Regular' },
+  invoiceListVehicle: { fontSize: 11, color: '#94A3B8', fontFamily: 'Inter_400Regular' },
+  invoiceListAmount:  { fontSize: 15, fontWeight: '700', color: '#1a2e4a', fontFamily: 'Inter_700Bold' },
+  invoiceDownloadBtn: {
+    backgroundColor: '#1a2e4a', borderRadius: 8,
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  invoiceDownloadBtnText: { color: '#c8a84b', fontSize: 12, fontWeight: '700', fontFamily: 'Inter_700Bold' },
 
   invoiceBtn: {
     marginTop: 10, backgroundColor: '#1a2e4a', borderRadius: 12,
