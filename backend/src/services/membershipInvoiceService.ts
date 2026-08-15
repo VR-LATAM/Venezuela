@@ -404,7 +404,7 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
     y += 20;
     doc.fontSize(9).font('Helvetica').fillColor('#78350F');
     for (const [lbl, val] of [
-      [`Membresía (base)`, formatUsd(amountUsdN)],
+      [`Membresía (base)`, formatUsd(amountUsd)],
       [`IVA 16%`,          formatUsd(ivaUsd)],
       [`Total USD`,        formatUsd(totalUsd)],
       [`Tasa BCV aplicada`, `1 USD = Bs. ${rateVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],

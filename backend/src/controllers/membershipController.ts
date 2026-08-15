@@ -149,7 +149,7 @@ export const membershipController = {
       }).then(invoice =>
         emailService.sendMembershipInvoice({
           toEmail:     driver.email,
-          toName:      driver.full_name,
+          toName:      driver.name,
           invoice,
           vehicleType: membership.vehicle_type,
           periodStart: membership.period_start,
