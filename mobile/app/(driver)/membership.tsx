@@ -229,7 +229,7 @@ export default function MembershipScreen() {
                 {p.vehicle_type === 'moto' ? '🏍️  Moto' :
                  p.vehicle_type === 'sedan' ? '🚗  Sedán' : '🚙  SUV'}
               </Text>
-              <Text style={styles.planPrice}>${p.price_usd.toFixed(2)} / semana</Text>
+              <Text style={styles.planPrice}>${Number(p.price_usd).toFixed(2)} / semana</Text>
             </View>
           ))}
         </View>
@@ -304,7 +304,7 @@ export default function MembershipScreen() {
             {membership?.amount_usd && (
               <View style={styles.amountRow}>
                 <Text style={styles.amountLabel}>Monto a pagar</Text>
-                <Text style={styles.amountValue}>${membership.amount_usd.toFixed(2)} USD</Text>
+                <Text style={styles.amountValue}>${Number(membership.amount_usd).toFixed(2)} USD</Text>
               </View>
             )}
 
@@ -369,7 +369,7 @@ export default function MembershipScreen() {
                   <Text style={styles.historyMethod}>{h.payment_method ?? '—'}</Text>
                 </View>
                 <View style={styles.historyRight}>
-                  <Text style={styles.historyAmount}>${h.amount_usd}</Text>
+                  <Text style={styles.historyAmount}>${Number(h.amount_usd).toFixed(2)}</Text>
                   <View style={[
                     styles.historyStatusPill,
                     { backgroundColor:
