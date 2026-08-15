@@ -26,7 +26,7 @@ const C = {
 };
 
 const M  = 42;
-const PW = 595;
+const PW = 612;
 const W  = PW - M * 2;
 
 /* ─── Número correlativo ──────────────────────────────────────── */
@@ -148,7 +148,7 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
 
   /* ── PDF ──────────────────────────────────────────────────── */
   const pdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-    const doc    = new PDFDocument({ size: 'A4', margin: M, autoFirstPage: true });
+    const doc    = new PDFDocument({ size: 'LETTER', margin: M, autoFirstPage: true });
     const chunks: Buffer[] = [];
     doc.on('data',  (c: Buffer) => chunks.push(c));
     doc.on('end',   () => resolve(Buffer.concat(chunks)));
@@ -282,7 +282,7 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
     y += 54;
 
     /* ── Pie de página (posición fija al fondo) ───────────── */
-    const footerY = 841.89 - 40;
+    const footerY = 792 - 40;
     hLine(doc, footerY - 10);
     doc.fontSize(7).font('Helvetica').fillColor(C.muted)
        .text(
@@ -354,7 +354,7 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
   const totalUsd  = parseFloat((amountUsd + ivaUsd).toFixed(2));
 
   return new Promise<Buffer>((resolve, reject) => {
-    const doc    = new PDFDocument({ size: 'A4', margin: M, autoFirstPage: true });
+    const doc    = new PDFDocument({ size: 'LETTER', margin: M, autoFirstPage: true });
     const chunks: Buffer[] = [];
     doc.on('data',  (c: Buffer) => chunks.push(c));
     doc.on('end',   () => resolve(Buffer.concat(chunks)));
@@ -447,7 +447,7 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
     y += 54;
 
     /* ── Pie de página (posición fija al fondo) ───────────── */
-    const footerY2 = 841.89 - 40;
+    const footerY2 = 792 - 40;
     hLine(doc, footerY2 - 10);
     doc.fontSize(7).font('Helvetica').fillColor(C.muted)
        .text(
