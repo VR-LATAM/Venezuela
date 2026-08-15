@@ -8,10 +8,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, SafeAreaView,
-  ScrollView, TextInput, Alert, ActivityIndicator, Linking,
+  ScrollView, TextInput, Alert, ActivityIndicator,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import { BRAND_COLORS } from '@vride/shared';
 import { apiClient } from '../../src/services/apiClient';
 
@@ -110,12 +112,24 @@ export default function MembershipScreen() {
     setDownloading(true);
     try {
       const baseUrl = (apiClient.defaults.baseURL ?? '').replace(/\/$/, '');
-      const url = `${baseUrl}/membership/${membershipId}/invoice`;
-      const supported = await Linking.canOpenURL(url);
-      if (supported) {
-        await Linking.openURL(url);
+      const token   = apiClient.defaults.headers.common['Authorization'] as string | undefined;
+      const url     = `${baseUrl}/membership/${membershipId}/invoice`;
+      const dest    = `${FileSystem.cacheDirectory}factura-${membershipId.slice(0, 8).toUpperCase()}.pdf`;
+
+      const { status } = await FileSystem.downloadAsync(url, dest, {
+        headers: token ? { Authorization: token } : {},
+      });
+
+      if (status !== 200) {
+        Alert.alert('Error', 'No se pudo descargar la factura.');
+        return;
+      }
+
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(dest, { mimeType: 'application/pdf', UTI: 'com.adobe.pdf' });
       } else {
-        Alert.alert('Error', 'No se puede abrir el archivo. Revisa tu conexión.');
+        Alert.alert('Descargada', `Factura guardada en: ${dest}`);
       }
     } catch {
       Alert.alert('Error', 'No se pudo descargar la factura.');
