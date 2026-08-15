@@ -215,9 +215,8 @@ export default function MembershipScreen() {
               {formatDate(data.currentPeriod.start)} → {formatDate(data.currentPeriod.end)}
             </Text>
             <Text style={styles.periodSub}>
-              Próximo pago: viernes {formatDate(data.nextPaymentDate)}
+              Pago: {formatDate(data.nextPaymentDate)} · antes 2:00 PM
             </Text>
-            <Text style={styles.periodSub}>Pagar antes de las 2:00 PM</Text>
           </View>
         )}
 
