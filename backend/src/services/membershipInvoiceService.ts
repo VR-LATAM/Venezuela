@@ -366,7 +366,7 @@ function buildPDF(data: PDFData): Promise<Buffer> {
          'El monto reflejado en este documento podrá estar sujeto al pago adicional del 3% por concepto del Impuesto a las ' +
          'Grandes Transacciones Financieras (IGTF), según lo dispuesto en la Providencia Administrativa SNAT/2022/000013 ' +
          '(G.O. N° 42.339 del 17/03/2022), únicamente cuando el pago se efectúe en moneda extranjera. No aplica para pagos en Bolívares.',
-         M, FOOTER_Y, { width: W }
+         M, FOOTER_Y, { width: W, align: 'center' }
        );
 
     doc.fontSize(6.5).font('Helvetica').fillColor(C.muted)
@@ -374,7 +374,7 @@ function buildPDF(data: PDFData): Promise<Buffer> {
          'Los montos expresados en Bolívares se calculan aplicando el tipo de cambio oficial publicado por el Banco Central ' +
          'de Venezuela (BCV) a la fecha de emisión del presente comprobante, en cumplimiento del artículo 13 numeral 14 de la ' +
          'Providencia SNAT/2011/0071, el artículo 128 de la Ley del BCV, el artículo 25 de la Ley del IVA y el artículo 38 de su Reglamento (RLIVA).',
-         M, FOOTER_Y + 24, { width: W }
+         M, FOOTER_Y + 24, { width: W, align: 'center' }
        );
 
     doc.fontSize(6.5).font('Helvetica').fillColor(C.muted)
