@@ -130,8 +130,8 @@ export const membershipController = {
     if (!membership) return sendError(res, 404, 'Membresía no encontrada o ya procesada', 'NOT_FOUND');
 
     /* Generar y enviar factura en background (no bloquea la respuesta) */
-    const { rows: driverRows } = await db.query<{ name: string; email: string; cedula: string | null }>(
-      'SELECT name, email, cedula FROM users WHERE id = $1',
+    const { rows: driverRows } = await db.query<{ name: string; email: string; cedula: string | null; phone: string | null; state_code: string | null }>(
+      'SELECT name, email, cedula, phone, state_code FROM users WHERE id = $1',
       [membership.driver_id]
     );
     const driver = driverRows[0];
@@ -145,6 +145,8 @@ export const membershipController = {
         driverName:   driver.name,
         driverEmail:  driver.email,
         driverCedula: driver.cedula,
+        driverPhone:  driver.phone,
+        driverState:  driver.state_code,
         approvedAt:   new Date(),
       }).then(invoice =>
         emailService.sendMembershipInvoice({
@@ -190,8 +192,8 @@ export const membershipController = {
     if (!membership) return sendError(res, 404, 'Membresía no encontrada', 'NOT_FOUND');
     if (membership.status !== 'active') return sendError(res, 422, 'Solo se puede facturar membresías activas', 'INVALID_STATUS');
 
-    const { rows: driverRows } = await db.query<{ name: string; email: string; cedula: string | null }>(
-      'SELECT name, email, cedula FROM users WHERE id = $1',
+    const { rows: driverRows } = await db.query<{ name: string; email: string; cedula: string | null; phone: string | null; state_code: string | null }>(
+      'SELECT name, email, cedula, phone, state_code FROM users WHERE id = $1',
       [membership.driver_id]
     );
     const driver = driverRows[0];
@@ -206,6 +208,8 @@ export const membershipController = {
       driverName:   driver.name,
       driverEmail:  driver.email,
       driverCedula: driver.cedula,
+      driverPhone:  driver.phone,
+      driverState:  driver.state_code,
       approvedAt:   membership.approved_at ? new Date(membership.approved_at) : new Date(),
     });
 
