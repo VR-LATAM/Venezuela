@@ -212,28 +212,60 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
     doc.rect(M, y, W, 2).fill(C.gold);
     y += 12;
 
-    /* ── Cabecera tabla ─────────────────────────────────────── */
+    /* ── Cabecera tabla: CANTIDAD | DESCRIPCIÓN | Bs. ─────── */
+    const colQty  = 48;
+    const colBs   = W * 0.30;
+    const colDesc = W - colQty - colBs;
+
     doc.rect(M, y, W, 22).fill(C.primary);
     doc.fontSize(8).font('Helvetica-Bold').fillColor(C.white)
-       .text('DESCRIPCIÓN', M + 6, y + 7, { width: W * 0.62, lineBreak: false });
+       .text('CANT.', M + 4, y + 7, { width: colQty - 4, align: 'center', lineBreak: false });
     doc.fontSize(8).font('Helvetica-Bold').fillColor(C.white)
-       .text('MONTO (Bs.)', M + W * 0.62, y + 7, { width: W * 0.38, align: 'right', lineBreak: false });
+       .text('DESCRIPCIÓN', M + colQty + 4, y + 7, { width: colDesc - 8, lineBreak: false });
+    doc.fontSize(8).font('Helvetica-Bold').fillColor(C.white)
+       .text('Bs.', M + colQty + colDesc, y + 7, { width: colBs - 4, align: 'right', lineBreak: false });
     y += 26;
 
     /* ── Fila detalle ───────────────────────────────────────── */
-    doc.rect(M, y, W, 34).fill('#F8FAFC');
+    const rowH = 110;
+    doc.rect(M, y, W, rowH).fill('#F8FAFC');
+
+    /* Cantidad */
+    doc.fontSize(13).font('Helvetica-Bold').fillColor(C.dark)
+       .text('1', M + 4, y + 10, { width: colQty - 4, align: 'center', lineBreak: false });
+
+    /* Descripción: concepto + periodo + desglose USD */
+    const xDesc = M + colQty + 4;
     doc.fontSize(11).font('Helvetica-Bold').fillColor(C.dark)
-       .text(descripcion, M + 6, y + 5, { lineBreak: false });
+       .text(descripcion, xDesc, y + 6, { width: colDesc - 8, lineBreak: false });
     doc.fontSize(9).font('Helvetica').fillColor(C.muted)
-       .text(periodo, M + 6, y + 19);
-    doc.fontSize(11).font('Helvetica-Bold').fillColor(C.dark)
-       .text(formatVes(amountVes), M + W * 0.62, y + 10, { width: W * 0.38, align: 'right', lineBreak: false });
-    y += 38;
+       .text(periodo, xDesc, y + 20, { width: colDesc - 8, lineBreak: false });
+
+    const usdLines: [string, string][] = [
+      [`Membresía:`,   formatUsd(amountUsdN)],
+      [`IVA 16%:`,     formatUsd(ivaUsd)],
+      [`Total USD:`,   formatUsd(totalUsd)],
+      [`Tasa BCV:`,    `1 USD = Bs. ${rateVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ];
+    let yd = y + 36;
+    doc.fontSize(8.5).fillColor('#78350F');
+    for (const [lbl, val] of usdLines) {
+      doc.font('Helvetica').text(lbl, xDesc, yd, { width: colDesc * 0.42, lineBreak: false });
+      doc.font('Helvetica-Bold').text(val, xDesc + colDesc * 0.42, yd, { width: colDesc * 0.54, lineBreak: false });
+      yd += 13;
+    }
+
+    /* Monto en Bs. (alineado al centro vertical de la fila) */
+    doc.fontSize(13).font('Helvetica-Bold').fillColor(C.primary)
+       .text(formatVes(amountVes), M + colQty + colDesc, y + (rowH / 2) - 8,
+             { width: colBs - 4, align: 'right', lineBreak: false });
+
+    y += rowH + 4;
 
     hLine(doc, y);
     y += 10;
 
-    /* ── IVA y totales ──────────────────────────────────────── */
+    /* ── Totales en Bs. ─────────────────────────────────────── */
     y = row(doc, y, 'Base imponible', formatVes(amountVes));
     y = row(doc, y, 'IVA (16%)', formatVes(ivaVes), { color: C.muted });
     y += 4;
@@ -241,34 +273,13 @@ export async function generateMembershipInvoice(input: InvoiceInput): Promise<In
     hLine(doc, y, true);
     y += 8;
 
-    /* Caja total */
+    /* Caja TOTAL en Bs. */
     doc.rect(M, y, W, 44).fill(C.primary);
     doc.fontSize(12).font('Helvetica-Bold').fillColor(C.white)
-       .text('TOTAL A PAGAR', M + 12, y + 15, { width: W / 2, lineBreak: false });
+       .text('TOTAL A PAGAR (Bs.)', M + 12, y + 15, { width: W / 2, lineBreak: false });
     doc.fontSize(22).font('Helvetica-Bold').fillColor(C.gold)
        .text(formatVes(totalVes), M, y + 11, { width: W - 12, align: 'right', lineBreak: false });
     y += 54;
-
-    /* ── Nota USD ───────────────────────────────────────────── */
-    doc.rect(M, y, W, 68).fillAndStroke('#FFFBEB', '#FDE68A');
-
-    doc.fontSize(8.5).font('Helvetica-Bold').fillColor('#92400E')
-       .text('NOTA INFORMATIVA — Equivalente en Dólares (USD)', M + 10, y + 8);
-    y += 20;
-
-    doc.fontSize(9).font('Helvetica').fillColor('#78350F');
-    const nota = [
-      [`Membresía (base)`, formatUsd(amountUsdN)],
-      [`IVA 16%`,          formatUsd(ivaUsd)],
-      [`Total USD`,        formatUsd(totalUsd)],
-      [`Tasa BCV aplicada`, `1 USD = Bs. ${rateVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-    ] as [string, string][];
-
-    for (const [lbl, val] of nota) {
-      doc.text(lbl, M + 10, y, { width: W * 0.60, lineBreak: false });
-      doc.text(val, M + W * 0.60, y, { width: W * 0.40 - 10, align: 'right', lineBreak: false });
-      y += 13;
-    }
 
     y += 16;
 
@@ -378,16 +389,47 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
        .text(`Cédula: ${m.driver_cedula ?? 'No registrada'}    |    ${m.driver_email}`, M, y); y += 18;
     doc.rect(M, y, W, 2).fill(C.gold); y += 12;
 
+    const colQty2  = 48;
+    const colBs2   = W * 0.30;
+    const colDesc2 = W - colQty2 - colBs2;
+
     doc.rect(M, y, W, 22).fill(C.primary);
-    doc.fontSize(8).font('Helvetica-Bold').fillColor(C.white).text('DESCRIPCIÓN', M + 6, y + 7, { width: W * 0.62, lineBreak: false });
-    doc.fontSize(8).font('Helvetica-Bold').fillColor(C.white).text('MONTO (Bs.)', M + W * 0.62, y + 7, { width: W * 0.38, align: 'right', lineBreak: false });
+    doc.fontSize(8).font('Helvetica-Bold').fillColor(C.white)
+       .text('CANT.', M + 4, y + 7, { width: colQty2 - 4, align: 'center', lineBreak: false });
+    doc.fontSize(8).font('Helvetica-Bold').fillColor(C.white)
+       .text('DESCRIPCIÓN', M + colQty2 + 4, y + 7, { width: colDesc2 - 8, lineBreak: false });
+    doc.fontSize(8).font('Helvetica-Bold').fillColor(C.white)
+       .text('Bs.', M + colQty2 + colDesc2, y + 7, { width: colBs2 - 4, align: 'right', lineBreak: false });
     y += 26;
 
-    doc.rect(M, y, W, 34).fill('#F8FAFC');
-    doc.fontSize(11).font('Helvetica-Bold').fillColor(C.dark).text(descripcion, M + 6, y + 5, { lineBreak: false });
-    doc.fontSize(9).font('Helvetica').fillColor(C.muted).text(periodo, M + 6, y + 19);
-    doc.fontSize(11).font('Helvetica-Bold').fillColor(C.dark).text(formatVes(amountVes), M + W * 0.62, y + 10, { width: W * 0.38, align: 'right', lineBreak: false });
-    y += 38;
+    const rowH2 = 110;
+    doc.rect(M, y, W, rowH2).fill('#F8FAFC');
+    doc.fontSize(13).font('Helvetica-Bold').fillColor(C.dark)
+       .text('1', M + 4, y + 10, { width: colQty2 - 4, align: 'center', lineBreak: false });
+
+    const xDesc2 = M + colQty2 + 4;
+    doc.fontSize(11).font('Helvetica-Bold').fillColor(C.dark)
+       .text(descripcion, xDesc2, y + 6, { width: colDesc2 - 8, lineBreak: false });
+    doc.fontSize(9).font('Helvetica').fillColor(C.muted)
+       .text(periodo, xDesc2, y + 20, { width: colDesc2 - 8, lineBreak: false });
+
+    let yd2 = y + 36;
+    doc.fontSize(8.5).fillColor('#78350F');
+    for (const [lbl, val] of [
+      [`Membresía:`, formatUsd(amountUsd)],
+      [`IVA 16%:`,   formatUsd(ivaUsd)],
+      [`Total USD:`, formatUsd(totalUsd)],
+      [`Tasa BCV:`,  `1 USD = Bs. ${rateVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
+    ] as [string, string][]) {
+      doc.font('Helvetica').text(lbl, xDesc2, yd2, { width: colDesc2 * 0.42, lineBreak: false });
+      doc.font('Helvetica-Bold').text(val, xDesc2 + colDesc2 * 0.42, yd2, { width: colDesc2 * 0.54, lineBreak: false });
+      yd2 += 13;
+    }
+
+    doc.fontSize(13).font('Helvetica-Bold').fillColor(C.primary)
+       .text(formatVes(amountVes), M + colQty2 + colDesc2, y + (rowH2 / 2) - 8,
+             { width: colBs2 - 4, align: 'right', lineBreak: false });
+    y += rowH2 + 4;
 
     hLine(doc, y); y += 10;
     y = row(doc, y, 'Base imponible', formatVes(amountVes));
@@ -395,24 +437,11 @@ export async function getInvoiceForMembership(membershipId: string, driverId: st
     y += 4; hLine(doc, y, true); y += 8;
 
     doc.rect(M, y, W, 44).fill(C.primary);
-    doc.fontSize(12).font('Helvetica-Bold').fillColor(C.white).text('TOTAL A PAGAR', M + 12, y + 15, { width: W / 2, lineBreak: false });
-    doc.fontSize(22).font('Helvetica-Bold').fillColor(C.gold).text(formatVes(totalVes), M, y + 11, { width: W - 12, align: 'right', lineBreak: false });
+    doc.fontSize(12).font('Helvetica-Bold').fillColor(C.white)
+       .text('TOTAL A PAGAR (Bs.)', M + 12, y + 15, { width: W / 2, lineBreak: false });
+    doc.fontSize(22).font('Helvetica-Bold').fillColor(C.gold)
+       .text(formatVes(totalVes), M, y + 11, { width: W - 12, align: 'right', lineBreak: false });
     y += 54;
-
-    doc.rect(M, y, W, 68).fillAndStroke('#FFFBEB', '#FDE68A');
-    doc.fontSize(8.5).font('Helvetica-Bold').fillColor('#92400E').text('NOTA INFORMATIVA — Equivalente en Dólares (USD)', M + 10, y + 8);
-    y += 20;
-    doc.fontSize(9).font('Helvetica').fillColor('#78350F');
-    for (const [lbl, val] of [
-      [`Membresía (base)`, formatUsd(amountUsd)],
-      [`IVA 16%`,          formatUsd(ivaUsd)],
-      [`Total USD`,        formatUsd(totalUsd)],
-      [`Tasa BCV aplicada`, `1 USD = Bs. ${rateVes.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`],
-    ] as [string, string][]) {
-      doc.text(lbl, M + 10, y, { width: W * 0.60, lineBreak: false });
-      doc.text(val, M + W * 0.60, y, { width: W * 0.40 - 10, align: 'right', lineBreak: false });
-      y += 13;
-    }
 
     y += 16;
     hLine(doc, y); y += 8;
