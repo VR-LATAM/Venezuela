@@ -662,7 +662,8 @@ export const rideService = {
          SET total_rides = COALESCE(total_rides, 0) + 1,
              loyalty_cycle_rides = CASE
                WHEN $2 AND loyalty_cycle_rides = 7 THEN 0
-               ELSE LEAST(COALESCE(loyalty_cycle_rides, 0) + 1, 7)
+               WHEN COALESCE(total_rides, 0) >= 3 THEN LEAST(COALESCE(loyalty_cycle_rides, 0) + 1, 7)
+               ELSE 0
              END
          WHERE id = $1`,
         [ride.passenger_id, hadDiscount]
