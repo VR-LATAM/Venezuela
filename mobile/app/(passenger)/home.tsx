@@ -1952,6 +1952,7 @@ export default function PassengerHomeScreen() {
             </TouchableOpacity>
 
             {[
+              { icon: '🎁', label: 'Mis referidos',            route: '/(passenger)/referrals'             as const },
               { icon: '💳', label: 'Métodos de pago',        route: '/(passenger)/payments'              as const },
               { icon: '📊', label: 'Mi gasto',               route: '/(passenger)/spending'              as const },
               { icon: '🗂️', label: 'Historial de viajes',    route: '/(passenger)/history'               as const },

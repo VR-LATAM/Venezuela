@@ -13,6 +13,7 @@ export default function PassengerLayout() {
       <Stack.Screen name="schedule" />
       <Stack.Screen name="history" />
       <Stack.Screen name="special-needs" />
+      <Stack.Screen name="referrals" />
     </Stack>
   );
 }
