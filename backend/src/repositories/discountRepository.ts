@@ -1,40 +1,43 @@
 import { query, queryOne } from '../config/database';
 
-const CYCLE_LENGTH            = 8;
-const NEW_PASSENGER_THRESHOLD = 3;
-const NEW_PASSENGER_DISCOUNT  = 2.00;
-const MIN_FARE_TIER1          = 5.00;
-const MIN_FARE_TIER2          = 10.00;
-const DISCOUNT_TIER1          = 1.00;
-const DISCOUNT_TIER2          = 2.00;
-const MIN_HOURS_BETWEEN       = 96;
-const MAX_PER_WEEK            = 2;
-const MAX_PER_MONTH           = 5;
+const NEW_PASSENGER_MAX       = 3;
+const NEW_PASSENGER_DISCOUNT  = 1.00;
+const NEW_PASSENGER_MIN_FARE  = 3.00;
+
+const LOYALTY_CYCLE_SIZE      = 8;    // viajes regulares antes del descuento
+const LOYALTY_MIN_FARE_TIER1  = 5.00;
+const LOYALTY_MIN_FARE_TIER2  = 10.00;
+const LOYALTY_DISCOUNT_TIER1  = 1.00;
+const LOYALTY_DISCOUNT_TIER2  = 2.00;
+
+const MIN_HOURS_BETWEEN = 96;
+const MAX_PER_WEEK      = 2;
+const MAX_PER_MONTH     = 5;
 
 export const discountRepository = {
 
-  /* Verdadero si el pasajero tiene menos de 3 viajes completados (primeros 3 viajes = promo bienvenida) */
+  /* Verdadero si el pasajero aún no ha usado sus 3 descuentos de bienvenida */
   isNewPassenger: async (passengerId: string): Promise<boolean> => {
-    const row = await queryOne<{ total_rides: number }>(
-      `SELECT total_rides FROM passengers WHERE id = $1`,
+    const row = await queryOne<{ new_passenger_discounts_used: number }>(
+      `SELECT new_passenger_discounts_used FROM passengers WHERE id = $1`,
       [passengerId]
     );
-    return (row?.total_rides ?? 0) < NEW_PASSENGER_THRESHOLD;
+    return (row?.new_passenger_discounts_used ?? 0) < NEW_PASSENGER_MAX;
   },
 
-  /* Verdadero cuando el pasajero está en la posición 7 (va a completar su 8vo viaje del ciclo) */
+  /* Verdadero cuando el pasajero completó 8 viajes en el ciclo (el siguiente = descuento) */
   isLoyaltyRide: async (passengerId: string): Promise<boolean> => {
     const row = await queryOne<{ loyalty_cycle_rides: number }>(
       `SELECT loyalty_cycle_rides FROM passengers WHERE id = $1`,
       [passengerId]
     );
-    return (row?.loyalty_cycle_rides ?? 0) === CYCLE_LENGTH - 1;
+    return (row?.loyalty_cycle_rides ?? 0) === LOYALTY_CYCLE_SIZE;
   },
 
-  /* $2 si la tarifa es >= $10, $1 si >= $5, $0 si no aplica */
-  calculateDiscount: (fare: number): number => {
-    if (fare >= MIN_FARE_TIER2) return DISCOUNT_TIER2;
-    if (fare >= MIN_FARE_TIER1) return DISCOUNT_TIER1;
+  /* $2 si tarifa >= $10, $1 si tarifa >= $5 */
+  calculateLoyaltyDiscount: (fare: number): number => {
+    if (fare >= LOYALTY_MIN_FARE_TIER2) return LOYALTY_DISCOUNT_TIER2;
+    if (fare >= LOYALTY_MIN_FARE_TIER1) return LOYALTY_DISCOUNT_TIER1;
     return 0;
   },
 
@@ -62,33 +65,23 @@ export const discountRepository = {
     return { last96h, thisWeek, thisMonth, canTake };
   },
 
-  recordDiscount: async (driverId: string, rideId: string, discountAmount: number): Promise<void> => {
+  recordDiscount: async (
+    driverId: string,
+    rideId: string,
+    discountAmount: number,
+    discountType: 'new_passenger' | 'loyalty'
+  ): Promise<void> => {
     await query(
       `INSERT INTO driver_discount_tracking (driver_id, ride_id, is_voluntary) VALUES ($1, $2, FALSE)`,
       [driverId, rideId]
     );
     await query(
-      `UPDATE rides SET new_passenger_discount = TRUE, discount_amount = $1 WHERE id = $2`,
-      [discountAmount, rideId]
+      `UPDATE rides SET new_passenger_discount = TRUE, discount_amount = $1, discount_type = $2 WHERE id = $3`,
+      [discountAmount, discountType, rideId]
     );
   },
 
-  /* Avanza el contador de ciclo del pasajero tras completar un viaje.
-     Si fue viaje con descuento: resetea a 0 (el 8vo viaje no cuenta en el nuevo ciclo).
-     Si fue regular: incrementa (de 0 a 6; al llegar a 7 el siguiente será el descuento). */
-  advanceLoyaltyCycle: async (passengerId: string, wasDiscountRide: boolean): Promise<void> => {
-    if (wasDiscountRide) {
-      await query(`UPDATE passengers SET loyalty_cycle_rides = 0 WHERE id = $1`, [passengerId]);
-    } else {
-      await query(
-        `UPDATE passengers
-         SET loyalty_cycle_rides = LEAST(COALESCE(loyalty_cycle_rides, 0) + 1, $1)
-         WHERE id = $2`,
-        [CYCLE_LENGTH - 1, passengerId]
-      );
-    }
-  },
-
   NEW_PASSENGER_DISCOUNT,
-  MIN_FARE: MIN_FARE_TIER1,
+  NEW_PASSENGER_MIN_FARE,
+  LOYALTY_MIN_FARE_TIER1,
 };

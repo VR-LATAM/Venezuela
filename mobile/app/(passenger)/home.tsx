@@ -99,8 +99,7 @@ export default function PassengerHomeScreen() {
   const [driverWaitMinutes, setDriverWaitMinutes]   = useState(0);
   const [driverEtaMinutes, setDriverEtaMinutes]     = useState<number | null>(null);
 
-  // Descuento nuevo pasajero
-  const [rideDiscount, setRideDiscount] = useState<{ amount: number } | null>(null);
+  const [rideDiscount, setRideDiscount] = useState<{ amount: number; type?: string } | null>(null);
 
   // Chat con el conductor (disponible desde driver_assigned)
   const [chatOpen, setChatOpen]         = useState(false);
@@ -358,10 +357,10 @@ export default function PassengerHomeScreen() {
   const registerSocketListeners = () => {
     const unsubs = [
       socketService.on('passenger:driver_assigned', (data: unknown) => {
-        const d = data as { driver: typeof assignedDriver; hasDiscount?: boolean; discountAmount?: number };
+        const d = data as { driver: typeof assignedDriver; hasDiscount?: boolean; discountAmount?: number; discountType?: string };
         setSearchStatus('driver_assigned');
         setAssignedDriver(d.driver);
-        if (d.hasDiscount && d.discountAmount) setRideDiscount({ amount: d.discountAmount });
+        if (d.hasDiscount && d.discountAmount) setRideDiscount({ amount: d.discountAmount, type: d.discountType });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         // Asegurar que currentRide está cargado (puede faltar si la app se reconectó)
         if (!useRideStore.getState().currentRide) {
@@ -1692,7 +1691,10 @@ export default function PassengerHomeScreen() {
             {rideDiscount && (
               <View style={styles.discountBanner}>
                 <Text style={styles.discountBannerText}>
-                  🎁 ¡Completaste 8 viajes! Tienes ${rideDiscount.amount.toFixed(2)} de descuento en este servicio.
+                  {rideDiscount.type === 'loyalty'
+                    ? `🎁 ¡Completaste 8 viajes! Tienes $${rideDiscount.amount.toFixed(2)} de descuento en este servicio.`
+                    : `🎁 ¡Bienvenido! Tienes $${rideDiscount.amount.toFixed(2)} de descuento en este servicio.`
+                  }
                 </Text>
               </View>
             )}

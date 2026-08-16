@@ -402,12 +402,15 @@ export const rideService = {
       return;
     }
 
-    // Registrar descuento de fidelidad si este viaje lo tenía
-    const discountFlag  = await redis.get(`ride:discount:${rideId}`);
-    const discountAmount = discountFlag ? parseFloat(discountFlag) : 0;
-    if (discountAmount > 0) {
-      discountRepository.recordDiscount(driverId, rideId, discountAmount).catch(err => {
-        logger.error(`Error registrando descuento de fidelidad para viaje ${rideId}:`, err);
+    // Registrar descuento si este viaje lo tenía (formato Redis: "tipo:monto")
+    const discountFlag = await redis.get(`ride:discount:${rideId}`);
+    const [discountTypeRaw, discountAmountRaw] = (discountFlag ?? '').split(':');
+    const discountAmount = discountAmountRaw ? parseFloat(discountAmountRaw) : 0;
+    const discountType   = (discountTypeRaw === 'new_passenger' || discountTypeRaw === 'loyalty')
+      ? discountTypeRaw : null;
+    if (discountAmount > 0 && discountType) {
+      discountRepository.recordDiscount(driverId, rideId, discountAmount, discountType).catch(err => {
+        logger.error(`Error registrando descuento para viaje ${rideId}:`, err);
       });
       await redis.del(`ride:discount:${rideId}`);
     }
@@ -429,7 +432,8 @@ export const rideService = {
     emitToUser(ride.passenger_id, 'passenger:driver_assigned', {
       rideId,
       hasDiscount:    discountAmount > 0,
-      discountAmount: discountAmount,
+      discountAmount,
+      discountType:   discountType ?? undefined,
       driver: {
         id:             driver?.id,
         name:           driver?.operative_code ?? driver?.name,
@@ -607,7 +611,8 @@ export const rideService = {
       logger.info(`Loyalty 10% discount: $${loyaltyDiscount} for passenger ${ride.passenger_id} (week:${ridesThisWeek} month:${ridesThisMonth})`);
     }
     if (loyaltyRideDiscount > 0) {
-      logger.info(`Descuento fidelidad (viaje 8): -$${loyaltyRideDiscount} absorbido por conductor ${driverId}`);
+      const dtype = (rideAny.discount_type ?? 'desconocido');
+      logger.info(`Descuento ${dtype}: -$${loyaltyRideDiscount} absorbido por conductor ${driverId}`);
     }
     logger.info(`Comisión Venezuela 0% — conductor recibe $${driverEarnings} de $${fareEstimate.total}`);
 
@@ -656,17 +661,22 @@ export const rideService = {
         [driverId, driverEarnings]
       );
 
-      const hadDiscount = rideAny.new_passenger_discount === true;
+      const rideDiscountType = (rideAny.discount_type ?? null) as 'new_passenger' | 'loyalty' | null;
       await client.query(
         `UPDATE passengers
          SET total_rides = COALESCE(total_rides, 0) + 1,
+             new_passenger_discounts_used = CASE
+               WHEN $2 = 'new_passenger' THEN LEAST(COALESCE(new_passenger_discounts_used, 0) + 1, 3)
+               ELSE new_passenger_discounts_used
+             END,
              loyalty_cycle_rides = CASE
-               WHEN $2 AND loyalty_cycle_rides = 7 THEN 0
-               WHEN COALESCE(total_rides, 0) >= 3 THEN LEAST(COALESCE(loyalty_cycle_rides, 0) + 1, 7)
-               ELSE 0
+               WHEN $2 = 'loyalty' AND loyalty_cycle_rides = 8 THEN 0
+               WHEN COALESCE(new_passenger_discounts_used, 0) >= 3 AND $2 != 'new_passenger'
+                 THEN LEAST(COALESCE(loyalty_cycle_rides, 0) + 1, 8)
+               ELSE loyalty_cycle_rides
              END
          WHERE id = $1`,
-        [ride.passenger_id, hadDiscount]
+        [ride.passenger_id, rideDiscountType]
       );
 
       return { completedRide, driverStats: statsResult.rows[0] };
@@ -1205,10 +1215,11 @@ async function searchAndNotifyDrivers(
     const specialCategories: string[] = specialNeeds?.categories ?? (specialNeeds?.category && specialNeeds.category !== 'none' ? [specialNeeds.category] : []);
 
     // Verificar si aplica alguno de los dos tipos de descuento (excluyentes entre sí)
-    const isNewPassenger  = await discountRepository.isNewPassenger(passengerId).catch(() => false);
-    const isLoyaltyRide   = !isNewPassenger && await discountRepository.isLoyaltyRide(passengerId).catch(() => false);
-    const fareQualifies   = estimatedFare >= discountRepository.MIN_FARE;
-    const discountEligible = (isNewPassenger || isLoyaltyRide) && fareQualifies;
+    const isNewPassenger   = await discountRepository.isNewPassenger(passengerId).catch(() => false);
+    const isLoyaltyRide    = !isNewPassenger && await discountRepository.isLoyaltyRide(passengerId).catch(() => false);
+    const newPassQualifies = isNewPassenger && estimatedFare >= discountRepository.NEW_PASSENGER_MIN_FARE;
+    const loyaltyQualifies = isLoyaltyRide  && estimatedFare >= discountRepository.LOYALTY_MIN_FARE_TIER1;
+    const discountEligible = newPassQualifies || loyaltyQualifies;
 
     // Ofrecer viaje a cada conductor en orden de distancia (más cercano primero)
     for (const driver of candidates) {
@@ -1225,9 +1236,9 @@ async function searchAndNotifyDrivers(
         const discountStatus = await discountRepository.getDriverDiscountStatus(driver.id);
         if (discountStatus.canTake) {
           isDiscountRide     = true;
-          rideDiscountAmount = isNewPassenger
+          rideDiscountAmount = newPassQualifies
             ? discountRepository.NEW_PASSENGER_DISCOUNT
-            : discountRepository.calculateDiscount(estimatedFare);
+            : discountRepository.calculateLoyaltyDiscount(estimatedFare);
         } else {
           // Conductor alcanzó sus límites — buscar otro que pueda absorber el descuento
           continue;
@@ -1278,9 +1289,10 @@ async function searchAndNotifyDrivers(
         driver.id
       );
 
-      // Guardar monto de descuento en Redis para registrarlo cuando el conductor acepte
+      // Guardar tipo y monto de descuento en Redis para registrarlo cuando el conductor acepte
       if (isDiscountRide && rideDiscountAmount > 0) {
-        await redis.setex(`ride:discount:${rideId}`, env.DRIVER_ACCEPT_TIMEOUT_SECONDS + 60, String(rideDiscountAmount));
+        const discountType = newPassQualifies ? 'new_passenger' : 'loyalty';
+        await redis.setex(`ride:discount:${rideId}`, env.DRIVER_ACCEPT_TIMEOUT_SECONDS + 60, `${discountType}:${rideDiscountAmount}`);
       }
 
       logger.info(`Viaje ${rideId}: ofrecido al conductor ${driver.id} (${radiusKm}km)`);
