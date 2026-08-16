@@ -341,7 +341,10 @@ export default function PassengerHomeScreen() {
     try {
       const [addr] = await Location.reverseGeocodeAsync(coords);
       if (addr) {
-        const readable = [addr.street, addr.city, addr.region].filter(Boolean).join(', ');
+        // En Venezuela addr.street puede ser null — usamos name/district como alternativa
+        const street = addr.street ?? addr.name ?? addr.district ?? null;
+        const readable = [street, addr.city ?? addr.subregion, addr.region]
+          .filter(Boolean).join(', ');
         setPickupAddress(readable || 'Mi ubicación actual');
       }
     } catch { /* mantener default */ }
@@ -1689,7 +1692,7 @@ export default function PassengerHomeScreen() {
             {rideDiscount && (
               <View style={styles.discountBanner}>
                 <Text style={styles.discountBannerText}>
-                  🎁 ¡Felicidades! Tienes ${ rideDiscount.amount.toFixed(2)} de descuento en este viaje.
+                  🎁 ¡Completaste 8 viajes! Tienes ${rideDiscount.amount.toFixed(2)} de descuento en este servicio.
                 </Text>
               </View>
             )}
