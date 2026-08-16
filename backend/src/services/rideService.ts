@@ -656,16 +656,16 @@ export const rideService = {
         [driverId, driverEarnings]
       );
 
-      const wasLoyaltyDiscount = rideAny.new_passenger_discount === true;
+      const hadDiscount = rideAny.new_passenger_discount === true;
       await client.query(
         `UPDATE passengers
          SET total_rides = COALESCE(total_rides, 0) + 1,
              loyalty_cycle_rides = CASE
-               WHEN $2 THEN 0
+               WHEN $2 AND loyalty_cycle_rides = 7 THEN 0
                ELSE LEAST(COALESCE(loyalty_cycle_rides, 0) + 1, 7)
              END
          WHERE id = $1`,
-        [ride.passenger_id, wasLoyaltyDiscount]
+        [ride.passenger_id, hadDiscount]
       );
 
       return { completedRide, driverStats: statsResult.rows[0] };
@@ -1203,10 +1203,11 @@ async function searchAndNotifyDrivers(
     const specialNeeds = (passengerProfile as any)?.special_needs ?? null;
     const specialCategories: string[] = specialNeeds?.categories ?? (specialNeeds?.category && specialNeeds.category !== 'none' ? [specialNeeds.category] : []);
 
-    // Verificar si el pasajero está en su 8vo viaje del ciclo de fidelidad y la tarifa aplica
-    const isLoyaltyRide   = await discountRepository.isLoyaltyRide(passengerId).catch(() => false);
+    // Verificar si aplica alguno de los dos tipos de descuento (excluyentes entre sí)
+    const isNewPassenger  = await discountRepository.isNewPassenger(passengerId).catch(() => false);
+    const isLoyaltyRide   = !isNewPassenger && await discountRepository.isLoyaltyRide(passengerId).catch(() => false);
     const fareQualifies   = estimatedFare >= discountRepository.MIN_FARE;
-    const discountEligible = isLoyaltyRide && fareQualifies;
+    const discountEligible = (isNewPassenger || isLoyaltyRide) && fareQualifies;
 
     // Ofrecer viaje a cada conductor en orden de distancia (más cercano primero)
     for (const driver of candidates) {
@@ -1222,8 +1223,10 @@ async function searchAndNotifyDrivers(
       if (discountEligible) {
         const discountStatus = await discountRepository.getDriverDiscountStatus(driver.id);
         if (discountStatus.canTake) {
-          isDiscountRide    = true;
-          rideDiscountAmount = discountRepository.calculateDiscount(estimatedFare);
+          isDiscountRide     = true;
+          rideDiscountAmount = isNewPassenger
+            ? discountRepository.NEW_PASSENGER_DISCOUNT
+            : discountRepository.calculateDiscount(estimatedFare);
         } else {
           // Conductor alcanzó sus límites — buscar otro que pueda absorber el descuento
           continue;

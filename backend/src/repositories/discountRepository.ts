@@ -1,15 +1,26 @@
 import { query, queryOne } from '../config/database';
 
-const CYCLE_LENGTH       = 8;
-const MIN_FARE_TIER1     = 5.00;
-const MIN_FARE_TIER2     = 10.00;
-const DISCOUNT_TIER1     = 1.00;
-const DISCOUNT_TIER2     = 2.00;
-const MIN_HOURS_BETWEEN  = 96;
-const MAX_PER_WEEK       = 2;
-const MAX_PER_MONTH      = 5;
+const CYCLE_LENGTH            = 8;
+const NEW_PASSENGER_THRESHOLD = 3;
+const NEW_PASSENGER_DISCOUNT  = 2.00;
+const MIN_FARE_TIER1          = 5.00;
+const MIN_FARE_TIER2          = 10.00;
+const DISCOUNT_TIER1          = 1.00;
+const DISCOUNT_TIER2          = 2.00;
+const MIN_HOURS_BETWEEN       = 96;
+const MAX_PER_WEEK            = 2;
+const MAX_PER_MONTH           = 5;
 
 export const discountRepository = {
+
+  /* Verdadero si el pasajero tiene menos de 3 viajes completados (primeros 3 viajes = promo bienvenida) */
+  isNewPassenger: async (passengerId: string): Promise<boolean> => {
+    const row = await queryOne<{ total_rides: number }>(
+      `SELECT total_rides FROM passengers WHERE id = $1`,
+      [passengerId]
+    );
+    return (row?.total_rides ?? 0) < NEW_PASSENGER_THRESHOLD;
+  },
 
   /* Verdadero cuando el pasajero está en la posición 7 (va a completar su 8vo viaje del ciclo) */
   isLoyaltyRide: async (passengerId: string): Promise<boolean> => {
@@ -78,5 +89,6 @@ export const discountRepository = {
     }
   },
 
+  NEW_PASSENGER_DISCOUNT,
   MIN_FARE: MIN_FARE_TIER1,
 };
