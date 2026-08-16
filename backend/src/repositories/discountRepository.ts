@@ -69,7 +69,7 @@ export const discountRepository = {
     driverId: string,
     rideId: string,
     discountAmount: number,
-    discountType: 'new_passenger' | 'loyalty'
+    discountType: 'new_passenger' | 'loyalty' | 'referral_credit'
   ): Promise<void> => {
     await query(
       `INSERT INTO driver_discount_tracking (driver_id, ride_id, is_voluntary) VALUES ($1, $2, FALSE)`,

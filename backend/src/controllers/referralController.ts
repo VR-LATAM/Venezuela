@@ -7,6 +7,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { db } from '../config/database';
 import { sendSuccess } from '../utils/response';
+import { passengerReferralRepository } from '../repositories/passengerReferralRepository';
 
 export const referralController = {
 
@@ -64,6 +65,32 @@ export const referralController = {
         totalReferrals:  referrals.length,
         activeReferrals: referrals.filter(r => r.status === 'in_progress').length,
         totalBonusEarned: parseFloat(bonusRows[0]?.total ?? '0'),
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  // GET /referral/passenger/me — progreso del programa de referidos del pasajero
+  getPassengerReferrals: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const passengerId = req.user!.userId;
+      const progress = await passengerReferralRepository.getProgress(passengerId);
+
+      const passenger = await db.query<{ operative_code: string }>(
+        `SELECT operative_code FROM passengers WHERE id = $1`, [passengerId]
+      );
+
+      sendSuccess(res, {
+        myReferralCode:     passenger.rows[0]?.operative_code ?? null,
+        credit:             progress.credit,
+        completedThisMonth: progress.completedThisMonth,
+        maxPerMonth:        2,
+        rewardAmount:       passengerReferralRepository.REWARD_AMOUNT,
+        ridesRequired:      passengerReferralRepository.RIDES_TO_QUALIFY,
+        groupSize:          passengerReferralRepository.MAX_PER_GROUP,
+        groupDays:          passengerReferralRepository.GROUP_DAYS,
+        activeGroup:        progress.activeGroup,
       });
     } catch (err) {
       next(err);

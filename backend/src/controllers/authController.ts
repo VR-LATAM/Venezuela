@@ -77,6 +77,7 @@ const registerPassengerSchema = z.object({
   emergencyContactPhone: z.string().optional(),
   emergencyContactEmail: z.string().email().optional(),
   passengerCategories:   z.array(z.enum(PASSENGER_CATEGORIES)).optional(),
+  referralCode:          z.string().max(30).optional(),
 });
 
 const registerDriverSchema = z.object({

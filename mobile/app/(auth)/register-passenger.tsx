@@ -69,6 +69,7 @@ export default function RegisterPassengerScreen() {
   const [idDocFrontUri, setIdDocFrontUri] = useState<string | null>(null);
   const [idDocBackUri, setIdDocBackUri] = useState<string | null>(null);
   const [showScanner, setShowScanner] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
 
   const selectedStateName = VE_STATES.find(s => s.code === stateCode)?.name ?? stateCode;
 
@@ -208,6 +209,7 @@ export default function RegisterPassengerScreen() {
         emergencyContactEmail: emergencyEmail.trim() || undefined,
         passengerCategories:   passengerCategories.length > 0 ? passengerCategories : undefined,
         photoUri:              photoUri ?? undefined,
+        referralCode:          referralCode.trim().toUpperCase() || undefined,
       });
       // Subir frente y dorso del ID (tokens ya guardados tras registro)
       if (idDocFrontUri || idDocBackUri) {
@@ -426,6 +428,20 @@ export default function RegisterPassengerScreen() {
                 placeholder="(0412) 123-4567"
                 placeholderTextColor="#aaa"
               />
+            </View>
+
+            <View style={styles.field}>
+              <Text style={styles.label}>Código de referido (opcional)</Text>
+              <TextInput
+                style={styles.input}
+                value={referralCode}
+                onChangeText={t => setReferralCode(t.toUpperCase())}
+                autoCapitalize="characters"
+                autoCorrect={false}
+                placeholder="Ej: PSJ-JUAN"
+                placeholderTextColor="#aaa"
+              />
+              <Text style={styles.fieldHint}>Si alguien te invitó, ingresa su código aquí</Text>
             </View>
 
             <View style={styles.field}>
@@ -669,6 +685,9 @@ const styles = StyleSheet.create({
     color: BRAND_COLORS.TEXT,
     marginBottom: 6,
     fontFamily: 'Inter_500Medium',
+  },
+  fieldHint: {
+    fontSize: 13, color: '#6B7280', marginTop: 4, fontFamily: 'Inter_400Regular',
   },
   input: {
     height: 56,

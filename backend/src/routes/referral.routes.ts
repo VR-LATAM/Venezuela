@@ -8,7 +8,8 @@ import { asyncHandler } from '../utils/asyncHandler';
 const router = Router();
 router.use(requireAuth);
 
-router.get('/me',          requireRole('driver'), asyncHandler(referralController.getMyReferrals));
-router.get('/leaderboard', requireRole('driver'), asyncHandler(referralController.leaderboard));
+router.get('/me',          requireRole('driver'),    asyncHandler(referralController.getMyReferrals));
+router.get('/leaderboard', requireRole('driver'),    asyncHandler(referralController.leaderboard));
+router.get('/passenger/me', requireRole('passenger'), asyncHandler(referralController.getPassengerReferrals));
 
 export default router;

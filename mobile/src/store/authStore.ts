@@ -37,6 +37,7 @@ interface AuthState {
     emergencyContactEmail?: string;
     passengerCategories?: string[];
     photoUri?: string;
+    referralCode?: string;
   }) => Promise<void>;
   registerDriver: (params: {
     email: string;

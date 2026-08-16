@@ -38,6 +38,7 @@ export interface RegisterPassengerParams {
   emergencyContactPhone?: string;
   emergencyContactEmail?: string;
   passengerCategories?: string[];
+  referralCode?: string;
 }
 
 export interface RegisterDriverParams {
@@ -112,7 +113,13 @@ export const authService = {
       return createdUser;
     });
 
-    // 4. Crear Customer de Stripe para cobros futuros (no bloquea el registro si falla)
+    // 4. Procesar código de referido (no bloquea si falla)
+    if (params.referralCode) {
+      const { passengerReferralService } = await import('./passengerReferralService');
+      passengerReferralService.onPassengerRegistered(user.id, params.referralCode).catch(() => {});
+    }
+
+    // 5. Crear Customer de Stripe para cobros futuros (no bloquea el registro si falla)
     try {
       const stripeCustomerId = await stripeService.createPassengerCustomer({
         email:  decoded.email ?? '',

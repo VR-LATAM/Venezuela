@@ -18,7 +18,9 @@ import { referralService } from './referralService';
 import { emailService } from './emailService';
 import { calculateFareEstimate, getStateConfig } from './fareService';
 import { emitToUser, emitToAdmins } from '../socket/emitter';
-import { discountRepository } from '../repositories/discountRepository';
+import { discountRepository }          from '../repositories/discountRepository';
+import { passengerReferralRepository, CREDIT_PER_RIDE, MIN_FARE_CREDIT } from '../repositories/passengerReferralRepository';
+import { passengerReferralService }     from './passengerReferralService';
 import { vipRepository } from '../repositories/vipRepository';
 import { corporateRepository } from '../repositories/corporateRepository';
 import { redis, REDIS_KEYS } from '../config/redis';
@@ -406,7 +408,7 @@ export const rideService = {
     const discountFlag = await redis.get(`ride:discount:${rideId}`);
     const [discountTypeRaw, discountAmountRaw] = (discountFlag ?? '').split(':');
     const discountAmount = discountAmountRaw ? parseFloat(discountAmountRaw) : 0;
-    const discountType   = (discountTypeRaw === 'new_passenger' || discountTypeRaw === 'loyalty')
+    const discountType   = (discountTypeRaw === 'new_passenger' || discountTypeRaw === 'loyalty' || discountTypeRaw === 'referral_credit')
       ? discountTypeRaw : null;
     if (discountAmount > 0 && discountType) {
       discountRepository.recordDiscount(driverId, rideId, discountAmount, discountType).catch(err => {
@@ -600,19 +602,19 @@ export const rideService = {
 
     // ── Cálculo final ──
     // Driver earns their % of the gross fare (platform absorbs the loyalty discount)
-    const loyaltyRideDiscount = rideAny.new_passenger_discount === true
+    const rideDiscountTotal = rideAny.new_passenger_discount === true
       ? Math.round(((rideAny.discount_amount as number) ?? 0) * 100) / 100
       : 0;
-    const driverEarnings = Math.round((fareEstimate.total * (1 - commissionRate) - loyaltyRideDiscount) * 100) / 100;
+    const driverEarnings = Math.round((fareEstimate.total * (1 - commissionRate) - rideDiscountTotal) * 100) / 100;
     const platformFee    = Math.round((fareEstimate.total * commissionRate - loyaltyDiscount) * 100) / 100;
     const totalCharged   = Math.round((fareEstimate.total - loyaltyDiscount) * 100) / 100;
 
     if (loyaltyDiscount > 0) {
       logger.info(`Loyalty 10% discount: $${loyaltyDiscount} for passenger ${ride.passenger_id} (week:${ridesThisWeek} month:${ridesThisMonth})`);
     }
-    if (loyaltyRideDiscount > 0) {
+    if (rideDiscountTotal > 0) {
       const dtype = (rideAny.discount_type ?? 'desconocido');
-      logger.info(`Descuento ${dtype}: -$${loyaltyRideDiscount} absorbido por conductor ${driverId}`);
+      logger.info(`Descuento ${dtype}: -$${rideDiscountTotal} absorbido por conductor ${driverId}`);
     }
     logger.info(`Comisión Venezuela 0% — conductor recibe $${driverEarnings} de $${fareEstimate.total}`);
 
@@ -739,6 +741,14 @@ export const rideService = {
     ]).catch(() => {/* no bloquear */});
 
     emitToAdmins('admin:ride_status_changed', { rideId, status: 'completed' });
+
+    // Deducir crédito de referido si se usó en este viaje
+    if ((rideAny.discount_type as string) === 'referral_credit') {
+      passengerReferralRepository.deductCredit(ride.passenger_id).catch(() => {});
+    }
+
+    // Notificar progreso de referidos si el pasajero es miembro de un grupo
+    passengerReferralService.onRideCompleted(ride.passenger_id).catch(() => {});
 
     // Enviar recibo PDF por email al pasajero (fire-and-forget, no bloquea)
     (async () => {
@@ -1221,6 +1231,12 @@ async function searchAndNotifyDrivers(
     const loyaltyQualifies = isLoyaltyRide  && estimatedFare >= discountRepository.LOYALTY_MIN_FARE_TIER1;
     const discountEligible = newPassQualifies || loyaltyQualifies;
 
+    // Crédito de referidos: aplica solo si no hay otro descuento y la tarifa >= $3
+    const referralCredit = (!discountEligible && estimatedFare >= MIN_FARE_CREDIT)
+      ? await passengerReferralRepository.getCredit(passengerId).catch(() => 0)
+      : 0;
+    const hasReferralCredit = referralCredit >= CREDIT_PER_RIDE;
+
     // Ofrecer viaje a cada conductor en orden de distancia (más cercano primero)
     for (const driver of candidates) {
       triedDriverIds.add(driver.id);
@@ -1232,13 +1248,22 @@ async function searchAndNotifyDrivers(
       // Calcular estado del descuento para este conductor
       let isDiscountRide = false;
       let rideDiscountAmount = 0;
-      if (discountEligible) {
+      let rideDiscountKind: 'new_passenger' | 'loyalty' | 'referral_credit' | null = null;
+
+      if (discountEligible || hasReferralCredit) {
         const discountStatus = await discountRepository.getDriverDiscountStatus(driver.id);
         if (discountStatus.canTake) {
-          isDiscountRide     = true;
-          rideDiscountAmount = newPassQualifies
-            ? discountRepository.NEW_PASSENGER_DISCOUNT
-            : discountRepository.calculateLoyaltyDiscount(estimatedFare);
+          isDiscountRide = true;
+          if (newPassQualifies) {
+            rideDiscountAmount = discountRepository.NEW_PASSENGER_DISCOUNT;
+            rideDiscountKind   = 'new_passenger';
+          } else if (loyaltyQualifies) {
+            rideDiscountAmount = discountRepository.calculateLoyaltyDiscount(estimatedFare);
+            rideDiscountKind   = 'loyalty';
+          } else {
+            rideDiscountAmount = CREDIT_PER_RIDE;
+            rideDiscountKind   = 'referral_credit';
+          }
         } else {
           // Conductor alcanzó sus límites — buscar otro que pueda absorber el descuento
           continue;
@@ -1290,9 +1315,8 @@ async function searchAndNotifyDrivers(
       );
 
       // Guardar tipo y monto de descuento en Redis para registrarlo cuando el conductor acepte
-      if (isDiscountRide && rideDiscountAmount > 0) {
-        const discountType = newPassQualifies ? 'new_passenger' : 'loyalty';
-        await redis.setex(`ride:discount:${rideId}`, env.DRIVER_ACCEPT_TIMEOUT_SECONDS + 60, `${discountType}:${rideDiscountAmount}`);
+      if (isDiscountRide && rideDiscountAmount > 0 && rideDiscountKind) {
+        await redis.setex(`ride:discount:${rideId}`, env.DRIVER_ACCEPT_TIMEOUT_SECONDS + 60, `${rideDiscountKind}:${rideDiscountAmount}`);
       }
 
       logger.info(`Viaje ${rideId}: ofrecido al conductor ${driver.id} (${radiusKm}km)`);
