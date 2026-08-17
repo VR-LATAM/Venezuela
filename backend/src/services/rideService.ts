@@ -672,9 +672,9 @@ export const rideService = {
                ELSE new_passenger_discounts_used
              END,
              loyalty_cycle_rides = CASE
-               WHEN $2 = 'loyalty' AND loyalty_cycle_rides = 8 THEN 0
+               WHEN $2 = 'loyalty' AND loyalty_cycle_rides = 9 THEN 0
                WHEN COALESCE(new_passenger_discounts_used, 0) >= 3 AND $2 != 'new_passenger'
-                 THEN LEAST(COALESCE(loyalty_cycle_rides, 0) + 1, 8)
+                 THEN LEAST(COALESCE(loyalty_cycle_rides, 0) + 1, 9)
                ELSE loyalty_cycle_rides
              END
          WHERE id = $1`,

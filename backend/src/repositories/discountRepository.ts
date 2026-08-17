@@ -4,7 +4,7 @@ const NEW_PASSENGER_MAX       = 3;
 const NEW_PASSENGER_DISCOUNT  = 1.00;
 const NEW_PASSENGER_MIN_FARE  = 3.00;
 
-const LOYALTY_CYCLE_SIZE      = 8;    // viajes regulares antes del descuento
+const LOYALTY_CYCLE_SIZE      = 9;    // viajes regulares antes del descuento
 const LOYALTY_MIN_FARE_TIER1  = 5.00;
 const LOYALTY_MIN_FARE_TIER2  = 10.00;
 const LOYALTY_DISCOUNT_TIER1  = 1.00;
@@ -25,7 +25,7 @@ export const discountRepository = {
     return (row?.new_passenger_discounts_used ?? 0) < NEW_PASSENGER_MAX;
   },
 
-  /* Verdadero cuando el pasajero completó 8 viajes en el ciclo (el siguiente = descuento) */
+  /* Verdadero cuando el pasajero completó 9 viajes en el ciclo (el siguiente = descuento) */
   isLoyaltyRide: async (passengerId: string): Promise<boolean> => {
     const row = await queryOne<{ loyalty_cycle_rides: number }>(
       `SELECT loyalty_cycle_rides FROM passengers WHERE id = $1`,
