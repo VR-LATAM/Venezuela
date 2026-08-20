@@ -57,6 +57,7 @@ const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string; categor
   { key: 'wait_and_return',label: 'Ida y Vuelta',  emoji: '🔄', category: 'schedule'  },
   { key: 'encomienda',     label: 'Encomienda',    emoji: '📦', category: 'delivery'  },
   { key: 'carga',          label: 'Carga',         emoji: '🏗️', category: 'delivery'  },
+  { key: 'cisterna',       label: 'Especiales',    emoji: '🛠️', category: 'delivery'  },
 ];
 
 const CARGA_SUB_OPTIONS = [
@@ -64,6 +65,16 @@ const CARGA_SUB_OPTIONS = [
   { key: 'plataforma'as ServiceType, emoji: '🚛', label: 'Plataforma', vehicle: null      },
   { key: 'carga'     as ServiceType, emoji: '🛻', label: 'F-350',     vehicle: '350'      },
   { key: 'carga'     as ServiceType, emoji: '🚚', label: 'NPR 400+',  vehicle: 'npr'      },
+] as const;
+
+const ESPECIALES_TYPES: ServiceType[] = ['cisterna', 'grua', 'mecanico', 'planta_electrica', 'tanque_gas'];
+
+const ESPECIALES_SUB_OPTIONS = [
+  { key: 'cisterna'         as ServiceType, emoji: '🚛', label: 'Cisterna'        },
+  { key: 'grua'             as ServiceType, emoji: '🏗️', label: 'Grúa'            },
+  { key: 'mecanico'         as ServiceType, emoji: '🔧', label: 'Mecánico'         },
+  { key: 'planta_electrica' as ServiceType, emoji: '⚡', label: 'Planta Eléc.'    },
+  { key: 'tanque_gas'       as ServiceType, emoji: '🛢️', label: 'Tanque Gas'      },
 ] as const;
 
 
@@ -727,7 +738,7 @@ export default function PassengerHomeScreen() {
   useEffect(() => {
     const est = allEstimates[selectedService];
     if (
-      (selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma') &&
+      (selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma' || ESPECIALES_TYPES.includes(selectedService)) &&
       est && offeredPrice === 0
     ) {
       setOfferedPrice(Math.ceil(est.total));
@@ -778,6 +789,7 @@ export default function PassengerHomeScreen() {
 
     setSearchStatus('requesting');
     const isCargaCategory = selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma';
+    const isEspeciales    = ESPECIALES_TYPES.includes(selectedService);
     const isDelivery      = selectedService === 'encomienda' || isCargaCategory;
     const isCargaHeavy    = selectedService === 'carga';
     const finalPickupLat  = (isDelivery && customPickupCoords) ? customPickupCoords.latitude  : userLocation.latitude;
@@ -795,14 +807,14 @@ export default function PassengerHomeScreen() {
         serviceType:          selectedService,
         stateCode:            user?.state_code ?? 'DC',
         promoCode:            promoApplied ? promoCode : undefined,
-        packageDescription:   selectedService === 'encomienda' ? pkgDescription.trim() || undefined : isCargaCategory ? cargaDescription.trim() || undefined : undefined,
-        senderName:           isCargaCategory ? cargaSenderName.trim() || undefined : undefined,
-        senderPhone:          isCargaCategory ? cargaSenderPhone.trim() || undefined : undefined,
-        recipientName:        selectedService === 'encomienda' ? pkgRecipient.trim() || undefined  : isCargaCategory ? cargaRecipient.trim() || undefined  : undefined,
-        recipientPhone:       selectedService === 'encomienda' ? pkgPhone.trim() || undefined      : isCargaCategory ? cargaPhone.trim() || undefined      : undefined,
+        packageDescription:   selectedService === 'encomienda' ? pkgDescription.trim() || undefined : (isCargaCategory || isEspeciales) ? cargaDescription.trim() || undefined : undefined,
+        senderName:           (isCargaCategory || isEspeciales) ? cargaSenderName.trim() || undefined : undefined,
+        senderPhone:          (isCargaCategory || isEspeciales) ? cargaSenderPhone.trim() || undefined : undefined,
+        recipientName:        selectedService === 'encomienda' ? pkgRecipient.trim() || undefined  : (isCargaCategory || isEspeciales) ? cargaRecipient.trim() || undefined  : undefined,
+        recipientPhone:       selectedService === 'encomienda' ? pkgPhone.trim() || undefined      : (isCargaCategory || isEspeciales) ? cargaPhone.trim() || undefined      : undefined,
         deliveryVehicle:      selectedService === 'encomienda' ? deliveryVehicle : undefined,
         cargaVehicle:         isCargaHeavy ? cargaVehicle : undefined,
-        offeredPrice:         isCargaCategory ? offeredPrice : undefined,
+        offeredPrice:         (isCargaCategory || isEspeciales) ? offeredPrice : undefined,
         hourlyPackageHours:   selectedService === 'hourly' ? hourlyPackageHours : undefined,
         estimatedWaitMinutes: selectedService === 'wait_and_return' ? estimatedWaitMinutes : undefined,
       });
@@ -1184,135 +1196,196 @@ export default function PassengerHomeScreen() {
                         </TouchableOpacity>
                       </View>
                     )}
-                    <View style={styles.serviceGrid}>
-                      {SERVICE_OPTIONS.map(svc => {
-                        const isCargaCategory = svc.key === 'carga';
-                        const isActive = isCargaCategory
-                          ? (selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma')
-                          : selectedService === svc.key;
-                        const isSched  = svc.key === 'scheduled';
-                        const est      = allEstimates[svc.key];
-                        return (
-                          <TouchableOpacity
-                            key={svc.key}
-                            style={[styles.serviceCard, isActive && styles.serviceCardActive]}
-                            onPress={() => {
-                              if (isCargaCategory) {
-                                if (!isActive) setSelectedService('pickup');
-                              } else {
-                                setSelectedService(svc.key);
-                              }
-                              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                            }}
-                            activeOpacity={0.75}
-                          >
-                            <View style={styles.serviceCardRow}>
-                              <Text style={[styles.serviceCardLabel, isActive && styles.textWhite]}>
-                                {svc.label}
-                              </Text>
-                              {isSched ? (
-                                <Text style={[styles.serviceCardBook, isActive && styles.textWhite]}>
-                                  Reservar →
-                                </Text>
-                              ) : isLoadingEstimates ? (
-                                <ActivityIndicator
-                                  size="small"
-                                  color={isActive ? '#fff' : BRAND_COLORS.PRIMARY}
-                                />
-                              ) : est ? (
-                                <Text style={[styles.serviceCardPrice, isActive && styles.textWhite]}>
-                                  ${(est.total ?? 0).toFixed(2)}
-                                </Text>
-                              ) : (
-                                <Text style={[styles.serviceCardPrice, { color: '#bbb' }]}>—</Text>
-                              )}
-                            </View>
-                            {(est?.surge_multiplier ?? 1) > 1 && (
-                              <Text style={styles.surgeTag}>⚡ Alta demanda</Text>
-                            )}
-                            {est && !isSched && svc.key !== 'hourly' && svc.key !== 'wait_and_return' && (
-                              <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
-                                {est.duration_minutes ?? 0} min · {(est.distance_km ?? 0).toFixed(1)} km
-                              </Text>
-                            )}
-                            {est && svc.key === 'hourly' && (
-                              <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
-                                Paquete {hourlyPackageHours}h
-                              </Text>
-                            )}
-                            {est && svc.key === 'wait_and_return' && (
-                              <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
-                                {(est.distance_km ?? 0).toFixed(1)} km · espera {estimatedWaitMinutes < 60 ? `${estimatedWaitMinutes} min` : `${estimatedWaitMinutes / 60}h`}
-                              </Text>
-                            )}
-                          </TouchableOpacity>
-                        );
-                      })}
-                    </View>
-
-                    {/* Sub-opciones Por Hora */}
-                    {selectedService === 'hourly' && (
-                      <View style={styles.cargaSubRow}>
-                        {([2, 4, 8] as const).map(h => (
-                          <TouchableOpacity
-                            key={h}
-                            style={[styles.cargaSubBtn, hourlyPackageHours === h && styles.cargaSubBtnActive]}
-                            onPress={() => { setHourlyPackageHours(h); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                          >
-                            <Text style={styles.cargaSubEmoji}>⏱️</Text>
-                            <Text style={[styles.cargaSubLabel, hourlyPackageHours === h && styles.cargaSubLabelActive]}>
-                              {h}h
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-
-                    {/* Sub-opciones Ida y Vuelta */}
-                    {selectedService === 'wait_and_return' && (
-                      <View style={styles.cargaSubRow}>
-                        {([30, 60, 120] as const).map(m => (
-                          <TouchableOpacity
-                            key={m}
-                            style={[styles.cargaSubBtn, estimatedWaitMinutes === m && styles.cargaSubBtnActive]}
-                            onPress={() => { setEstimatedWaitMinutes(m); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                          >
-                            <Text style={styles.cargaSubEmoji}>🔄</Text>
-                            <Text style={[styles.cargaSubLabel, estimatedWaitMinutes === m && styles.cargaSubLabelActive]}>
-                              {m === 30 ? '30 min' : m === 60 ? '1 hora' : '2 horas'}
-                            </Text>
-                          </TouchableOpacity>
-                        ))}
-                      </View>
-                    )}
-
-                    {/* Sub-opciones de Carga */}
-                    {(selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma') && (
-                      <View style={styles.cargaSubRow}>
-                        {CARGA_SUB_OPTIONS.map((sub, idx) => {
-                          const isSubActive =
-                            sub.key !== 'carga'
+                    {/* Sub-menú de Carga */}
+                    {(selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma') ? (
+                      <View>
+                        <TouchableOpacity
+                          style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, marginBottom: 10 }}
+                          onPress={() => { setSelectedService('sedan'); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                        >
+                          <Text style={{ color: BRAND_COLORS.PRIMARY, fontSize: 14, fontWeight: '600' }}>← Todos los servicios</Text>
+                        </TouchableOpacity>
+                        <View style={styles.serviceGrid}>
+                          {CARGA_SUB_OPTIONS.map((sub, idx) => {
+                            const isSubActive = sub.key !== 'carga'
                               ? selectedService === sub.key
                               : selectedService === 'carga' && cargaVehicle === sub.vehicle;
-                          return (
-                            <TouchableOpacity
-                              key={idx}
-                              style={[styles.cargaSubBtn, isSubActive && styles.cargaSubBtnActive]}
-                              onPress={() => {
-                                setSelectedService(sub.key);
-                                if (sub.vehicle) setCargaVehicle(sub.vehicle as '350' | 'npr');
-                                setOfferedPrice(0);
-                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                              }}
-                            >
-                              <Text style={styles.cargaSubEmoji}>{sub.emoji}</Text>
-                              <Text style={[styles.cargaSubLabel, isSubActive && styles.cargaSubLabelActive]}>
-                                {sub.label}
-                              </Text>
-                            </TouchableOpacity>
-                          );
-                        })}
+                            const subEst = allEstimates[sub.key !== 'carga' ? sub.key : 'carga'];
+                            return (
+                              <TouchableOpacity
+                                key={idx}
+                                style={[styles.serviceCard, isSubActive && styles.serviceCardActive]}
+                                onPress={() => {
+                                  setSelectedService(sub.key);
+                                  if (sub.vehicle) setCargaVehicle(sub.vehicle as '350' | 'npr');
+                                  setOfferedPrice(0);
+                                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                }}
+                                activeOpacity={0.75}
+                              >
+                                <View style={styles.serviceCardRow}>
+                                  <Text style={[styles.serviceCardLabel, isSubActive && styles.textWhite]}>
+                                    {sub.emoji} {sub.label}
+                                  </Text>
+                                  {isLoadingEstimates ? (
+                                    <ActivityIndicator size="small" color={isSubActive ? '#fff' : BRAND_COLORS.PRIMARY} />
+                                  ) : subEst ? (
+                                    <Text style={[styles.serviceCardPrice, isSubActive && styles.textWhite]}>
+                                      ${(subEst.total ?? 0).toFixed(2)}
+                                    </Text>
+                                  ) : (
+                                    <Text style={[styles.serviceCardPrice, { color: '#bbb' }]}>—</Text>
+                                  )}
+                                </View>
+                                {subEst && (
+                                  <Text style={[styles.serviceCardMeta, isSubActive && styles.textWhiteAlpha]}>
+                                    {subEst.duration_minutes ?? 0} min · {(subEst.distance_km ?? 0).toFixed(1)} km
+                                  </Text>
+                                )}
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
                       </View>
+
+                    ) : ESPECIALES_TYPES.includes(selectedService) ? (
+                      /* Sub-menú de Servicios Especiales */
+                      <View>
+                        <TouchableOpacity
+                          style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, marginBottom: 10 }}
+                          onPress={() => { setSelectedService('sedan'); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                        >
+                          <Text style={{ color: BRAND_COLORS.PRIMARY, fontSize: 14, fontWeight: '600' }}>← Todos los servicios</Text>
+                        </TouchableOpacity>
+                        <View style={styles.serviceGrid}>
+                          {ESPECIALES_SUB_OPTIONS.map((sub, idx) => {
+                            const isSubActive = selectedService === sub.key;
+                            return (
+                              <TouchableOpacity
+                                key={idx}
+                                style={[styles.serviceCard, isSubActive && styles.serviceCardActive]}
+                                onPress={() => {
+                                  setSelectedService(sub.key);
+                                  setOfferedPrice(0);
+                                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                }}
+                                activeOpacity={0.75}
+                              >
+                                <View style={styles.serviceCardRow}>
+                                  <Text style={[styles.serviceCardLabel, isSubActive && styles.textWhite]}>
+                                    {sub.emoji} {sub.label}
+                                  </Text>
+                                  <Text style={[styles.serviceCardPrice, { color: isSubActive ? '#fff' : '#bbb' }]}>—</Text>
+                                </View>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                      </View>
+
+                    ) : (
+                      /* Grid principal de servicios */
+                      <>
+                        <View style={styles.serviceGrid}>
+                          {SERVICE_OPTIONS.map(svc => {
+                            const isCargaCategory      = svc.key === 'carga';
+                            const isEspecialesCategory = svc.key === 'cisterna' && svc.label === 'Especiales';
+                            const isActive = selectedService === svc.key;
+                            const isSched = svc.key === 'scheduled';
+                            const est     = isEspecialesCategory ? undefined : allEstimates[svc.key];
+                            return (
+                              <TouchableOpacity
+                                key={svc.key}
+                                style={[styles.serviceCard, isActive && styles.serviceCardActive]}
+                                onPress={() => {
+                                  if (isCargaCategory) {
+                                    if (!isActive) setSelectedService('pickup');
+                                  } else if (isEspecialesCategory) {
+                                    if (!isActive) setSelectedService('cisterna');
+                                  } else {
+                                    setSelectedService(svc.key);
+                                  }
+                                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                }}
+                                activeOpacity={0.75}
+                              >
+                                <View style={styles.serviceCardRow}>
+                                  <Text style={[styles.serviceCardLabel, isActive && styles.textWhite]}>
+                                    {svc.label}
+                                  </Text>
+                                  {isSched ? (
+                                    <Text style={[styles.serviceCardBook, isActive && styles.textWhite]}>
+                                      Reservar →
+                                    </Text>
+                                  ) : isLoadingEstimates ? (
+                                    <ActivityIndicator size="small" color={isActive ? '#fff' : BRAND_COLORS.PRIMARY} />
+                                  ) : est ? (
+                                    <Text style={[styles.serviceCardPrice, isActive && styles.textWhite]}>
+                                      ${(est.total ?? 0).toFixed(2)}
+                                    </Text>
+                                  ) : (
+                                    <Text style={[styles.serviceCardPrice, { color: '#bbb' }]}>—</Text>
+                                  )}
+                                </View>
+                                {(est?.surge_multiplier ?? 1) > 1 && (
+                                  <Text style={styles.surgeTag}>⚡ Alta demanda</Text>
+                                )}
+                                {est && !isSched && svc.key !== 'hourly' && svc.key !== 'wait_and_return' && (
+                                  <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
+                                    {est.duration_minutes ?? 0} min · {(est.distance_km ?? 0).toFixed(1)} km
+                                  </Text>
+                                )}
+                                {est && svc.key === 'hourly' && (
+                                  <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
+                                    Paquete {hourlyPackageHours}h
+                                  </Text>
+                                )}
+                                {est && svc.key === 'wait_and_return' && (
+                                  <Text style={[styles.serviceCardMeta, isActive && styles.textWhiteAlpha]}>
+                                    {(est.distance_km ?? 0).toFixed(1)} km · espera {estimatedWaitMinutes < 60 ? `${estimatedWaitMinutes} min` : `${estimatedWaitMinutes / 60}h`}
+                                  </Text>
+                                )}
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+
+                        {/* Sub-opciones Por Hora */}
+                        {selectedService === 'hourly' && (
+                          <View style={styles.cargaSubRow}>
+                            {([2, 4, 8] as const).map(h => (
+                              <TouchableOpacity
+                                key={h}
+                                style={[styles.cargaSubBtn, hourlyPackageHours === h && styles.cargaSubBtnActive]}
+                                onPress={() => { setHourlyPackageHours(h); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                              >
+                                <Text style={styles.cargaSubEmoji}>⏱️</Text>
+                                <Text style={[styles.cargaSubLabel, hourlyPackageHours === h && styles.cargaSubLabelActive]}>
+                                  {h}h
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        )}
+
+                        {/* Sub-opciones Ida y Vuelta */}
+                        {selectedService === 'wait_and_return' && (
+                          <View style={styles.cargaSubRow}>
+                            {([30, 60, 120] as const).map(m => (
+                              <TouchableOpacity
+                                key={m}
+                                style={[styles.cargaSubBtn, estimatedWaitMinutes === m && styles.cargaSubBtnActive]}
+                                onPress={() => { setEstimatedWaitMinutes(m); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                              >
+                                <Text style={styles.cargaSubEmoji}>🔄</Text>
+                                <Text style={[styles.cargaSubLabel, estimatedWaitMinutes === m && styles.cargaSubLabelActive]}>
+                                  {m === 30 ? '30 min' : m === 60 ? '1 hora' : '2 horas'}
+                                </Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        )}
+                      </>
                     )}
 
                   </>
@@ -1320,9 +1393,12 @@ export default function PassengerHomeScreen() {
                   /* Chips sin destino */
                   <View style={styles.chipRow}>
                     {SERVICE_OPTIONS.map(svc => {
-                      const isCargaCategory = svc.key === 'carga';
+                      const isCargaCategory      = svc.key === 'carga';
+                      const isEspecialesCategory = svc.key === 'cisterna' && svc.label === 'Especiales';
                       const isActive = isCargaCategory
                         ? (selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma')
+                        : isEspecialesCategory
+                        ? ESPECIALES_TYPES.includes(selectedService)
                         : selectedService === svc.key;
                       return (
                         <TouchableOpacity
@@ -1330,7 +1406,8 @@ export default function PassengerHomeScreen() {
                           style={[styles.chip, isActive && styles.chipActive]}
                           onPress={() => {
                             if (isCargaCategory && !isActive) setSelectedService('pickup');
-                            else if (!isCargaCategory) setSelectedService(svc.key);
+                            else if (isEspecialesCategory && !isActive) setSelectedService('cisterna');
+                            else if (!isCargaCategory && !isEspecialesCategory) setSelectedService(svc.key);
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                           }}
                         >
@@ -1440,54 +1517,62 @@ export default function PassengerHomeScreen() {
                   </View>
                 )}
 
-                {/* Formulario unificado de Carga (Pick-Up / Plataforma / F-350 / NPR) */}
-                {(selectedService === 'pickup' || selectedService === 'plataforma' || selectedService === 'carga') && dropoffCoords && (
+                {/* Formulario unificado de Carga y Servicios Especiales */}
+                {(selectedService === 'pickup' || selectedService === 'plataforma' || selectedService === 'carga' || ESPECIALES_TYPES.includes(selectedService)) && dropoffCoords && (
                   <View style={styles.encomiendaForm}>
-                    <Text style={styles.encomiendaTitle}>🚚 Datos del servicio de carga</Text>
+                    <Text style={styles.encomiendaTitle}>
+                      {ESPECIALES_TYPES.includes(selectedService) ? '🛠️ Datos del servicio especial' : '🚚 Datos del servicio de carga'}
+                    </Text>
 
-                    {/* Dirección de recogida personalizada */}
-                    <Text style={styles.encomiendaSectionLabel}>Dirección de recogida</Text>
-                    <View style={styles.customPickupRow}>
-                      <TextInput
-                        style={[styles.encomiendaInput, { flex: 1, marginBottom: 0 }]}
-                        value={customPickupAddr}
-                        onChangeText={t => { setCustomPickupAddr(t); setCustomPickupCoords(null); }}
-                        placeholder="Escribe la dirección de recogida"
-                        placeholderTextColor="#94A3B8"
-                        maxLength={200}
-                      />
-                      <TouchableOpacity
-                        style={styles.customPickupGeoBtn}
-                        onPress={async () => {
-                          const addr = customPickupAddr.trim();
-                          if (!addr) return;
-                          setIsGeocodingPickup(true);
-                          try {
-                            const coords = await rideMobileService.geocodeAddress(addr);
-                            if (coords) setCustomPickupCoords({ latitude: coords.lat, longitude: coords.lng });
-                            else Alert.alert('No encontrada', 'Verifica la dirección e intenta de nuevo.');
-                          } finally { setIsGeocodingPickup(false); }
-                        }}
-                        disabled={isGeocodingPickup}
-                      >
-                        {isGeocodingPickup
-                          ? <ActivityIndicator size="small" color="#fff" />
-                          : <Text style={styles.customPickupGeoBtnText}>📍</Text>
-                        }
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={styles.customPickupResetBtn}
-                        onPress={() => { setCustomPickupAddr(pickupAddress); setCustomPickupCoords(null); }}
-                      >
-                        <Text style={styles.customPickupResetBtnText}>↺</Text>
-                      </TouchableOpacity>
-                    </View>
-                    {customPickupCoords && (
-                      <Text style={styles.customPickupConfirm}>✓ Dirección de recogida confirmada</Text>
+                    {/* Dirección de recogida personalizada (solo para Carga, no para Especiales) */}
+                    {!ESPECIALES_TYPES.includes(selectedService) && (
+                      <>
+                        <Text style={styles.encomiendaSectionLabel}>Dirección de recogida</Text>
+                        <View style={styles.customPickupRow}>
+                          <TextInput
+                            style={[styles.encomiendaInput, { flex: 1, marginBottom: 0 }]}
+                            value={customPickupAddr}
+                            onChangeText={t => { setCustomPickupAddr(t); setCustomPickupCoords(null); }}
+                            placeholder="Escribe la dirección de recogida"
+                            placeholderTextColor="#94A3B8"
+                            maxLength={200}
+                          />
+                          <TouchableOpacity
+                            style={styles.customPickupGeoBtn}
+                            onPress={async () => {
+                              const addr = customPickupAddr.trim();
+                              if (!addr) return;
+                              setIsGeocodingPickup(true);
+                              try {
+                                const coords = await rideMobileService.geocodeAddress(addr);
+                                if (coords) setCustomPickupCoords({ latitude: coords.lat, longitude: coords.lng });
+                                else Alert.alert('No encontrada', 'Verifica la dirección e intenta de nuevo.');
+                              } finally { setIsGeocodingPickup(false); }
+                            }}
+                            disabled={isGeocodingPickup}
+                          >
+                            {isGeocodingPickup
+                              ? <ActivityIndicator size="small" color="#fff" />
+                              : <Text style={styles.customPickupGeoBtnText}>📍</Text>
+                            }
+                          </TouchableOpacity>
+                          <TouchableOpacity
+                            style={styles.customPickupResetBtn}
+                            onPress={() => { setCustomPickupAddr(pickupAddress); setCustomPickupCoords(null); }}
+                          >
+                            <Text style={styles.customPickupResetBtnText}>↺</Text>
+                          </TouchableOpacity>
+                        </View>
+                        {customPickupCoords && (
+                          <Text style={styles.customPickupConfirm}>✓ Dirección de recogida confirmada</Text>
+                        )}
+                      </>
                     )}
 
-                    {/* Tipo de carga */}
-                    <Text style={styles.encomiendaSectionLabel}>Tipo de carga</Text>
+                    {/* Descripción */}
+                    <Text style={styles.encomiendaSectionLabel}>
+                      {ESPECIALES_TYPES.includes(selectedService) ? 'Descripción del servicio' : 'Tipo de carga'}
+                    </Text>
                     <TextInput
                       style={styles.encomiendaInput}
                       value={cargaDescription}

@@ -20,7 +20,7 @@ import { redis } from '../config/redis';
 import { sendSuccess, sendCreated, sendError } from '../utils/response';
 import { ServiceType } from '@vride/shared';
 
-const SERVICE_TYPES = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly', 'wait_and_return', 'encomienda', 'pickup', 'plataforma', 'carga'] as const;
+const SERVICE_TYPES = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly', 'wait_and_return', 'encomienda', 'pickup', 'plataforma', 'carga', 'cisterna', 'grua', 'mecanico', 'planta_electrica', 'tanque_gas'] as const;
 
 export const rideController = {
   // POST /ride/estimate — estimar tarifa antes de confirmar

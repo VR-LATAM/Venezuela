@@ -562,7 +562,7 @@ export const rideService = {
       estimatedWaitMinutes: rideAny.wait_minutes > 0 ? rideAny.wait_minutes : undefined,
     });
     // Para carga: respetar el precio negociado (counter_price si fue contra-oferta, offered_price si fue directo)
-    if (ride.service_type === 'carga') {
+    if (['carga', 'pickup', 'plataforma', 'cisterna', 'grua', 'mecanico', 'planta_electrica', 'tanque_gas'].includes(ride.service_type)) {
       const negotiatedPrice = +(rideAny.counter_price ?? rideAny.offered_price ?? fareEstimate.total);
       if (negotiatedPrice > 0) {
         fareEstimate.total    = negotiatedPrice;
@@ -983,7 +983,8 @@ export const rideService = {
   submitCounterOffer: async (rideId: string, driverId: string, counterPrice: number, counterReason: string): Promise<void> => {
     const ride = await rideRepository.findById(rideId);
     if (!ride) throw new Error('RIDE_NOT_FOUND');
-    if (ride.service_type !== 'carga') throw new Error('NOT_CARGA_RIDE');
+    const NEGOTIABLE_TYPES = ['carga', 'pickup', 'plataforma', 'cisterna', 'grua', 'mecanico', 'planta_electrica', 'tanque_gas'];
+    if (!NEGOTIABLE_TYPES.includes(ride.service_type)) throw new Error('NOT_CARGA_RIDE');
     if (!['searching', 'price_negotiation'].includes(ride.status)) throw new Error('INVALID_RIDE_STATUS');
 
     await rideRepository.updateCounterOffer(rideId, driverId, counterPrice, counterReason);

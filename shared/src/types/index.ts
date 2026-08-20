@@ -17,7 +17,8 @@ export type ServiceType =
   | 'motorcycle' | 'sedan' | 'suv'
   | 'scheduled' | 'hourly' | 'wait_and_return'
   | 'encomienda' | 'pickup' | 'plataforma'
-  | 'carga';
+  | 'carga'
+  | 'cisterna' | 'grua' | 'mecanico' | 'planta_electrica' | 'tanque_gas';
 
 // ─────────────────────────────────────
 // ESTADOS DEL VIAJE
