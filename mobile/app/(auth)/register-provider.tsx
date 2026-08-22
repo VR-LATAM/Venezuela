@@ -33,7 +33,7 @@ const VE_STATES = [
 const TYPE_CONFIG: Record<string, { label: string; emoji: string; color: string }> = {
   tecnico:   { label: 'Técnico',   emoji: '🔧', color: '#B45309' },
   proveedor: { label: 'Proveedor', emoji: '🚛', color: '#047857' },
-  negocio:   { label: 'Negocio',   emoji: '🏪', color: '#7C3AED' },
+  negocio:   { label: 'Taller',    emoji: '🏪', color: '#7C3AED' },
 };
 
 const STEP_LABELS = ['Datos personales', 'Tu servicio', 'Revisión'];

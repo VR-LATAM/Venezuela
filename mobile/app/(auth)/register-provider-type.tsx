@@ -48,8 +48,8 @@ const PROVIDER_TYPES: {
   {
     key: 'negocio',
     emoji: '🏪',
-    label: 'Negocio',
-    desc: 'Tienes un establecimiento físico que ofrece servicios.',
+    label: 'Taller',
+    desc: 'Tienes un taller mecánico o establecimiento de reparación.',
     services: 'Taller Mecánico',
     color: '#7C3AED',
   },
