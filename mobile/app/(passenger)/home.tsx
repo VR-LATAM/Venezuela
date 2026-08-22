@@ -816,6 +816,12 @@ export default function PassengerHomeScreen() {
     }
 
     const isCargaCategory = selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma';
+    if (selectedService === 'encomienda') {
+      if (!pkgRecipient.trim() || !pkgPhone.trim()) {
+        Alert.alert('Datos requeridos', 'Ingresa el nombre y teléfono del destinatario.');
+        return;
+      }
+    }
     if (isCargaCategory) {
       if (!cargaSenderName.trim() || !cargaSenderPhone.trim()) {
         Alert.alert('Datos requeridos', 'Ingresa el nombre y teléfono de quien envía.');
@@ -1582,15 +1588,16 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={pkgDescription}
                       onChangeText={setPkgDescription}
-                      placeholder="Descripción del paquete (opcional)"
+                      placeholder="Descripción del paquete"
                       placeholderTextColor="#94A3B8"
                       maxLength={200}
                     />
+                    <Text style={styles.encomiendaSectionLabel}>Destinatario <Text style={{ color: '#EF4444' }}>*</Text></Text>
                     <TextInput
                       style={styles.encomiendaInput}
                       value={pkgRecipient}
                       onChangeText={setPkgRecipient}
-                      placeholder="Nombre del destinatario (opcional)"
+                      placeholder="Nombre completo"
                       placeholderTextColor="#94A3B8"
                       maxLength={100}
                     />
@@ -1598,7 +1605,7 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={pkgPhone}
                       onChangeText={setPkgPhone}
-                      placeholder="Teléfono del destinatario (opcional)"
+                      placeholder="Teléfono"
                       placeholderTextColor="#94A3B8"
                       keyboardType="phone-pad"
                       maxLength={30}
