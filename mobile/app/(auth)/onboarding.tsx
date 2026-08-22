@@ -1,7 +1,7 @@
 // Diseñado por: Edward Labrador
 // Para: ELITE GROUP - Integral Services LLC
 // ═══════════════════════════════════════════════════════════════
-// Pantalla de onboarding — 3 slides explicando el servicio
+// Pantalla de onboarding — 4 slides: servicios, bienvenida $1, referidos, seguridad
 // Se puede omitir. Solo aparece la primera vez.
 // ═══════════════════════════════════════════════════════════════
 
@@ -27,23 +27,30 @@ interface Slide {
 const slides: Slide[] = [
   {
     id: '1',
-    emoji: '📍',
-    title: 'Tu viaje, cuando lo necesitas',
-    desc: 'Solicita un conductor en segundos. Disponible en toda Venezuela.',
+    emoji: '🚗',
+    title: 'Todos los servicios en una sola app',
+    desc: 'Taxi, moto, SUV, carga, encomiendas, grúa, mecánico, cisterna, planta eléctrica y más. Todo lo que necesitas en Venezuela.',
     color: BRAND_COLORS.PRIMARY,
   },
   {
     id: '2',
-    emoji: '🤝',
-    title: 'Conductores verificados',
-    desc: 'Conductores capacitados y verificados para tu seguridad y comodidad.',
+    emoji: '🎁',
+    title: '$1 de descuento en tus primeros 3 viajes',
+    desc: 'Como regalo de bienvenida, cada uno de tus 3 primeros viajes tiene $1 de descuento automático. Solo regístrate y viaja.',
     color: '#7B2FBE',
   },
   {
     id: '3',
+    emoji: '🤝',
+    title: 'Gana créditos refiriendo amigos',
+    desc: 'Comparte tu código y recibe $5 en crédito por cada grupo de 3 amigos que completen 10 viajes. Y el décimo viaje siempre tiene descuento para ti también.',
+    color: '#E67E22',
+  },
+  {
+    id: '4',
     emoji: '🛡️',
-    title: 'Seguro y transparente',
-    desc: 'Precios claros en USD y Bs., tracking en tiempo real y botón SOS disponible.',
+    title: 'Seguro, transparente y siempre disponible',
+    desc: 'Conductores verificados, precios en USD y Bs., tracking en tiempo real y botón SOS. Tu seguridad es nuestra prioridad.',
     color: BRAND_COLORS.ACCENT,
   },
 ];
