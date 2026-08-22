@@ -855,6 +855,35 @@ export default function DriverHomeScreen() {
     router.replace('/(auth)/' as any);
   };
 
+  const handleDeleteAccount = () => {
+    if (isOnline) {
+      Alert.alert('', 'Desconéctate antes de eliminar tu cuenta.');
+      return;
+    }
+    Alert.alert(
+      'Eliminar cuenta',
+      'Esta acción es permanente e irreversible. Se eliminarán todos tus datos personales.\n\n¿Estás seguro de que deseas continuar?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sí, eliminar mi cuenta',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const { apiClient } = await import('../../src/services/apiClient');
+              await apiClient.delete('/user/account');
+              socketService.disconnect();
+              await logout();
+              router.replace('/(auth)/' as any);
+            } catch {
+              Alert.alert('Error', 'No se pudo eliminar la cuenta. Contáctanos en soporte@veronaride.com');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const onRefresh = () => {
     setRefreshing(true);
     void loadProfile();
@@ -1609,6 +1638,10 @@ export default function DriverHomeScreen() {
               </TouchableOpacity>
             ))}
             <View style={{ height: 8 }} />
+            <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); handleDeleteAccount(); }}>
+              <Text style={styles.menuItemIcon}>🗑️</Text>
+              <Text style={[styles.menuItemText, { color: '#DC2626' }]}>Eliminar cuenta</Text>
+            </TouchableOpacity>
             <TouchableOpacity style={styles.menuItem} onPress={() => { setMenuVisible(false); void handleLogout(); }}>
               <Text style={styles.menuItemIcon}>🚪</Text>
               <Text style={[styles.menuItemText, { color: BRAND_COLORS.ALERT }]}>Cerrar sesión</Text>

@@ -54,6 +54,36 @@ export default function ProviderDashboardScreen() {
     ]);
   };
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Eliminar cuenta',
+      'Esta acción es permanente e irreversible. Se eliminarán todos tus datos personales y tu afiliación como prestatario.\n\n¿Estás seguro?',
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sí, eliminar mi cuenta',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const token = await SecureStore.getItemAsync('access_token');
+              const res = await fetch(
+                `${require('expo-constants').default.expoConfig?.extra?.apiUrl ?? process.env['EXPO_PUBLIC_API_URL'] ?? 'http://localhost:3000'}/api/v1/user/account`,
+                { method: 'DELETE', headers: { Authorization: `Bearer ${token ?? ''}` } }
+              );
+              if (!res.ok) throw new Error();
+              await SecureStore.deleteItemAsync('access_token');
+              await SecureStore.deleteItemAsync('refresh_token');
+              clearUser();
+              router.replace('/(auth)/login-provider');
+            } catch {
+              Alert.alert('Error', 'No se pudo eliminar la cuenta. Contáctanos en soporte@veronaride.com');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <StatusBar barStyle="light-content" backgroundColor={BRAND_COLORS.PRIMARY} />
@@ -65,9 +95,14 @@ export default function ProviderDashboardScreen() {
           <Text style={styles.greeting}>Hola, {user?.name?.split(' ')[0] ?? 'Prestatario'}</Text>
           <Text style={styles.typeLabel}>{typeLabel}</Text>
         </View>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Salir</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
+            <Text style={styles.deleteBtnText}>🗑️</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Salir</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -178,6 +213,11 @@ const styles = StyleSheet.create({
     paddingVertical: 7, borderRadius: 8,
   },
   logoutText: { color: '#fff', fontWeight: '600', fontSize: 13 },
+  deleteBtn: {
+    backgroundColor: 'rgba(220,38,38,0.3)', paddingHorizontal: 10,
+    paddingVertical: 7, borderRadius: 8,
+  },
+  deleteBtnText: { fontSize: 15 },
   scroll: { flex: 1, padding: 16 },
 
   statusCard: {

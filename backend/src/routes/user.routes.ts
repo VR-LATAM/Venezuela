@@ -159,11 +159,13 @@ router.delete('/account', async (req: Request, res: Response): Promise<void> => 
       // Eliminar métodos de pago
       await client.query('DELETE FROM payment_methods WHERE user_id = $1', [userId]);
 
-      // Eliminar registro de rol (driver o passenger)
+      // Eliminar registro de rol
       if (role === 'driver') {
         await client.query('DELETE FROM drivers WHERE id = $1', [userId]);
       } else if (role === 'passenger') {
         await client.query('DELETE FROM passengers WHERE id = $1', [userId]);
+      } else if (role === 'provider') {
+        await client.query('DELETE FROM ve_service_providers WHERE user_id = $1', [userId]);
       }
 
       // Anonimizar registro de usuario (no eliminar — mantener integridad referencial)
