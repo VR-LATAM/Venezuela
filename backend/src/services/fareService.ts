@@ -274,9 +274,9 @@ export async function calculateFareEstimate(params: {
   const effectiveMinFare =
     params.serviceType === 'motorcycle'  ? minFare * motorcycleMultiplier :
     params.serviceType === 'encomienda'  ? Math.min(minFare, 2.00)        :
-    params.serviceType === 'pickup'      ? Math.max(minFare, 15.00)       :
-    params.serviceType === 'plataforma'  ? Math.max(minFare, 90.00)       :
-    params.serviceType === 'carga'       ? Math.max(minFare, params.cargaVehicle === 'npr' ? 50.00 : 30.00) :
+    params.serviceType === 'pickup'      ? Math.max(minFare, 15.00)        :
+    params.serviceType === 'plataforma'  ? Math.max(minFare, 120.00)       :
+    params.serviceType === 'carga'       ? Math.max(minFare, params.cargaVehicle === 'npr' ? 75.00 : 40.00) :
     minFare;
 
   // Tarifa solo por distancia (sin componente de tiempo)
