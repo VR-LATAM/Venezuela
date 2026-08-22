@@ -58,7 +58,11 @@ const PROVIDER_TYPES: {
 export default function RegisterProviderTypeScreen() {
   const handleSelect = (type: ProviderType) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    router.push({ pathname: '/(auth)/register-driver', params: { providerType: type } });
+    if (type === 'conductor') {
+      router.push('/(auth)/register-driver');
+    } else {
+      router.push({ pathname: '/(auth)/register-provider', params: { providerType: type } });
+    }
   };
 
   return (
