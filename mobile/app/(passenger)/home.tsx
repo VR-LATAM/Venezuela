@@ -30,6 +30,7 @@ import { apiClient } from '../../src/services/apiClient';
 import { TipModal } from '../../src/components/payments/TipModal';
 import { SOSButton } from '../../src/components/common/SOSButton';
 import { InfoModal, InfoPage } from '../../src/components/common/InfoModal';
+import ComunidadForm, { ComunidadFormData } from '../../src/components/comunidad/ComunidadForm';
 import { nokiaToneService } from '../../src/services/nokiaToneService';
 import { useRouteDeviation } from '../../src/hooks/useRouteDeviation';
 import { useMapZoom } from '../../src/hooks/useMapZoom';
@@ -168,6 +169,9 @@ export default function PassengerHomeScreen() {
   const [promoDiscount, setPromoDiscount]   = useState(0);
   const [promoValidating, setPromoValidating] = useState(false);
   const [promoApplied, setPromoApplied]     = useState(false);
+
+  // Comunidad — formulario específico por servicio
+  const [comunidadFormData, setComunidadFormData] = useState<ComunidadFormData | null>(null);
 
   // Encomienda / Delivery
   const [pkgDescription, setPkgDescription] = useState('');
@@ -829,7 +833,9 @@ export default function PassengerHomeScreen() {
         serviceType:          selectedService,
         stateCode:            user?.state_code ?? 'DC',
         promoCode:            promoApplied ? promoCode : undefined,
-        packageDescription:   selectedService === 'encomienda' ? pkgDescription.trim() || undefined : (isCargaCategory || isEspeciales) ? cargaDescription.trim() || undefined : undefined,
+        packageDescription:   selectedService === 'encomienda' ? pkgDescription.trim() || undefined : isEspeciales ? JSON.stringify(comunidadFormData ?? {}) : isCargaCategory ? cargaDescription.trim() || undefined : undefined,
+        scheduledDate:        isEspeciales && comunidadFormData?.mode === 'programar' ? comunidadFormData.scheduledDate || undefined : undefined,
+        scheduledTime:        isEspeciales && comunidadFormData?.mode === 'programar' ? comunidadFormData.scheduledTime || undefined : undefined,
         senderName:           (isCargaCategory || isEspeciales) ? cargaSenderName.trim() || undefined : undefined,
         senderPhone:          (isCargaCategory || isEspeciales) ? cargaSenderPhone.trim() || undefined : undefined,
         recipientName:        selectedService === 'encomienda' ? pkgRecipient.trim() || undefined  : (isCargaCategory || isEspeciales) ? cargaRecipient.trim() || undefined  : undefined,
@@ -1597,17 +1603,24 @@ export default function PassengerHomeScreen() {
                     )}
 
                     {/* Descripción */}
-                    <Text style={styles.encomiendaSectionLabel}>
-                      {ESPECIALES_TYPES.includes(selectedService) ? 'Descripción del servicio' : 'Tipo de carga'}
-                    </Text>
-                    <TextInput
-                      style={styles.encomiendaInput}
-                      value={cargaDescription}
-                      onChangeText={setCargaDescription}
-                      placeholder="¿Qué se va a transportar? (opcional)"
-                      placeholderTextColor="#94A3B8"
-                      maxLength={300}
-                    />
+                    {ESPECIALES_TYPES.includes(selectedService) ? (
+                      <ComunidadForm
+                        serviceType={selectedService}
+                        onChange={setComunidadFormData}
+                      />
+                    ) : (
+                      <>
+                        <Text style={styles.encomiendaSectionLabel}>Tipo de carga</Text>
+                        <TextInput
+                          style={styles.encomiendaInput}
+                          value={cargaDescription}
+                          onChangeText={setCargaDescription}
+                          placeholder="¿Qué se va a transportar? (opcional)"
+                          placeholderTextColor="#94A3B8"
+                          maxLength={300}
+                        />
+                      </>
+                    )}
 
                     {/* Precio ofrecido */}
                     <Text style={styles.encomiendaSectionLabel}>Precio ofrecido</Text>
