@@ -14,6 +14,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
+import * as ImagePicker from 'expo-image-picker';
 import { router, useLocalSearchParams } from 'expo-router';
 
 
@@ -174,6 +175,8 @@ export default function PassengerHomeScreen() {
   const [comunidadFormData, setComunidadFormData] = useState<ComunidadFormData | null>(null);
 
   // Encomienda / Delivery
+  const [pkgPhotos, setPkgPhotos]           = useState<string[]>([]);
+  const [cargaPhotos, setCargaPhotos]       = useState<string[]>([]);
   const [pkgDescription, setPkgDescription] = useState('');
   const [_pkgSize, _setPkgSize]               = useState<'small' | 'medium' | 'large'>('small');
   const [pkgRecipient, setPkgRecipient]     = useState('');
@@ -785,6 +788,49 @@ export default function PassengerHomeScreen() {
   }, [userLocation, dropoffCoords]);
 
   // ─────────────────────────────────────
+  const addPhoto = (current: string[], setter: (p: string[]) => void) => {
+    Alert.alert('Agregar foto', 'Selecciona una opción', [
+      { text: 'Cámara', onPress: async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') { Alert.alert('Permiso requerido', 'Activa el acceso a la cámara en Configuración.'); return; }
+        const r = await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
+        if (!r.canceled && r.assets[0]) setter([...current, r.assets[0].uri]);
+      }},
+      { text: 'Galería', onPress: async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== 'granted') { Alert.alert('Permiso requerido', 'Activa el acceso a la galería en Configuración.'); return; }
+        const r = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7 });
+        if (!r.canceled && r.assets[0]) setter([...current, r.assets[0].uri]);
+      }},
+      { text: 'Cancelar', style: 'cancel' },
+    ]);
+  };
+
+  const renderPhotoRow = (photos: string[], setter: (p: string[]) => void) => (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6, marginBottom: 4 }}>
+      {photos.map((uri, idx) => (
+        <View key={idx} style={{ position: 'relative' }}>
+          <Image source={{ uri }} style={{ width: 72, height: 72, borderRadius: 8 }} />
+          <TouchableOpacity
+            style={{ position: 'absolute', top: -6, right: -6, backgroundColor: '#EF4444', borderRadius: 10, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}
+            onPress={() => setter(photos.filter((_, i) => i !== idx))}
+          >
+            <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✕</Text>
+          </TouchableOpacity>
+        </View>
+      ))}
+      {photos.length < 6 && (
+        <TouchableOpacity
+          style={{ width: 72, height: 72, borderRadius: 8, borderWidth: 1.5, borderColor: '#ddd', borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fafafa' }}
+          onPress={() => addPhoto(photos, setter)}
+        >
+          <Text style={{ fontSize: 24 }}>📷</Text>
+          <Text style={{ fontSize: 10, color: '#999', marginTop: 2 }}>Foto</Text>
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+
   // Solicitar viaje
   // ─────────────────────────────────────
   const handleRequestRide = async () => {
@@ -817,6 +863,10 @@ export default function PassengerHomeScreen() {
 
     const isCargaCategory = selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma';
     if (selectedService === 'encomienda') {
+      if (!cargaSenderName.trim() || !cargaSenderPhone.trim()) {
+        Alert.alert('Datos requeridos', 'Ingresa el nombre y teléfono de quien envía.');
+        return;
+      }
       if (!pkgRecipient.trim() || !pkgPhone.trim()) {
         Alert.alert('Datos requeridos', 'Ingresa el nombre y teléfono del destinatario.');
         return;
@@ -854,8 +904,8 @@ export default function PassengerHomeScreen() {
         packageDescription:   selectedService === 'encomienda' ? pkgDescription.trim() || undefined : isEspeciales ? JSON.stringify(comunidadFormData ?? {}) : isCargaCategory ? cargaDescription.trim() || undefined : undefined,
         scheduledDate:        isEspeciales && comunidadFormData?.mode === 'programar' ? comunidadFormData.scheduledDate || undefined : undefined,
         scheduledTime:        isEspeciales && comunidadFormData?.mode === 'programar' ? comunidadFormData.scheduledTime || undefined : undefined,
-        senderName:           (isCargaCategory || isEspeciales) ? cargaSenderName.trim() || undefined : undefined,
-        senderPhone:          (isCargaCategory || isEspeciales) ? cargaSenderPhone.trim() || undefined : undefined,
+        senderName:           (isCargaCategory || isEspeciales || selectedService === 'encomienda') ? cargaSenderName.trim() || undefined : undefined,
+        senderPhone:          (isCargaCategory || isEspeciales || selectedService === 'encomienda') ? cargaSenderPhone.trim() || undefined : undefined,
         recipientName:        selectedService === 'encomienda' ? pkgRecipient.trim() || undefined  : (isCargaCategory || isEspeciales) ? cargaRecipient.trim() || undefined  : undefined,
         recipientPhone:       selectedService === 'encomienda' ? pkgPhone.trim() || undefined      : (isCargaCategory || isEspeciales) ? cargaPhone.trim() || undefined      : undefined,
         deliveryVehicle:      selectedService === 'encomienda' ? deliveryVehicle : undefined,
@@ -1562,6 +1612,25 @@ export default function PassengerHomeScreen() {
                       <Text style={styles.customPickupConfirm}>✓ Recogida confirmada</Text>
                     )}
 
+                    <Text style={styles.encomiendaSectionLabel}>Quien envía <Text style={{ color: '#EF4444' }}>*</Text></Text>
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={cargaSenderName}
+                      onChangeText={setCargaSenderName}
+                      placeholder="Nombre completo"
+                      placeholderTextColor="#94A3B8"
+                      maxLength={100}
+                    />
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={cargaSenderPhone}
+                      onChangeText={setCargaSenderPhone}
+                      placeholder="Teléfono"
+                      placeholderTextColor="#94A3B8"
+                      keyboardType="phone-pad"
+                      maxLength={30}
+                    />
+
                     <Text style={styles.encomiendaSectionLabel}>Vehículo para el envío</Text>
                     <View style={styles.encomiendaSizeRow}>
                       {([
@@ -1592,6 +1661,10 @@ export default function PassengerHomeScreen() {
                       placeholderTextColor="#94A3B8"
                       maxLength={200}
                     />
+
+                    <Text style={styles.encomiendaSectionLabel}>Fotos del paquete</Text>
+                    {renderPhotoRow(pkgPhotos, setPkgPhotos)}
+
                     <Text style={styles.encomiendaSectionLabel}>Destinatario <Text style={{ color: '#EF4444' }}>*</Text></Text>
                     <TextInput
                       style={styles.encomiendaInput}
@@ -1669,6 +1742,9 @@ export default function PassengerHomeScreen() {
                       placeholderTextColor="#94A3B8"
                       maxLength={300}
                     />
+
+                    <Text style={styles.encomiendaSectionLabel}>Fotos de la carga</Text>
+                    {renderPhotoRow(cargaPhotos, setCargaPhotos)}
 
                     {/* Precio ofrecido */}
                     <Text style={styles.encomiendaSectionLabel}>Precio ofrecido</Text>
