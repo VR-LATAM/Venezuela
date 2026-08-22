@@ -186,13 +186,13 @@ export async function calculateFareEstimate(params: {
       1.0;
     serviceMultiplier = vehicleBase * 0.60;
   } else if (params.serviceType === 'carga') {
-    serviceMultiplier = params.cargaVehicle === 'npr' ? 2.5 : 2.0;
+    serviceMultiplier = params.cargaVehicle === 'npr' ? 2.2 : 1.8;
   } else {
     serviceMultiplier =
       params.serviceType === 'motorcycle' ? motorcycleMultiplier :
       params.serviceType === 'suv'        ? suvMultiplier        :
       params.serviceType === 'pickup'     ? 1.20                 :
-      params.serviceType === 'plataforma' ? 1.60                 :
+      params.serviceType === 'plataforma' ? 3.0                  :
       1.0;
   }
 
@@ -275,8 +275,8 @@ export async function calculateFareEstimate(params: {
     params.serviceType === 'motorcycle'  ? minFare * motorcycleMultiplier :
     params.serviceType === 'encomienda'  ? Math.min(minFare, 2.00)        :
     params.serviceType === 'pickup'      ? Math.max(minFare, 6.00)        :
-    params.serviceType === 'plataforma'  ? Math.max(minFare, 10.00)       :
-    params.serviceType === 'carga'       ? Math.max(minFare, 15.00)       :
+    params.serviceType === 'plataforma'  ? Math.max(minFare, 20.00)       :
+    params.serviceType === 'carga'       ? Math.max(minFare, params.cargaVehicle === 'npr' ? 15.00 : 10.00) :
     minFare;
 
   // Tarifa solo por distancia (sin componente de tiempo)
