@@ -19,7 +19,8 @@ export type ServiceType =
   | 'encomienda' | 'pickup' | 'plataforma'
   | 'carga'
   | 'cisterna' | 'grua' | 'mecanico' | 'planta_electrica' | 'tanque_gas'
-  | 'baterias' | 'cauchos' | 'gasolina' | 'aire_acondicionado' | 'mudanza';
+  | 'baterias' | 'cauchos' | 'gasolina' | 'aire_acondicionado' | 'mudanza'
+  | 'taller_mecanico';
 
 // ─────────────────────────────────────
 // ESTADOS DEL VIAJE

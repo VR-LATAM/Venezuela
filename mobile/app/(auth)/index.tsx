@@ -74,11 +74,11 @@ export default function WelcomeScreen() {
 
         <TouchableOpacity
           style={[styles.button, styles.secondaryButton]}
-          onPress={() => router.push('/(auth)/register-driver')}
-          accessibilityLabel="Soy conductor"
+          onPress={() => router.push('/(auth)/register-provider-type')}
+          accessibilityLabel="Soy prestatario"
           accessibilityRole="button"
         >
-          <Text style={styles.secondaryButtonText} numberOfLines={1} adjustsFontSizeToFit>Soy conductor</Text>
+          <Text style={styles.secondaryButtonText} numberOfLines={1} adjustsFontSizeToFit>Soy prestatario</Text>
         </TouchableOpacity>
 
       </View>

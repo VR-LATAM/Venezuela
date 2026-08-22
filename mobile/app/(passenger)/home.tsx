@@ -69,7 +69,7 @@ const CARGA_SUB_OPTIONS = [
 
 const ESPECIALES_TYPES: ServiceType[] = [
   'cisterna', 'grua', 'mecanico', 'planta_electrica', 'tanque_gas',
-  'baterias', 'cauchos', 'gasolina', 'aire_acondicionado', 'mudanza',
+  'baterias', 'cauchos', 'gasolina', 'aire_acondicionado', 'mudanza', 'taller_mecanico',
 ];
 
 const ESPECIALES_SUB_OPTIONS = [
@@ -83,6 +83,7 @@ const ESPECIALES_SUB_OPTIONS = [
   { key: 'gasolina'          as ServiceType, emoji: '⛽', label: 'Gasolina'           },
   { key: 'aire_acondicionado'as ServiceType, emoji: '❄️', label: 'Aire Acond.'       },
   { key: 'mudanza'           as ServiceType, emoji: '📦', label: 'Mudanza'            },
+  { key: 'taller_mecanico'  as ServiceType, emoji: '🏪', label: 'Taller Mecánico'    },
 ] as const;
 
 

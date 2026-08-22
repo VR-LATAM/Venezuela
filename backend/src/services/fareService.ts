@@ -37,6 +37,7 @@ const SERVICE_MULTIPLIERS: Record<ServiceType, number> = {
   gasolina:           1.3,
   aire_acondicionado: 1.3,
   mudanza:            2.0,
+  taller_mecanico:    1.0,
 };
 
 // ─────────────────────────────────────

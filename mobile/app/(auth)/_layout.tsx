@@ -9,6 +9,7 @@ export default function AuthLayout() {
       <Stack.Screen name="onboarding" />
       <Stack.Screen name="login" />
       <Stack.Screen name="register-passenger" />
+      <Stack.Screen name="register-provider-type" />
       <Stack.Screen name="register-driver" />
       <Stack.Screen name="verify-email" />
     </Stack>
