@@ -427,6 +427,93 @@ export const authService = {
   },
 
   // ─────────────────────────────────────
+  // REGISTER PROVIDER
+  // Registro de prestatario con email + contraseña (sin Firebase)
+  // Crea un usuario role='provider' + registro en ve_service_providers
+  // ─────────────────────────────────────
+  registerProvider: async (params: {
+    fullName:     string;
+    cedula?:      string;
+    phone:        string;
+    email:        string;
+    password:     string;
+    state?:       string;
+    providerType: 'tecnico' | 'proveedor' | 'negocio';
+    specialty?:   string;
+    experience?:  string;
+    equipment?:   string;
+    capacity?:    string;
+    bizName?:     string;
+    bizAddress?:  string;
+    rif?:         string;
+  }): Promise<{ message: string }> => {
+    const bcrypt = await import('bcryptjs');
+    const existing = await userRepository.findByEmail(params.email);
+    if (existing) throw new Error('ALREADY_REGISTERED');
+
+    const passwordHash = await bcrypt.hash(params.password, 12);
+
+    await withTransaction(async (client) => {
+      const { rows: userRows } = await client.query(
+        `INSERT INTO users (firebase_uid, email, name, phone, phone_verified, role, language, state_code, password_hash)
+         VALUES ($1, $2, $3, $4, true, 'provider', 'es', 'ZU', $5)
+         RETURNING id`,
+        [`provider_${params.email}`, params.email, params.fullName, params.phone, passwordHash]
+      );
+      const userId = (userRows[0] as { id: string }).id;
+
+      await client.query(
+        `INSERT INTO ve_service_providers
+         (user_id, provider_type, full_name, cedula, phone, state,
+          specialty, experience, equipment, capacity,
+          business_name, business_address, rif)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+        [
+          userId, params.providerType, params.fullName,
+          params.cedula ?? null, params.phone, params.state ?? null,
+          params.specialty ?? null, params.experience ?? null,
+          params.equipment ?? null, params.capacity ?? null,
+          params.bizName ?? null, params.bizAddress ?? null, params.rif ?? null,
+        ]
+      );
+    });
+
+    return { message: 'Registro enviado, pendiente de aprobación' };
+  },
+
+  // ─────────────────────────────────────
+  // PROVIDER LOGIN
+  // Login de prestatario con email + contraseña
+  // ─────────────────────────────────────
+  providerLogin: async (params: {
+    email:    string;
+    password: string;
+  }): Promise<{ user: User; tokens: AuthTokens; role: UserRole; provider: Record<string, unknown> | null }> => {
+    const bcrypt = await import('bcryptjs');
+
+    const user = await userRepository.findByEmail(params.email);
+    if (!user || user.role !== 'provider') throw new Error('INVALID_CREDENTIALS');
+
+    const userWithHash = user as User & { password_hash?: string };
+    if (!userWithHash.password_hash) throw new Error('INVALID_CREDENTIALS');
+
+    const match = await bcrypt.compare(params.password, userWithHash.password_hash);
+    if (!match) throw new Error('INVALID_CREDENTIALS');
+    if (!user.is_active) throw new Error('ACCOUNT_DISABLED');
+
+    const { queryOne: qOne } = await import('../config/database');
+    const provider = await qOne<Record<string, unknown>>(
+      'SELECT * FROM ve_service_providers WHERE user_id = $1',
+      [user.id]
+    );
+
+    const tokens = generateTokenPair(user.id, 'provider', user.email);
+    await redis.setex(REDIS_KEYS.refreshToken(user.id), REDIS_TTL.REFRESH_TOKEN, tokens.refreshToken);
+
+    return { user, tokens, role: 'provider', provider };
+  },
+
+  // ─────────────────────────────────────
   // LOGOUT
   // Invalida el refresh token en Redis
   // ─────────────────────────────────────

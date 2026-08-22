@@ -30,6 +30,10 @@ router.post('/logout',      requireAuth, authController.logout);
 router.get('/me',           requireAuth, authController.me);
 router.post('/push-token',  requireAuth, authController.savePushToken);
 
+// Prestatarios de servicios Comunidad — registro y login sin Firebase
+router.post('/register-provider', authLimiter, auditLog('provider_registered'), authController.registerProvider);
+router.post('/provider-login',    authLimiter, authController.providerLogin);
+
 // Login del panel de administración — funciona en todos los entornos
 router.post('/admin-login', authLimiter, authController.adminLogin);
 

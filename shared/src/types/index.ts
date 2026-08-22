@@ -7,7 +7,7 @@
 // ─────────────────────────────────────
 // ROLES DE USUARIO
 // ─────────────────────────────────────
-export type UserRole = 'passenger' | 'driver' | 'admin';
+export type UserRole = 'passenger' | 'driver' | 'admin' | 'provider';
 export type Language = 'es' | 'en';
 
 // ─────────────────────────────────────

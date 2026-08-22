@@ -121,8 +121,8 @@ export default function RegisterProviderScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       Alert.alert(
         '✅ Registro enviado',
-        'Tu solicitud está en revisión. Te notificaremos cuando sea aprobada.',
-        [{ text: 'Aceptar', onPress: () => router.replace('/(auth)/login') }]
+        'Tu solicitud está en revisión. Te notificaremos cuando sea aprobada.\n\nYa puedes iniciar sesión con tu correo y contraseña.',
+        [{ text: 'Ir al acceso', onPress: () => router.replace('/(auth)/login-provider') }]
       );
     } catch (e: any) {
       Alert.alert('Error', e.message ?? 'No se pudo completar el registro.');

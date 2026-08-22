@@ -163,7 +163,7 @@ export default function PassengerHomeScreen() {
 
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const [_keyboardHeight, setKeyboardHeight] = useState(0);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Promo code
   const [promoCode, setPromoCode]           = useState('');
@@ -1217,12 +1217,12 @@ export default function PassengerHomeScreen() {
             {!isSearchingDest && (
               /* ── MODO NORMAL ── */
               <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={0}
               >
               <ScrollView
                 style={styles.idlePane}
-                contentContainerStyle={{ paddingBottom: 8 }}
+                contentContainerStyle={{ paddingBottom: keyboardHeight > 0 ? keyboardHeight + 24 : 8 }}
                 keyboardShouldPersistTaps="handled"
                 showsVerticalScrollIndicator={false}
               >

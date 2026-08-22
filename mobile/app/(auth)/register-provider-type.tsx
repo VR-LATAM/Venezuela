@@ -77,6 +77,13 @@ export default function RegisterProviderTypeScreen() {
         <Text style={styles.title}>¿Qué tipo de servicio ofreces?</Text>
         <Text style={styles.subtitle}>Selecciona la categoría que mejor describe lo que haces.</Text>
 
+        <TouchableOpacity
+          style={styles.loginLink}
+          onPress={() => router.push('/(auth)/login-provider')}
+        >
+          <Text style={styles.loginLinkText}>¿Ya tienes cuenta? Inicia sesión aquí</Text>
+        </TouchableOpacity>
+
         <View style={styles.list}>
           {PROVIDER_TYPES.map(pt => (
             <TouchableOpacity
@@ -124,4 +131,6 @@ const styles = StyleSheet.create({
   cardLabel: { fontSize: 18, fontWeight: '700' },
   cardDesc: { fontSize: 13, color: '#444', marginBottom: 6, lineHeight: 19 },
   cardServices: { fontSize: 11, color: '#999', fontStyle: 'italic' },
+  loginLink:     { alignSelf: 'center', marginBottom: 20 },
+  loginLinkText: { color: BRAND_COLORS.PRIMARY, fontSize: 14, fontWeight: '600' },
 });

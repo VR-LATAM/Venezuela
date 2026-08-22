@@ -76,6 +76,8 @@ export default function RootLayout() {
           router.replace('/(passenger)/categories');
         } else if (user.role === 'driver') {
           router.replace('/(driver)/home');
+        } else if (user.role === 'provider') {
+          router.replace('/(provider)/dashboard');
         } else if (user.role === 'admin') {
           // Admin usa el dashboard web, no la app móvil
           router.replace('/(auth)/login');
@@ -93,6 +95,7 @@ export default function RootLayout() {
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(passenger)" />
         <Stack.Screen name="(driver)" />
+        <Stack.Screen name="(provider)" />
         <Stack.Screen name="(info)" />
       </Stack>
     </StripeProvider>

@@ -233,6 +233,57 @@ export const authController = {
     }
   },
 
+  // POST /auth/register-provider — registro de prestatario de servicios (sin Firebase)
+  registerProvider: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const schema = z.object({
+        fullName:     z.string().min(2),
+        cedula:       z.string().optional(),
+        phone:        z.string().min(7),
+        email:        z.string().email(),
+        password:     z.string().min(6),
+        state:        z.string().optional(),
+        providerType: z.enum(['tecnico', 'proveedor', 'negocio']),
+        specialty:    z.string().optional(),
+        experience:   z.string().optional(),
+        equipment:    z.string().optional(),
+        capacity:     z.string().optional(),
+        bizName:      z.string().optional(),
+        bizAddress:   z.string().optional(),
+        rif:          z.string().optional(),
+      });
+      const body = schema.parse(req.body);
+      const result = await authService.registerProvider(body);
+      sendCreated(res, result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'ALREADY_REGISTERED') {
+        sendError(res, 409, 'Este correo ya está registrado', 'ALREADY_REGISTERED');
+        return;
+      }
+      next(err);
+    }
+  },
+
+  // POST /auth/provider-login — login de prestatario con email + contraseña
+  providerLogin: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const { email, password } = z.object({
+        email:    z.string().email(),
+        password: z.string().min(1),
+      }).parse(req.body);
+      const result = await authService.providerLogin({ email, password });
+      sendSuccess(res, result);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : '';
+      if (msg === 'INVALID_CREDENTIALS' || msg === 'ACCOUNT_DISABLED') {
+        sendError(res, 401, 'Credenciales incorrectas', 'INVALID_CREDENTIALS');
+        return;
+      }
+      next(err);
+    }
+  },
+
   // POST /auth/admin-login — login del panel admin con email + contraseña + TOTP (si habilitado)
   adminLogin: async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
