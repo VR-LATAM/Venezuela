@@ -788,7 +788,9 @@ export default function PassengerHomeScreen() {
   // Solicitar viaje
   // ─────────────────────────────────────
   const handleRequestRide = async () => {
-    if (!userLocation || !dropoffCoords) return;
+    const isEspeciales = ESPECIALES_TYPES.includes(selectedService);
+    if (!userLocation) return;
+    if (!isEspeciales && !dropoffCoords) return;
     if (selectedService === 'scheduled') {
       router.push('/(passenger)/schedule');
       return;
@@ -815,7 +817,6 @@ export default function PassengerHomeScreen() {
 
     setSearchStatus('requesting');
     const isCargaCategory = selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma';
-    const isEspeciales    = ESPECIALES_TYPES.includes(selectedService);
     const isDelivery      = selectedService === 'encomienda' || isCargaCategory;
     const isCargaHeavy    = selectedService === 'carga';
     const finalPickupLat  = (isDelivery && customPickupCoords) ? customPickupCoords.latitude  : userLocation.latitude;
@@ -827,9 +828,9 @@ export default function PassengerHomeScreen() {
         pickupAddress:        finalPickupAddr,
         pickupLat:            finalPickupLat,
         pickupLng:            finalPickupLng,
-        dropoffAddress:       dropoffAddress.trim(),
-        dropoffLat:           dropoffCoords.latitude,
-        dropoffLng:           dropoffCoords.longitude,
+        dropoffAddress:       isEspeciales ? pickupAddress : dropoffAddress.trim(),
+        dropoffLat:           isEspeciales ? userLocation.latitude  : dropoffCoords!.latitude,
+        dropoffLng:           isEspeciales ? userLocation.longitude : dropoffCoords!.longitude,
         serviceType:          selectedService,
         stateCode:            user?.state_code ?? 'DC',
         promoCode:            promoApplied ? promoCode : undefined,
@@ -924,15 +925,27 @@ export default function PassengerHomeScreen() {
     if (selectedService === 'pickup' || selectedService === 'plataforma') {
       return est ? `Solicitar ${svcOpt?.label}  ·  $${(est.total ?? 0).toFixed(2)}` : `Solicitar ${svcOpt?.label}`;
     }
+    if (ESPECIALES_TYPES.includes(selectedService)) {
+      const sub = ESPECIALES_SUB_OPTIONS.find(s => s.key === selectedService);
+      const nombre = sub?.label ?? 'Servicio';
+      const modo = comunidadFormData?.mode === 'programar' ? 'Programar' : 'Solicitar';
+      return `${modo} ${nombre}`;
+    }
     if (est) return `Solicitar ${name}  ·  $${(est.total ?? 0).toFixed(2)}`;
     return 'Solicitar viaje';
   };
 
   const deliveryServices: ServiceType[] = ['encomienda', 'carga'];
-  const canRequest = !!userLocation && !!dropoffCoords &&
-    (selectedService === 'scheduled' ||
-     deliveryServices.includes(selectedService) ||
-     !!allEstimates[selectedService]);
+  const isComunidadService = ESPECIALES_TYPES.includes(selectedService);
+  const canRequest = !!userLocation && (
+    isComunidadService
+      ? true
+      : !!dropoffCoords && (
+          selectedService === 'scheduled' ||
+          deliveryServices.includes(selectedService) ||
+          !!allEstimates[selectedService]
+        )
+  );
 
   const isActiveRide = ['searching', 'driver_assigned', 'driver_arrived', 'in_progress']
     .includes(searchStatus);
@@ -1178,7 +1191,41 @@ export default function PassengerHomeScreen() {
                 </TouchableOpacity>
 
                 {/* Grid de servicios con precios */}
-                {dropoffCoords ? (
+                {ESPECIALES_TYPES.includes(selectedService) ? (
+                  /* ── Comunidad: prestatario viene al cliente, no requiere destino ── */
+                  <View>
+                    <TouchableOpacity
+                      style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, marginBottom: 10 }}
+                      onPress={() => { setSelectedService('sedan'); router.back(); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                    >
+                      <Text style={{ color: BRAND_COLORS.PRIMARY, fontSize: 14, fontWeight: '600' }}>← Categorías</Text>
+                    </TouchableOpacity>
+                    <View style={styles.serviceGrid}>
+                      {ESPECIALES_SUB_OPTIONS.map((sub, idx) => {
+                        const isSubActive = selectedService === sub.key;
+                        return (
+                          <TouchableOpacity
+                            key={idx}
+                            style={[styles.serviceCard, isSubActive && styles.serviceCardActive]}
+                            onPress={() => { setSelectedService(sub.key); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
+                            activeOpacity={0.75}
+                          >
+                            <View style={styles.serviceCardRow}>
+                              <Text style={[styles.serviceCardLabel, isSubActive && styles.textWhite]}>
+                                {sub.emoji} {sub.label}
+                              </Text>
+                              <Text style={[styles.serviceCardPrice, { color: isSubActive ? '#fff' : '#bbb' }]}>—</Text>
+                            </View>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                    <ComunidadForm
+                      serviceType={selectedService}
+                      onChange={setComunidadFormData}
+                    />
+                  </View>
+                ) : dropoffCoords ? (
                   <>
                     {/* Línea de estado — solo visible si hay error o cargando */}
                     {estimateError && !isLoadingEstimates && (
@@ -1270,41 +1317,6 @@ export default function PassengerHomeScreen() {
                                     {subEst.duration_minutes ?? 0} min · {(subEst.distance_km ?? 0).toFixed(1)} km
                                   </Text>
                                 )}
-                              </TouchableOpacity>
-                            );
-                          })}
-                        </View>
-                      </View>
-
-                    ) : ESPECIALES_TYPES.includes(selectedService) ? (
-                      /* Sub-menú de Comunidad */
-                      <View>
-                        <TouchableOpacity
-                          style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, marginBottom: 10 }}
-                          onPress={() => { setSelectedService('sedan'); Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); }}
-                        >
-                          <Text style={{ color: BRAND_COLORS.PRIMARY, fontSize: 14, fontWeight: '600' }}>← Todos los servicios</Text>
-                        </TouchableOpacity>
-                        <View style={styles.serviceGrid}>
-                          {ESPECIALES_SUB_OPTIONS.map((sub, idx) => {
-                            const isSubActive = selectedService === sub.key;
-                            return (
-                              <TouchableOpacity
-                                key={idx}
-                                style={[styles.serviceCard, isSubActive && styles.serviceCardActive]}
-                                onPress={() => {
-                                  setSelectedService(sub.key);
-                                  setOfferedPrice(0);
-                                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                                }}
-                                activeOpacity={0.75}
-                              >
-                                <View style={styles.serviceCardRow}>
-                                  <Text style={[styles.serviceCardLabel, isSubActive && styles.textWhite]}>
-                                    {sub.emoji} {sub.label}
-                                  </Text>
-                                  <Text style={[styles.serviceCardPrice, { color: isSubActive ? '#fff' : '#bbb' }]}>—</Text>
-                                </View>
                               </TouchableOpacity>
                             );
                           })}
@@ -1550,77 +1562,62 @@ export default function PassengerHomeScreen() {
                   </View>
                 )}
 
-                {/* Formulario unificado de Carga y Comunidad */}
-                {(selectedService === 'pickup' || selectedService === 'plataforma' || selectedService === 'carga' || ESPECIALES_TYPES.includes(selectedService)) && dropoffCoords && (
+                {/* Formulario de Carga */}
+                {(selectedService === 'pickup' || selectedService === 'plataforma' || selectedService === 'carga') && dropoffCoords && (
                   <View style={styles.encomiendaForm}>
-                    <Text style={styles.encomiendaTitle}>
-                      {ESPECIALES_TYPES.includes(selectedService) ? '🤝 Datos del servicio' : '🚚 Datos del servicio de carga'}
-                    </Text>
+                    <Text style={styles.encomiendaTitle}>🚚 Datos del servicio de carga</Text>
 
-                    {/* Dirección de recogida personalizada (solo para Carga, no para Especiales) */}
-                    {!ESPECIALES_TYPES.includes(selectedService) && (
-                      <>
-                        <Text style={styles.encomiendaSectionLabel}>Dirección de recogida</Text>
-                        <View style={styles.customPickupRow}>
-                          <TextInput
-                            style={[styles.encomiendaInput, { flex: 1, marginBottom: 0 }]}
-                            value={customPickupAddr}
-                            onChangeText={t => { setCustomPickupAddr(t); setCustomPickupCoords(null); }}
-                            placeholder="Escribe la dirección de recogida"
-                            placeholderTextColor="#94A3B8"
-                            maxLength={200}
-                          />
-                          <TouchableOpacity
-                            style={styles.customPickupGeoBtn}
-                            onPress={async () => {
-                              const addr = customPickupAddr.trim();
-                              if (!addr) return;
-                              setIsGeocodingPickup(true);
-                              try {
-                                const coords = await rideMobileService.geocodeAddress(addr);
-                                if (coords) setCustomPickupCoords({ latitude: coords.lat, longitude: coords.lng });
-                                else Alert.alert('No encontrada', 'Verifica la dirección e intenta de nuevo.');
-                              } finally { setIsGeocodingPickup(false); }
-                            }}
-                            disabled={isGeocodingPickup}
-                          >
-                            {isGeocodingPickup
-                              ? <ActivityIndicator size="small" color="#fff" />
-                              : <Text style={styles.customPickupGeoBtnText}>📍</Text>
-                            }
-                          </TouchableOpacity>
-                          <TouchableOpacity
-                            style={styles.customPickupResetBtn}
-                            onPress={() => { setCustomPickupAddr(pickupAddress); setCustomPickupCoords(null); }}
-                          >
-                            <Text style={styles.customPickupResetBtnText}>↺</Text>
-                          </TouchableOpacity>
-                        </View>
-                        {customPickupCoords && (
-                          <Text style={styles.customPickupConfirm}>✓ Dirección de recogida confirmada</Text>
-                        )}
-                      </>
-                    )}
-
-                    {/* Descripción */}
-                    {ESPECIALES_TYPES.includes(selectedService) ? (
-                      <ComunidadForm
-                        serviceType={selectedService}
-                        onChange={setComunidadFormData}
+                    {/* Dirección de recogida personalizada */}
+                    <Text style={styles.encomiendaSectionLabel}>Dirección de recogida</Text>
+                    <View style={styles.customPickupRow}>
+                      <TextInput
+                        style={[styles.encomiendaInput, { flex: 1, marginBottom: 0 }]}
+                        value={customPickupAddr}
+                        onChangeText={t => { setCustomPickupAddr(t); setCustomPickupCoords(null); }}
+                        placeholder="Escribe la dirección de recogida"
+                        placeholderTextColor="#94A3B8"
+                        maxLength={200}
                       />
-                    ) : (
-                      <>
-                        <Text style={styles.encomiendaSectionLabel}>Tipo de carga</Text>
-                        <TextInput
-                          style={styles.encomiendaInput}
-                          value={cargaDescription}
-                          onChangeText={setCargaDescription}
-                          placeholder="¿Qué se va a transportar? (opcional)"
-                          placeholderTextColor="#94A3B8"
-                          maxLength={300}
-                        />
-                      </>
+                      <TouchableOpacity
+                        style={styles.customPickupGeoBtn}
+                        onPress={async () => {
+                          const addr = customPickupAddr.trim();
+                          if (!addr) return;
+                          setIsGeocodingPickup(true);
+                          try {
+                            const coords = await rideMobileService.geocodeAddress(addr);
+                            if (coords) setCustomPickupCoords({ latitude: coords.lat, longitude: coords.lng });
+                            else Alert.alert('No encontrada', 'Verifica la dirección e intenta de nuevo.');
+                          } finally { setIsGeocodingPickup(false); }
+                        }}
+                        disabled={isGeocodingPickup}
+                      >
+                        {isGeocodingPickup
+                          ? <ActivityIndicator size="small" color="#fff" />
+                          : <Text style={styles.customPickupGeoBtnText}>📍</Text>
+                        }
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.customPickupResetBtn}
+                        onPress={() => { setCustomPickupAddr(pickupAddress); setCustomPickupCoords(null); }}
+                      >
+                        <Text style={styles.customPickupResetBtnText}>↺</Text>
+                      </TouchableOpacity>
+                    </View>
+                    {customPickupCoords && (
+                      <Text style={styles.customPickupConfirm}>✓ Dirección de recogida confirmada</Text>
                     )}
+
+                    {/* Tipo de carga */}
+                    <Text style={styles.encomiendaSectionLabel}>Tipo de carga</Text>
+                    <TextInput
+                      style={styles.encomiendaInput}
+                      value={cargaDescription}
+                      onChangeText={setCargaDescription}
+                      placeholder="¿Qué se va a transportar? (opcional)"
+                      placeholderTextColor="#94A3B8"
+                      maxLength={300}
+                    />
 
                     {/* Precio ofrecido */}
                     <Text style={styles.encomiendaSectionLabel}>Precio ofrecido</Text>
