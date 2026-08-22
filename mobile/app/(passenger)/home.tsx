@@ -88,7 +88,7 @@ const ESPECIALES_SUB_OPTIONS = [
 ] as const;
 
 
-const TAXI_SERVICES:      ServiceType[] = ['motorcycle', 'sedan', 'suv', 'hourly', 'wait_and_return'];
+const TAXI_SERVICES:      ServiceType[] = ['motorcycle', 'sedan', 'suv', 'scheduled', 'hourly', 'wait_and_return'];
 const CARGA_SERVICES:     ServiceType[] = ['pickup', 'plataforma', 'carga'];
 const COMUNIDAD_SERVICES: ServiceType[] = [...ESPECIALES_TYPES];
 
@@ -1436,34 +1436,67 @@ export default function PassengerHomeScreen() {
 
                   </>
                 ) : (
-                  /* Chips sin destino */
-                  <View style={styles.chipRow}>
-                    {SERVICE_OPTIONS.map(svc => {
-                      const isCargaCategory      = svc.key === 'carga';
-                      const isEspecialesCategory = svc.key === 'cisterna' && svc.label === 'Especiales';
-                      const isActive = isCargaCategory
-                        ? (selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma')
-                        : isEspecialesCategory
-                        ? ESPECIALES_TYPES.includes(selectedService)
-                        : selectedService === svc.key;
-                      return (
-                        <TouchableOpacity
-                          key={svc.key}
-                          style={[styles.chip, isActive && styles.chipActive]}
-                          onPress={() => {
-                            if (isCargaCategory && !isActive) setSelectedService('pickup');
-                            else if (isEspecialesCategory && !isActive) setSelectedService('cisterna');
-                            else if (!isCargaCategory && !isEspecialesCategory) setSelectedService(svc.key);
-                            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          }}
-                        >
-                          <Text style={[styles.chipLabel, isActive && { color: '#fff' }]}>
-                            {svc.label}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
+                  /* Sin destino: muestra solo vehículos relevantes para la categoría */
+                  <>
+                    {(category === 'carga' || selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma') ? (
+                      /* Carga sin destino: sub-opciones de vehículo directamente */
+                      <View>
+                        <View style={styles.serviceGrid}>
+                          {CARGA_SUB_OPTIONS.map((sub, idx) => {
+                            const isSubActive = sub.key !== 'carga'
+                              ? selectedService === sub.key
+                              : selectedService === 'carga' && cargaVehicle === sub.vehicle;
+                            return (
+                              <TouchableOpacity
+                                key={idx}
+                                style={[styles.serviceCard, isSubActive && styles.serviceCardActive]}
+                                onPress={() => {
+                                  setSelectedService(sub.key);
+                                  if (sub.vehicle) setCargaVehicle(sub.vehicle as '350' | 'npr');
+                                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                                }}
+                                activeOpacity={0.75}
+                              >
+                                <View style={styles.serviceCardRow}>
+                                  <Text style={[styles.serviceCardLabel, isSubActive && styles.textWhite]}>
+                                    {sub.emoji} {sub.label}
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </View>
+                        <Text style={{ color: '#999', fontSize: 13, textAlign: 'center', marginTop: 12 }}>
+                          📍 Ingresa el destino de entrega para ver precios
+                        </Text>
+                      </View>
+                    ) : (
+                      /* Taxi / Encomienda / sin categoría: chips filtrados */
+                      <View style={styles.chipRow}>
+                        {SERVICE_OPTIONS.filter(svc => {
+                          if (category === 'taxi') return TAXI_SERVICES.includes(svc.key);
+                          if (category === 'encomienda') return svc.key === 'encomienda';
+                          return true;
+                        }).map(svc => {
+                          const isActive = selectedService === svc.key;
+                          return (
+                            <TouchableOpacity
+                              key={svc.key}
+                              style={[styles.chip, isActive && styles.chipActive]}
+                              onPress={() => {
+                                setSelectedService(svc.key);
+                                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                              }}
+                            >
+                              <Text style={[styles.chipLabel, isActive && { color: '#fff' }]}>
+                                {svc.label}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    )}
+                  </>
                 )}
 
                 {/* Formulario de encomienda */}
