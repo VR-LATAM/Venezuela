@@ -5,7 +5,7 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, SafeAreaView, ScrollView,
-  TouchableOpacity, Alert,
+  TouchableOpacity, Alert, StatusBar,
 } from 'react-native';
 import { router } from 'expo-router';
 import * as SecureStore from 'expo-secure-store';
@@ -56,8 +56,12 @@ export default function ProviderDashboardScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="light-content" backgroundColor={BRAND_COLORS.PRIMARY} />
       <View style={styles.header}>
-        <View>
+        <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <Text style={styles.backBtnText}>←</Text>
+        </TouchableOpacity>
+        <View style={styles.headerCenter}>
           <Text style={styles.greeting}>Hola, {user?.name?.split(' ')[0] ?? 'Prestatario'}</Text>
           <Text style={styles.typeLabel}>{typeLabel}</Text>
         </View>
@@ -161,11 +165,14 @@ const styles = StyleSheet.create({
   safe:   { flex: 1, backgroundColor: '#F8F9FA' },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: BRAND_COLORS.PRIMARY, paddingHorizontal: 20, paddingVertical: 16,
-    paddingTop: 20,
+    backgroundColor: BRAND_COLORS.PRIMARY, paddingHorizontal: 16, paddingVertical: 14,
+    paddingTop: 16,
   },
-  greeting:  { fontSize: 18, fontWeight: '700', color: '#fff' },
-  typeLabel: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
+  backBtn:      { padding: 6, marginRight: 4 },
+  backBtnText:  { color: '#fff', fontSize: 22, fontWeight: '700' },
+  headerCenter: { flex: 1 },
+  greeting:  { fontSize: 17, fontWeight: '700', color: '#fff' },
+  typeLabel: { fontSize: 12, color: 'rgba(255,255,255,0.8)', marginTop: 2 },
   logoutBtn: {
     backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 14,
     paddingVertical: 7, borderRadius: 8,
