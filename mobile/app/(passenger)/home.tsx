@@ -14,7 +14,7 @@ import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 import MapViewDirections from 'react-native-maps-directions';
 import * as Location from 'expo-location';
 import * as Haptics from 'expo-haptics';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 
 
 import { useAuthStore, useUser } from '../../src/store/authStore';
@@ -57,28 +57,41 @@ const SERVICE_OPTIONS: { key: ServiceType; label: string; emoji: string; categor
   { key: 'wait_and_return',label: 'Ida y Vuelta',  emoji: '🔄', category: 'schedule'  },
   { key: 'encomienda',     label: 'Encomienda',    emoji: '📦', category: 'delivery'  },
   { key: 'carga',          label: 'Carga',         emoji: '🏗️', category: 'delivery'  },
-  { key: 'cisterna',       label: 'Especiales',    emoji: '🛠️', category: 'delivery'  },
+  { key: 'cisterna',       label: 'Comunidad',     emoji: '🤝', category: 'delivery'  },
 ];
 
 const CARGA_SUB_OPTIONS = [
   { key: 'pickup'    as ServiceType, emoji: '🛻', label: 'Pick-Up',   vehicle: null       },
-  { key: 'plataforma'as ServiceType, emoji: '🚛', label: 'Plataforma', vehicle: null      },
+  { key: 'plataforma'as ServiceType, emoji: '🚛', label: 'Plataforma / Int. 4300', vehicle: null      },
   { key: 'carga'     as ServiceType, emoji: '🛻', label: 'F-350',     vehicle: '350'      },
   { key: 'carga'     as ServiceType, emoji: '🚚', label: 'NPR 400+',  vehicle: 'npr'      },
 ] as const;
 
-const ESPECIALES_TYPES: ServiceType[] = ['cisterna', 'grua', 'mecanico', 'planta_electrica', 'tanque_gas'];
+const ESPECIALES_TYPES: ServiceType[] = [
+  'cisterna', 'grua', 'mecanico', 'planta_electrica', 'tanque_gas',
+  'baterias', 'cauchos', 'gasolina', 'aire_acondicionado', 'mudanza',
+];
 
 const ESPECIALES_SUB_OPTIONS = [
-  { key: 'cisterna'         as ServiceType, emoji: '🚛', label: 'Cisterna'        },
-  { key: 'grua'             as ServiceType, emoji: '🏗️', label: 'Grúa'            },
-  { key: 'mecanico'         as ServiceType, emoji: '🔧', label: 'Mecánico'         },
-  { key: 'planta_electrica' as ServiceType, emoji: '⚡', label: 'Planta Eléc.'    },
-  { key: 'tanque_gas'       as ServiceType, emoji: '🛢️', label: 'Tanque Gas'      },
+  { key: 'cisterna'          as ServiceType, emoji: '💧', label: 'Agua Potable'       },
+  { key: 'grua'              as ServiceType, emoji: '🏗️', label: 'Grúa'               },
+  { key: 'mecanico'          as ServiceType, emoji: '🔧', label: 'Mecánico'            },
+  { key: 'planta_electrica'  as ServiceType, emoji: '⚡', label: 'Planta Eléc.'       },
+  { key: 'tanque_gas'        as ServiceType, emoji: '🔥', label: 'Tanque Gas'         },
+  { key: 'baterias'          as ServiceType, emoji: '🔋', label: 'Baterías'           },
+  { key: 'cauchos'           as ServiceType, emoji: '🛞', label: 'Cauchos'            },
+  { key: 'gasolina'          as ServiceType, emoji: '⛽', label: 'Gasolina'           },
+  { key: 'aire_acondicionado'as ServiceType, emoji: '❄️', label: 'Aire Acond.'       },
+  { key: 'mudanza'           as ServiceType, emoji: '📦', label: 'Mudanza'            },
 ] as const;
 
 
+const TAXI_SERVICES:      ServiceType[] = ['motorcycle', 'sedan', 'suv', 'hourly', 'wait_and_return'];
+const CARGA_SERVICES:     ServiceType[] = ['pickup', 'plataforma', 'carga'];
+const COMUNIDAD_SERVICES: ServiceType[] = [...ESPECIALES_TYPES];
+
 export default function PassengerHomeScreen() {
+  const { category } = useLocalSearchParams<{ category?: string }>();
   const user = useUser();
   const { logout } = useAuthStore();
 
@@ -90,6 +103,14 @@ export default function PassengerHomeScreen() {
     setPendingThankyou,
     resetPassengerState, cancelCurrentRide, loadActiveRide,
   } = useRideStore();
+
+  // Preseleccionar servicio según categoría entrante
+  useEffect(() => {
+    if (category === 'carga')      setSelectedService('pickup');
+    else if (category === 'comunidad')  setSelectedService('cisterna');
+    else if (category === 'encomienda') setSelectedService('encomienda');
+    else if (category === 'taxi')       setSelectedService('sedan');
+  }, [category]);
 
   const mapRef       = useRef<MapView>(null);
   const searchRef    = useRef<TextInput>(null);
@@ -152,7 +173,7 @@ export default function PassengerHomeScreen() {
   const [_pkgSize, _setPkgSize]               = useState<'small' | 'medium' | 'large'>('small');
   const [pkgRecipient, setPkgRecipient]     = useState('');
   const [pkgPhone, setPkgPhone]             = useState('');
-  const [deliveryVehicle, setDeliveryVehicle] = useState<'motorcycle' | 'sedan' | 'suv' | 'pickup' | 'plataforma'>('motorcycle');
+  const [deliveryVehicle, setDeliveryVehicle] = useState<'motorcycle' | 'sedan'>('motorcycle');
 
   // Trabajo por Hora y Esperar-Regresar
   const [hourlyPackageHours, setHourlyPackageHours]   = useState<2 | 4 | 8>(2);
@@ -900,7 +921,7 @@ export default function PassengerHomeScreen() {
     return 'Solicitar viaje';
   };
 
-  const deliveryServices: ServiceType[] = ['encomienda', 'pickup', 'plataforma', 'carga'];
+  const deliveryServices: ServiceType[] = ['encomienda', 'carga'];
   const canRequest = !!userLocation && !!dropoffCoords &&
     (selectedService === 'scheduled' ||
      deliveryServices.includes(selectedService) ||
@@ -1249,7 +1270,7 @@ export default function PassengerHomeScreen() {
                       </View>
 
                     ) : ESPECIALES_TYPES.includes(selectedService) ? (
-                      /* Sub-menú de Servicios Especiales */
+                      /* Sub-menú de Comunidad */
                       <View>
                         <TouchableOpacity
                           style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 6, marginBottom: 10 }}
@@ -1287,7 +1308,13 @@ export default function PassengerHomeScreen() {
                       /* Grid principal de servicios */
                       <>
                         <View style={styles.serviceGrid}>
-                          {SERVICE_OPTIONS.map(svc => {
+                          {SERVICE_OPTIONS.filter(svc => {
+                            if (category === 'taxi')  return TAXI_SERVICES.includes(svc.key);
+                            if (category === 'carga') return svc.key === 'carga';
+                            if (category === 'comunidad') return svc.key === 'cisterna';
+                            if (category === 'encomienda') return svc.key === 'encomienda';
+                            return true;
+                          }).map(svc => {
                             const isCargaCategory      = svc.key === 'carga';
                             const isEspecialesCategory = svc.key === 'cisterna' && svc.label === 'Especiales';
                             const isActive = selectedService === svc.key;
@@ -1469,9 +1496,8 @@ export default function PassengerHomeScreen() {
                     <Text style={styles.encomiendaSectionLabel}>Vehículo para el envío</Text>
                     <View style={styles.encomiendaSizeRow}>
                       {([
-                        { key: 'motorcycle', emoji: '🏍️', label: 'Moto',  desc: 'Paquetes pequeños' },
-                        { key: 'sedan',      emoji: '🚗', label: 'Sedán', desc: 'Cajas medianas'    },
-                        { key: 'suv',        emoji: '🚙', label: 'SUV',   desc: 'Objetos grandes'   },
+                        { key: 'motorcycle', emoji: '🏍️', label: 'Moto',       desc: 'Paquetes pequeños'  },
+                        { key: 'sedan',      emoji: '🚗', label: 'Sedán / SUV', desc: 'Cajas y objetos grandes' },
                       ] as const).map(v => (
                         <TouchableOpacity
                           key={v.key}
@@ -1517,11 +1543,11 @@ export default function PassengerHomeScreen() {
                   </View>
                 )}
 
-                {/* Formulario unificado de Carga y Servicios Especiales */}
+                {/* Formulario unificado de Carga y Comunidad */}
                 {(selectedService === 'pickup' || selectedService === 'plataforma' || selectedService === 'carga' || ESPECIALES_TYPES.includes(selectedService)) && dropoffCoords && (
                   <View style={styles.encomiendaForm}>
                     <Text style={styles.encomiendaTitle}>
-                      {ESPECIALES_TYPES.includes(selectedService) ? '🛠️ Datos del servicio especial' : '🚚 Datos del servicio de carga'}
+                      {ESPECIALES_TYPES.includes(selectedService) ? '🤝 Datos del servicio' : '🚚 Datos del servicio de carga'}
                     </Text>
 
                     {/* Dirección de recogida personalizada (solo para Carga, no para Especiales) */}

@@ -63,7 +63,7 @@ export default function RatingScreen() {
       setSubmitted(true);
       setTimeout(() => {
         resetPassengerState();
-        router.replace('/(passenger)/home');
+        router.replace('/(passenger)/categories');
       }, 1500);
     } catch {
       Alert.alert('', 'No se pudo enviar la calificación. Inténtalo de nuevo.');
@@ -74,7 +74,7 @@ export default function RatingScreen() {
 
   const handleSkip = () => {
     resetPassengerState();
-    router.replace('/(passenger)/home');
+    router.replace('/(passenger)/categories');
   };
 
   if (submitted) {

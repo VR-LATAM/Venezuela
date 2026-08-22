@@ -5,6 +5,7 @@ import { Stack } from 'expo-router';
 export default function PassengerLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="categories" />
       <Stack.Screen name="home" />
       <Stack.Screen name="ride"     options={{ gestureEnabled: false }} />
       <Stack.Screen name="rating"   options={{ gestureEnabled: false }} />

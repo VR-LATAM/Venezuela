@@ -89,6 +89,26 @@ export async function uploadProfilePhoto(
   return getSignedUrl(filePath);
 }
 
+// Subir foto de custodia de paquete
+export async function uploadCustodyPhoto(
+  fileBuffer: Buffer,
+  mimeType: string,
+  rideId: string,
+  folder: string,
+  angle: string
+): Promise<string> {
+  const ext = getExtensionFromMime(mimeType);
+  const filePath = `custody/${rideId}/${folder}_${angle}_${uuidv4()}${ext}`;
+
+  await axios.post(
+    `${env.SUPABASE_URL}/storage/v1/object/custody-photos/${filePath}`,
+    fileBuffer,
+    { headers: { ...authHeaders(), 'Content-Type': mimeType, 'x-upsert': 'true' } }
+  );
+
+  return `${env.SUPABASE_URL}/storage/v1/object/public/custody-photos/${filePath}`;
+}
+
 // Eliminar archivo del storage
 export async function deleteFile(fileUrl: string): Promise<void> {
   try {

@@ -164,7 +164,7 @@ export default function RideScreen() {
     const unsubCancelled = socketService.on('passenger:ride_cancelled_by_driver', () => {
       Alert.alert('Viaje cancelado', 'El conductor canceló el viaje.');
       resetPassengerState();
-      router.replace('/(passenger)/home');
+      router.replace('/(passenger)/categories');
     });
 
     const unsubDriverMsg = socketService.on('passenger:driver_message', (data: unknown) => {
@@ -184,7 +184,7 @@ export default function RideScreen() {
           // El viaje ya no está activo — probablemente completado o cancelado
           clearInterval(pollInterval);
           resetPassengerState();
-          router.replace('/(passenger)/home');
+          router.replace('/(passenger)/categories');
         }
       } catch { /* ignorar errores de red */ }
     }, 8000);
@@ -321,7 +321,7 @@ export default function RideScreen() {
             try {
               await cancelCurrentRide(currentRide.id);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-              router.replace('/(passenger)/home');
+              router.replace('/(passenger)/categories');
             } catch {
               Alert.alert('Error', 'No se pudo cancelar el viaje. Inténtalo de nuevo.');
             } finally {

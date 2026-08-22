@@ -27,11 +27,16 @@ const SERVICE_MULTIPLIERS: Record<ServiceType, number> = {
   pickup:          1.4,
   plataforma:      1.8,
   carga:           2.0,
-  cisterna:        1.5,
-  grua:            2.0,
-  mecanico:        1.2,
-  planta_electrica:1.5,
-  tanque_gas:      1.2,
+  cisterna:           1.5,
+  grua:               2.0,
+  mecanico:           1.2,
+  planta_electrica:   1.5,
+  tanque_gas:         1.2,
+  baterias:           1.2,
+  cauchos:            1.2,
+  gasolina:           1.3,
+  aire_acondicionado: 1.3,
+  mudanza:            2.0,
 };
 
 // ─────────────────────────────────────

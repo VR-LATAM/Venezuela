@@ -31,7 +31,7 @@ function AboutContent() {
         cómoda y confiable.
       </Text>
       <Text style={s.body}>
-        Nos enfocamos en dos cosas: que los pasajeros lleguen a su destino de forma segura y
+        Nos enfocamos en dos cosas: que los clientes lleguen a su destino de forma segura y
         tranquila, y que los conductores tengan una herramienta que realmente trabaje para
         ellos — con transparencia y con respeto.
       </Text>
@@ -60,8 +60,8 @@ function AboutContent() {
 const privacySections = [
   { title: '1. Introducción', body: 'VERONA Ride Venezuela está comprometido con la protección de tu privacidad. Esta Política explica cómo recopilamos, usamos, divulgamos y protegemos tu información cuando usas nuestra aplicación.' },
   { title: '2. Información que recopilamos', body: 'Recopilamos: nombre completo, correo electrónico, número de teléfono, foto de perfil, datos de ubicación GPS durante los viajes, y preferencias opcionales si eliges proporcionarlas.' },
-  { title: '3. Cómo usamos tu información', body: 'Usamos tu información para brindar y mejorar el servicio, conectar pasajeros con conductores, enviar actualizaciones de viaje y alertas de seguridad, y cumplir con obligaciones legales venezolanas.' },
-  { title: '4. Compartición de información', body: 'Los detalles del viaje se comparten entre pasajeros y conductores asignados. Trabajamos con proveedores de confianza bajo acuerdos de confidencialidad. No vendemos tu información personal.' },
+  { title: '3. Cómo usamos tu información', body: 'Usamos tu información para brindar y mejorar el servicio, conectar clientes con conductores, enviar actualizaciones de viaje y alertas de seguridad, y cumplir con obligaciones legales venezolanas.' },
+  { title: '4. Compartición de información', body: 'Los detalles del servicio se comparten entre clientes y conductores asignados. Trabajamos con proveedores de confianza bajo acuerdos de confidencialidad. No vendemos tu información personal.' },
   { title: '5. Retención de datos', body: 'Conservamos tus datos mientras tu cuenta esté activa. Los registros de viajes se conservan hasta 7 años por razones legales. Puedes solicitar la eliminación de tu cuenta contactándonos.' },
   { title: '6. Seguridad', body: 'Usamos transmisión de datos cifrada (HTTPS/TLS), infraestructura de nube segura y controles de acceso estrictos.' },
   { title: '7. Contacto', body: 'Preguntas: support@veronaride.app' },
@@ -83,9 +83,9 @@ function PrivacyContent() {
 
 const legalSections = [
   { title: '1. Información de la empresa', body: 'VERONA Ride Venezuela\nCorreo: support@veronaride.app' },
-  { title: '2. Naturaleza del servicio', body: 'VERONA Ride opera una plataforma tecnológica que conecta pasajeros con proveedores de transporte independientes. Es un intermediario tecnológico, no una empresa de transporte. Los conductores son contratistas independientes.' },
+  { title: '2. Naturaleza del servicio', body: 'VERONA Ride opera una plataforma tecnológica que conecta clientes con proveedores de transporte y servicios independientes. Es un intermediario tecnológico, no una empresa de transporte. Los conductores son contratistas independientes.' },
   { title: '3. Limitación de responsabilidad', body: 'En la medida permitida por la ley venezolana, VERONA Ride no será responsable de daños indirectos o consecuentes derivados del uso del servicio.' },
-  { title: '4. Responsabilidades del usuario', body: 'Al usar VERONA Ride aceptas: proporcionar información precisa, usar el servicio solo para fines lícitos, tratar a los conductores con respeto y cumplir con las leyes venezolanas.' },
+  { title: '4. Responsabilidades del cliente', body: 'Al usar VERONA Ride aceptas: proporcionar información precisa, usar el servicio solo para fines lícitos, tratar a los conductores con respeto y cumplir con las leyes venezolanas.' },
   { title: '5. Responsabilidades del conductor', body: 'Los conductores son responsables de mantener licencia y registro válidos, contar con seguro adecuado y cumplir con la regulación de transporte venezolana.' },
   { title: '6. Propiedad intelectual', body: 'Todo el contenido de VERONA Ride Venezuela — logo, nombre, diseño y texto — es propiedad de VERONA Ride Venezuela y está protegido por las leyes venezolanas.' },
   { title: '7. Ley aplicable', body: 'Este Aviso Legal se rige por las leyes de la República Bolivariana de Venezuela.' },

@@ -18,7 +18,8 @@ export type ServiceType =
   | 'scheduled' | 'hourly' | 'wait_and_return'
   | 'encomienda' | 'pickup' | 'plataforma'
   | 'carga'
-  | 'cisterna' | 'grua' | 'mecanico' | 'planta_electrica' | 'tanque_gas';
+  | 'cisterna' | 'grua' | 'mecanico' | 'planta_electrica' | 'tanque_gas'
+  | 'baterias' | 'cauchos' | 'gasolina' | 'aire_acondicionado' | 'mudanza';
 
 // ─────────────────────────────────────
 // ESTADOS DEL VIAJE

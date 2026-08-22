@@ -73,7 +73,7 @@ export default function RootLayout() {
       } else if (isAuthenticated && user) {
         // Redirigir según el rol del usuario
         if (user.role === 'passenger') {
-          router.replace('/(passenger)/home');
+          router.replace('/(passenger)/categories');
         } else if (user.role === 'driver') {
           router.replace('/(driver)/home');
         } else if (user.role === 'admin') {

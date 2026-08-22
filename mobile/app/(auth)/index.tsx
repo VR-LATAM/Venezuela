@@ -66,10 +66,10 @@ export default function WelcomeScreen() {
         <TouchableOpacity
           style={[styles.button, styles.primaryButton]}
           onPress={() => router.push('/(auth)/register-passenger')}
-          accessibilityLabel="Soy pasajero"
+          accessibilityLabel="Soy cliente"
           accessibilityRole="button"
         >
-          <Text style={styles.primaryButtonText} numberOfLines={1} adjustsFontSizeToFit>Soy pasajero</Text>
+          <Text style={styles.primaryButtonText} numberOfLines={1} adjustsFontSizeToFit>Soy cliente</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
