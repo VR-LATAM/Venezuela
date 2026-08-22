@@ -815,8 +815,19 @@ export default function PassengerHomeScreen() {
       return;
     }
 
-    setSearchStatus('requesting');
     const isCargaCategory = selectedService === 'carga' || selectedService === 'pickup' || selectedService === 'plataforma';
+    if (isCargaCategory) {
+      if (!cargaSenderName.trim() || !cargaSenderPhone.trim()) {
+        Alert.alert('Datos requeridos', 'Ingresa el nombre y teléfono de quien envía.');
+        return;
+      }
+      if (!cargaRecipient.trim() || !cargaPhone.trim()) {
+        Alert.alert('Datos requeridos', 'Ingresa el nombre y teléfono de quien recibe.');
+        return;
+      }
+    }
+
+    setSearchStatus('requesting');
     const isDelivery      = selectedService === 'encomienda' || isCargaCategory;
     const isCargaHeavy    = selectedService === 'carga';
     const finalPickupLat  = (isDelivery && customPickupCoords) ? customPickupCoords.latitude  : userLocation.latitude;
@@ -1681,12 +1692,12 @@ export default function PassengerHomeScreen() {
                     </Text>
 
                     {/* Datos del remitente */}
-                    <Text style={styles.encomiendaSectionLabel}>Quien entrega</Text>
+                    <Text style={styles.encomiendaSectionLabel}>Quien envía <Text style={{ color: '#EF4444' }}>*</Text></Text>
                     <TextInput
                       style={styles.encomiendaInput}
                       value={cargaSenderName}
                       onChangeText={setCargaSenderName}
-                      placeholder="Nombre de quien entrega"
+                      placeholder="Nombre completo"
                       placeholderTextColor="#94A3B8"
                       maxLength={100}
                     />
@@ -1694,19 +1705,19 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={cargaSenderPhone}
                       onChangeText={setCargaSenderPhone}
-                      placeholder="Teléfono de quien entrega"
+                      placeholder="Teléfono"
                       placeholderTextColor="#94A3B8"
                       keyboardType="phone-pad"
                       maxLength={30}
                     />
 
                     {/* Datos del destinatario */}
-                    <Text style={styles.encomiendaSectionLabel}>Quien recibe</Text>
+                    <Text style={styles.encomiendaSectionLabel}>Quien recibe <Text style={{ color: '#EF4444' }}>*</Text></Text>
                     <TextInput
                       style={styles.encomiendaInput}
                       value={cargaRecipient}
                       onChangeText={setCargaRecipient}
-                      placeholder="Nombre de quien recibe"
+                      placeholder="Nombre completo"
                       placeholderTextColor="#94A3B8"
                       maxLength={100}
                     />
@@ -1714,7 +1725,7 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={cargaPhone}
                       onChangeText={setCargaPhone}
-                      placeholder="Teléfono de quien recibe"
+                      placeholder="Teléfono"
                       placeholderTextColor="#94A3B8"
                       keyboardType="phone-pad"
                       maxLength={30}
