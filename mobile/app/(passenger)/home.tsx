@@ -1647,7 +1647,7 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={cargaDescription}
                       onChangeText={setCargaDescription}
-                      placeholder="¿Qué se va a transportar? (opcional)"
+                      placeholder="¿Qué se va a transportar?"
                       placeholderTextColor="#94A3B8"
                       maxLength={300}
                     />
@@ -1686,7 +1686,7 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={cargaSenderName}
                       onChangeText={setCargaSenderName}
-                      placeholder="Nombre de quien entrega (opcional)"
+                      placeholder="Nombre de quien entrega"
                       placeholderTextColor="#94A3B8"
                       maxLength={100}
                     />
@@ -1694,7 +1694,7 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={cargaSenderPhone}
                       onChangeText={setCargaSenderPhone}
-                      placeholder="Teléfono de quien entrega (opcional)"
+                      placeholder="Teléfono de quien entrega"
                       placeholderTextColor="#94A3B8"
                       keyboardType="phone-pad"
                       maxLength={30}
@@ -1706,7 +1706,7 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={cargaRecipient}
                       onChangeText={setCargaRecipient}
-                      placeholder="Nombre de quien recibe (opcional)"
+                      placeholder="Nombre de quien recibe"
                       placeholderTextColor="#94A3B8"
                       maxLength={100}
                     />
@@ -1714,7 +1714,7 @@ export default function PassengerHomeScreen() {
                       style={styles.encomiendaInput}
                       value={cargaPhone}
                       onChangeText={setCargaPhone}
-                      placeholder="Teléfono de quien recibe (opcional)"
+                      placeholder="Teléfono de quien recibe"
                       placeholderTextColor="#94A3B8"
                       keyboardType="phone-pad"
                       maxLength={30}
